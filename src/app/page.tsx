@@ -1,8 +1,11 @@
+import Link from "next/link";
+
 import {
   getExpiringSoonCount,
   getFoodOptions,
   getInventory,
 } from "@/features/inventory/queries";
+import { getRankedRecipes } from "@/features/recipes/queries";
 import { InventoryForm } from "./inventory-form";
 import { InventoryItemActions } from "./inventory-item-actions";
 
@@ -25,10 +28,11 @@ const unitLabels = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [foodOptions, inventory, expiringSoon] = await Promise.all([
+  const [foodOptions, inventory, expiringSoon, rankedRecipes] = await Promise.all([
     getFoodOptions(),
     getInventory(),
     getExpiringSoonCount(),
+    getRankedRecipes(),
   ]);
 
   return (
@@ -44,9 +48,17 @@ export default async function Home() {
               <p className="text-xs text-[#6e776a]">Kochen, was schon da ist.</p>
             </div>
           </div>
-          <span className="rounded-full bg-[#eef2e8] px-3 py-1.5 text-xs font-medium text-[#4f604c]">
-            MVP · lokal
-          </span>
+          <nav className="flex items-center gap-2 text-sm font-medium text-[#52604e]">
+            <Link href="/" className="rounded-xl px-3 py-2 hover:bg-[#eef2e8]">
+              Übersicht
+            </Link>
+            <Link
+              href="/shopping-list"
+              className="rounded-xl px-3 py-2 hover:bg-[#eef2e8]"
+            >
+              Einkaufsliste
+            </Link>
+          </nav>
         </div>
       </header>
 
@@ -73,6 +85,57 @@ export default async function Home() {
               .filter((item) => item.expiresAt === null)
               .length.toString()}
           />
+        </section>
+
+        <section className="mb-10">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#78846f]">
+                Deine besten Matches
+              </p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                Was kannst du daraus kochen?
+              </h2>
+            </div>
+            <span className="hidden text-sm text-[#788076] sm:block">
+              Score aus Vorrat und Haltbarkeit
+            </span>
+          </div>
+          {rankedRecipes.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-[#cbd2c4] bg-[#fffdf7]/70 p-6 text-sm text-[#727a6f]">
+              Noch keine Rezepte vorhanden. Führe einmal den Seed-Befehl aus.
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {rankedRecipes.map((recipe, index) => (
+                <Link
+                  key={recipe.id}
+                  href={`/recipes/${recipe.id}`}
+                  className="group rounded-[1.5rem] bg-[#fffdf7] p-5 shadow-[0_12px_40px_rgba(44,58,39,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_46px_rgba(44,58,39,0.1)]"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="text-xs font-semibold text-[#7c8676]">
+                      #{index + 1} · {recipe.prepMinutes + recipe.cookMinutes} Min.
+                    </span>
+                    <span className="grid size-12 place-items-center rounded-full bg-[#dfead8] text-sm font-bold text-[#315c3b]">
+                      {recipe.score}%
+                    </span>
+                  </div>
+                  <h3 className="mt-3 text-lg font-bold tracking-tight group-hover:text-[#315c3b]">
+                    {recipe.title}
+                  </h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#70776d]">
+                    {recipe.description}
+                  </p>
+                  <p className="mt-4 text-sm font-medium text-[#53664e]">
+                    {recipe.canCook
+                      ? "Alle Pflichtzutaten vorhanden"
+                      : `${recipe.missingRequiredCount} Pflichtzutat${recipe.missingRequiredCount === 1 ? "" : "en"} fehlt`}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
 
         <div className="grid items-start gap-7 lg:grid-cols-[22rem_1fr]">

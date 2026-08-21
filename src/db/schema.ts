@@ -154,3 +154,23 @@ export const ingredientSubstitutes = sqliteTable(
     check("ingredient_substitutes_amount_positive", sql`${table.amount} > 0`),
   ],
 );
+
+export const shoppingListItems = sqliteTable(
+  "shopping_list_items",
+  {
+    id: text("id").primaryKey(),
+    foodId: text("food_id")
+      .notNull()
+      .references(() => foods.id, { onDelete: "restrict" }),
+    amount: real("amount").notNull(),
+    unit: text("unit").$type<Unit>().notNull(),
+    checked: integer("checked", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("shopping_list_items_food_id_unique").on(table.foodId),
+    check("shopping_list_items_amount_positive", sql`${table.amount} > 0`),
+  ],
+);

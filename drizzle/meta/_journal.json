@@ -15,6 +15,13 @@
       "when": 1787306659487,
       "tag": "0001_productive_khan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787307493644,
+      "tag": "0002_overconfident_hellcat",
+      "breakpoints": true
     }
   ]
 }

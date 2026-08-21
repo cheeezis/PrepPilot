@@ -42,41 +42,42 @@ automatisierte Tests abgesichert.
 - [x] Menge, Einheit und Lagerort erfassen
 - [x] Öffnungs- und Verbrauchsdatum erfassen
 - [x] Gleiche Vorräte ohne getrennte Verbrauchsdaten zusammenführen
-- [ ] Bestände nach dem Kochen reduzieren
+- [x] Bestände nach dem Kochen reduzieren
 
 ## 4. Rezeptdatenbank
 
 - [ ] Rezepte anlegen, bearbeiten und löschen
-- [ ] Zutaten strukturiert zuordnen
+- [x] Zutaten strukturiert zuordnen
 - [ ] Portionen skalieren
-- [ ] Zubereitungszeit, Nährwerte und Tags erfassen
+- [x] Zubereitungszeit, Nährwerte und Tags erfassen
+- [x] Fünf strukturierte MVP-Beispielrezepte anlegen
 - [ ] Mindestens 20 realistische Beispielrezepte importieren
 
 ## 5. Matching-Engine
 
-- [ ] Vorhandene, fehlende und optionale Zutaten bestimmen
-- [ ] Mengen bei der Bewertung berücksichtigen
-- [ ] Erste nachvollziehbare Score-Formel definieren
-- [ ] Bald ablaufende Vorräte höher gewichten
+- [x] Vorhandene, fehlende und optionale Zutaten bestimmen
+- [x] Mengen bei der Bewertung berücksichtigen
+- [x] Erste nachvollziehbare Score-Formel definieren
+- [x] Bald ablaufende Vorräte höher gewichten
 - [ ] Zeit, Ernährung und zusätzliche Einkäufe einbeziehen
-- [ ] Begründungen für Empfehlungen erzeugen
-- [ ] Matching-Logik mit Unit-Tests absichern
+- [x] Begründungen für Empfehlungen erzeugen
+- [x] Matching-Logik mit Unit-Tests absichern
 
 ## 6. Nutzeroberfläche
 
 - [ ] Onboarding und Präferenzen
 - [x] Vorratsübersicht
-- [ ] Rezept-Ranking mit Match-Score
-- [ ] Rezeptdetail mit vorhandenen und fehlenden Zutaten
-- [ ] Kochvorgang bestätigen
+- [x] Rezept-Ranking mit Match-Score
+- [x] Rezeptdetail mit vorhandenen und fehlenden Zutaten
+- [x] Kochvorgang bestätigen
 - [ ] Leere, ladende und fehlerhafte Zustände gestalten
 - [ ] Mobile Darstellung optimieren
 
 ## 7. Einkaufsliste
 
-- [ ] Fehlende Zutaten übernehmen
-- [ ] Doppelte Einträge zusammenfassen
-- [ ] Einträge abhaken
+- [x] Fehlende Zutaten übernehmen
+- [x] Doppelte Einträge zusammenfassen
+- [x] Einträge abhaken
 - [ ] Eingekaufte Lebensmittel in den Vorrat übernehmen
 
 ## 8. MVP-Abnahme
