@@ -1,99 +1,150 @@
 # PrepPilot – Roadmap
 
-Diese Liste ist die gemeinsame Arbeitsgrundlage. Aufgaben werden in Reihenfolge umgesetzt; neue Ideen landen zunächst im Backlog.
+Diese Liste ist die gemeinsame Arbeitsgrundlage. Aufgaben werden grundsätzlich
+in Reihenfolge umgesetzt; neue Ideen landen zunächst im Backlog.
 
-## 0. Produktfundament
+## 0. Produktkern und MVP
+
+PrepPilot verbindet langfristig zwei Modi:
+
+1. **Zielgerichtet optimieren:** Ein Gericht auf Portionen, Kalorien, Protein
+   und Budget anpassen.
+2. **Aus dem Vorrat kochen:** Vorhandene und bald ablaufende Lebensmittel mit
+   passenden Rezepten abgleichen.
+
+Der Optimierer ist der primäre MVP-Nutzerfluss:
+
+`Ziele eingeben → Gericht wählen → Mengen optimieren → Ergebnis prüfen → Einkaufsliste`
+
+Das MVP gilt als erfolgreich, wenn für mindestens ein realistisches Gericht
+deterministisch geeignete Zutatenmengen berechnet werden und Nährwerte, Kosten,
+Zielabweichungen sowie die daraus entstehende Einkaufsliste nachvollziehbar
+dargestellt werden. Der Vorrat wird bei Bedarf von den Einkaufsmengen abgezogen.
 
 - [x] Produktversprechen formulieren
-- [x] MVP-Nutzerfluss definieren
-- [x] MVP gegen spätere Funktionen abgrenzen
-- [x] Erfolgskriterien für das MVP festlegen
-
-Das MVP gilt als erfolgreich, wenn ein Nutzer Vorräte erfassen, daraus ein
-erklärbares Rezept-Ranking erhalten, ein Rezept auswählen und fehlende Zutaten
-auf eine Einkaufsliste übernehmen kann. Die Matching-Logik wird durch
-automatisierte Tests abgesichert.
+- [x] Optimierung und Vorrats-Matching als verbundene Produktmodi festlegen
+- [x] Primären MVP-Nutzerfluss definieren
+- [x] KI auf Import und Interpretation begrenzen; Berechnungen deterministisch halten
+- [ ] Konkrete MVP-Erfolgskriterien mit einem Referenzgericht abnehmen
 
 ## 1. Technisches Fundament
 
-- [x] Tech-Stack auswählen
+- [x] Next.js, React, TypeScript und SQLite für den lokalen MVP einrichten
 - [x] Architektur und Ordnerstruktur festlegen
-- [x] Entwicklungsumgebung scaffolden
-- [x] Linting und Unit-Tests einrichten
+- [x] Linting, TypeScript-Prüfung und Unit-Tests einrichten
+- [x] Migrationen, Seed-Daten und lokale Setup-Anleitung ergänzen
 - [ ] Automatische Formatierung einrichten
-- [x] `.env.example` und Setup-Anleitung ergänzen
+- [ ] Entscheidung über einen separaten Python-Optimierungsservice treffen
+- [ ] PostgreSQL erst für Mehrbenutzerbetrieb und Deployment einführen
 
-## 2. Domänen- und Datenmodell
+## 2. Vorhandenes Produktfundament
 
-- [x] `Food` als normalisierte Lebensmittelidentität modellieren
-- [x] Einheiten und Umrechnungen definieren
-- [x] `InventoryItem` für Vorräte modellieren
-- [x] `Recipe`, `RecipeIngredient` und Portionen modellieren
-- [x] Pflicht-, optionale und ersetzbare Zutaten abbilden
-- [x] Ernährungsformen, Allergene und Nährwerte abbilden
-- [x] Datenbankschema und Migrationen erstellen
-
-## 3. Vorratsverwaltung
-
-- [x] Vorräte anzeigen
-- [x] Vorräte anlegen
-- [x] Vorräte bearbeiten
-- [x] Vorräte löschen
-- [x] Menge, Einheit und Lagerort erfassen
-- [x] Öffnungs- und Verbrauchsdatum erfassen
-- [x] Gleiche Vorräte ohne getrennte Verbrauchsdaten zusammenführen
+- [x] Lebensmittel, Einheiten und Umrechnungen modellieren
+- [x] Rezepte, Zutaten, Portionen und optionale Zutaten modellieren
+- [x] Fünf strukturierte Beispielrezepte anlegen
+- [x] Vorräte anlegen, anzeigen, bearbeiten, löschen und zusammenführen
+- [x] Rezept-Ranking aus vorhandenen Vorräten erzeugen
+- [x] Fehlende Zutaten auf eine Einkaufsliste übernehmen
+- [x] Einkäufe abhaken und in den Vorrat übernehmen
 - [x] Bestände nach dem Kochen reduzieren
 
-## 4. Rezeptdatenbank
+## 3. Optimierungsfähige Lebensmitteldaten
 
-- [ ] Rezepte anlegen, bearbeiten und löschen
-- [x] Zutaten strukturiert zuordnen
-- [ ] Portionen skalieren
-- [x] Zubereitungszeit, Nährwerte und Tags erfassen
-- [x] Fünf strukturierte MVP-Beispielrezepte anlegen
-- [ ] Mindestens 20 realistische Beispielrezepte importieren
+- [ ] Bezugsmenge für Nährwert- und Preisdaten definieren
+- [ ] Kalorien, Protein, Kohlenhydrate und Fett pro Lebensmittel modellieren
+- [ ] Preis, Packungsgröße und kaufbare Einheit modellieren
+- [ ] Quelle und Stand der Nährwert- und Preisdaten speichern
+- [ ] Validierung für unvollständige oder widersprüchliche Daten ergänzen
+- [ ] Datenbankschema und Migration erstellen
+- [ ] Lebensmittel eines Referenzgerichts mit realistischen Daten ausstatten
 
-## 5. Matching-Engine
+## 4. Optimierungsfähige Rezepte
+
+- [ ] Zutaten als fest, skalierbar oder optimierbar kennzeichnen
+- [ ] Sinnvolle Mindest- und Höchstmengen pro Zutat definieren
+- [ ] Zutatenrollen wie Proteinquelle, Kohlenhydratquelle, Gemüse und Fett abbilden
+- [ ] Grundmengen zuverlässig auf eine gewünschte Portionszahl skalieren
+- [ ] Ein Referenzgericht vollständig für die Optimierung kalibrieren
+- [ ] Kulinarisch unsinnige Mengen durch Grenzen verhindern
+
+## 5. Deterministische Berechnungs- und Optimierungsengine
+
+- [ ] Eingabeschema für Portionen, Kalorien, Protein, Makros und Budget definieren
+- [ ] Nährwerte pro Zutat, Gesamtgericht und Portion berechnen
+- [ ] Kosten pro Zutat, Gesamtgericht und Portion berechnen
+- [ ] Benötigte Packungsanzahl und tatsächliche Einkaufskosten berechnen
+- [ ] Harte Bedingungen für Protein, Budget und ausgeschlossene Zutaten umsetzen
+- [ ] Zielabweichungen für Kalorien, Fett und Kohlenhydrate bewerten
+- [ ] Optimierungsmodus „nah am Kalorienziel“ implementieren
+- [ ] Optimierungsmodus „möglichst günstig“ implementieren
+- [ ] Optimierungsmodus „möglichst proteinreich“ implementieren
+- [ ] Optimierungsmodus „ausgewogener Kompromiss“ implementieren
+- [ ] Nicht erfüllbare Zielkombinationen erkennen und erklären
+- [ ] Ergebnisse reproduzierbar und nachvollziehbar begründen
+- [ ] Berechnungen und Optimierung umfassend mit Unit-Tests absichern
+
+## 6. Optimierer-Oberfläche
+
+- [ ] Formular für Portionszahl und Ernährungsziele erstellen
+- [ ] Kalorienziel und Proteinminimum erfassen
+- [ ] Optionale Fett-, Kohlenhydrat- und Budgetgrenzen erfassen
+- [ ] Unverträglichkeiten und ausgeschlossene Zutaten berücksichtigen
+- [ ] Gespeichertes Gericht auswählen
+- [ ] Optimierungsmodus auswählen
+- [ ] Ursprüngliche und optimierte Zutatenmengen vergleichen
+- [ ] Nährwerte und Zielerreichung pro Portion darstellen
+- [ ] Gesamt- und Portionskosten darstellen
+- [ ] Packungsgrößen und Einkaufsmenge darstellen
+- [ ] Aufteilung des fertigen Gerichts auf Portionen erklären
+- [ ] Lade-, Fehler- und nicht erfüllbare Zustände gestalten
+
+## 7. Verbindung mit Vorrat und Einkaufsliste
 
 - [x] Vorhandene, fehlende und optionale Zutaten bestimmen
-- [x] Mengen bei der Bewertung berücksichtigen
-- [x] Erste nachvollziehbare Score-Formel definieren
-- [x] Bald ablaufende Vorräte höher gewichten
-- [ ] Zeit, Ernährung und zusätzliche Einkäufe einbeziehen
-- [x] Begründungen für Empfehlungen erzeugen
-- [x] Matching-Logik mit Unit-Tests absichern
+- [x] Mengen und kompatible Einheiten berücksichtigen
+- [x] Bald ablaufende Vorräte im Rezept-Ranking höher gewichten
+- [x] Erklärbare Match-Begründungen erzeugen
+- [x] Einkaufsliste zusammenführen, abhaken und einräumen
+- [ ] Optimierte statt ursprünglicher Rezeptmengen für das Matching verwenden
+- [ ] Vorhandene Vorratsmengen von der optimierten Einkaufsliste abziehen
+- [ ] Packungsgrößen beim Einkauf berücksichtigen
+- [ ] Optimierte Mengen nach dem Kochen aus dem Vorrat abbuchen
+- [ ] Zwischen „Ziele optimieren“ und „Aus Vorrat kochen“ wechseln können
 
-## 6. Nutzeroberfläche
+## 8. Rezeptverwaltung und Import
 
-- [ ] Onboarding und Präferenzen
-- [x] Vorratsübersicht
-- [x] Rezept-Ranking mit Match-Score
-- [x] Rezeptdetail mit vorhandenen und fehlenden Zutaten
-- [x] Kochvorgang bestätigen
-- [ ] Leere, ladende und fehlerhafte Zustände gestalten
-- [ ] Mobile Darstellung optimieren
+- [ ] Rezepte anlegen, bearbeiten und löschen
+- [ ] Mindestens 20 realistische und kalibrierte Beispielrezepte bereitstellen
+- [ ] Rezepttext deterministisch in strukturierte Felder überführen
+- [ ] Rezeptlinks importieren
+- [ ] KI-gestützte Interpretation mit Bestätigungsansicht ergänzen
+- [ ] Nährwert- und Mengenangaben vor dem Speichern validieren
 
-## 7. Einkaufsliste
+## 9. Qualität und MVP-Abnahme
 
-- [x] Fehlende Zutaten übernehmen
-- [x] Doppelte Einträge zusammenfassen
-- [x] Einträge abhaken
-- [x] Eingekaufte Lebensmittel in den Vorrat übernehmen
-
-## 8. MVP-Abnahme
-
-- [ ] Zentralen Nutzerfluss als End-to-End-Test abdecken
+- [ ] Zentralen Optimierungsfluss als End-to-End-Test abdecken
+- [ ] Vorrats- und Einkaufsfluss als End-to-End-Test abdecken
+- [ ] Mobile Darstellung prüfen und verbessern
 - [ ] Barrierefreiheit und Tastaturbedienung prüfen
-- [ ] Beispielnutzer durch den vollständigen Ablauf führen
+- [ ] Referenzfall „6 Portionen, 900 kcal, 65 g Protein“ abnehmen
+- [ ] Ergebnisse gegen eine unabhängige Kontrollrechnung prüfen
+- [ ] Beispielnutzer durch beide Produktmodi führen
 - [ ] Feedback dokumentieren und priorisieren
+
+## 10. Veröffentlichung
+
+- [ ] Nutzer- und Haushaltskonzept festlegen
+- [ ] Produktionsdatenbank und Backups einrichten
+- [ ] Docker und CI/CD ergänzen
+- [ ] Datenschutz, Quellenangaben und rechtliche Hinweise prüfen
 - [ ] MVP veröffentlichen
 
 ## Späterer Backlog
 
-- Wochenpläne über mehrere Rezepte optimieren
-- Packungsgrößen und echte Preise berücksichtigen
+- Wochenpläne über mehrere Gerichte gemeinsam optimieren
+- eigene Supermarktpreise und Preisverläufe
 - Barcode-, Kassenbon- oder Kühlschrank-Scan
+- automatische Austauschzutaten
+- persönliche Bewertungen und lernende Präferenzen
 - Kalenderintegration
 - Haushalte mit mehreren Profilen
-- automatische Austauschzutaten
-- Import von Rezept-Webseiten
