@@ -7,24 +7,30 @@ Diese Liste ist die gemeinsame Arbeitsgrundlage. Aufgaben werden in Reihenfolge 
 - [x] Produktversprechen formulieren
 - [x] MVP-Nutzerfluss definieren
 - [x] MVP gegen spätere Funktionen abgrenzen
-- [ ] Erfolgskriterien für das MVP festlegen
+- [x] Erfolgskriterien für das MVP festlegen
+
+Das MVP gilt als erfolgreich, wenn ein Nutzer Vorräte erfassen, daraus ein
+erklärbares Rezept-Ranking erhalten, ein Rezept auswählen und fehlende Zutaten
+auf eine Einkaufsliste übernehmen kann. Die Matching-Logik wird durch
+automatisierte Tests abgesichert.
 
 ## 1. Technisches Fundament
 
-- [ ] Tech-Stack auswählen
-- [ ] Architektur und Ordnerstruktur festlegen
-- [ ] Entwicklungsumgebung scaffolden
-- [ ] Formatierung, Linting und Tests einrichten
+- [x] Tech-Stack auswählen
+- [x] Architektur und Ordnerstruktur festlegen
+- [x] Entwicklungsumgebung scaffolden
+- [x] Linting und Unit-Tests einrichten
+- [ ] Automatische Formatierung einrichten
 - [ ] `.env.example` und Setup-Anleitung ergänzen
 
 ## 2. Domänen- und Datenmodell
 
-- [ ] `Food` als normalisierte Lebensmittelidentität modellieren
-- [ ] Einheiten und Umrechnungen definieren
-- [ ] `InventoryItem` für Vorräte modellieren
-- [ ] `Recipe`, `RecipeIngredient` und Portionen modellieren
-- [ ] Pflicht-, optionale und ersetzbare Zutaten abbilden
-- [ ] Ernährungsformen, Allergene und Nährwerte abbilden
+- [x] `Food` als normalisierte Lebensmittelidentität modellieren
+- [x] Einheiten und Umrechnungen definieren
+- [x] `InventoryItem` für Vorräte modellieren
+- [x] `Recipe`, `RecipeIngredient` und Portionen modellieren
+- [x] Pflicht-, optionale und ersetzbare Zutaten abbilden
+- [x] Ernährungsformen, Allergene und Nährwerte abbilden
 - [ ] Datenbankschema und Migrationen erstellen
 
 ## 3. Vorratsverwaltung
@@ -87,4 +93,3 @@ Diese Liste ist die gemeinsame Arbeitsgrundlage. Aufgaben werden in Reihenfolge 
 - Haushalte mit mehreren Profilen
 - automatische Austauschzutaten
 - Import von Rezept-Webseiten
-
