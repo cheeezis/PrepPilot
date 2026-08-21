@@ -55,3 +55,16 @@ Der erste Match-Score bleibt bewusst einfach und erklärbar:
 
 Bei gleichem Score werden Rezepte mit weniger fehlenden Pflichtzutaten und
 anschließend mit kürzerer Gesamtzeit zuerst angezeigt.
+
+## Optimierungsdaten
+
+Nährwerte werden pro Lebensmittel mit einer expliziten Bezugsmenge und Einheit
+gespeichert. Die ersten Profile für das Referenzgericht stammen aus
+[USDA FoodData Central](https://fdc.nal.usda.gov/) und enthalten Anbieter,
+externe Datensatz-ID, URL und Abrufdatum. FoodData Central stellt die Daten
+unter CC0 bereit.
+
+Packungspreise werden getrennt von Lebensmitteln gespeichert, damit später
+mehrere Händlerangebote oder eigene Preise möglich sind. Die ersten Preise sind
+ausdrücklich als `estimate` markierte MVP-Schätzwerte und keine aktuellen
+Supermarktangebote.

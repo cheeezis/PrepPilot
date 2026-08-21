@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { InventoryItem } from "./inventory";
+import type { FoodPackageOffer, NutritionProfile } from "./nutrition";
 import type { Recipe } from "./recipe";
 import {
   validateInventoryItem,
+  validateFoodPackageOffer,
+  validateNutritionProfile,
   validateQuantity,
   validateRecipe,
 } from "./validation";
@@ -47,6 +50,72 @@ describe("validateQuantity", () => {
   it("rejects zero and negative amounts", () => {
     expect(validateQuantity({ amount: 0, unit: "g" }).valid).toBe(false);
     expect(validateQuantity({ amount: -1, unit: "piece" }).valid).toBe(false);
+  });
+});
+
+const validNutritionProfile: NutritionProfile = {
+  foodId: "rice",
+  referenceAmount: 100,
+  referenceUnit: "g",
+  caloriesKcal: 365,
+  proteinGrams: 7.13,
+  carbohydratesGrams: 80,
+  fatGrams: 0.66,
+  sourceProvider: "USDA FoodData Central",
+  sourceExternalId: "169756",
+  sourceUrl: "https://fdc.nal.usda.gov/fdc-app.html#/food-details/169756/nutrients",
+  sourceRetrievedAt: "2026-08-21",
+};
+
+const validPackageOffer: FoodPackageOffer = {
+  id: "rice-mvp-package",
+  foodId: "rice",
+  label: "MVP-Schätzwert 1 kg",
+  amount: 1000,
+  unit: "g",
+  priceCents: 249,
+  currency: "EUR",
+  sourceType: "estimate",
+  sourceProvider: null,
+  sourceUrl: null,
+  priceObservedAt: "2026-08-21",
+};
+
+describe("validateNutritionProfile", () => {
+  it("accepts a sourced non-negative nutrition profile", () => {
+    expect(validateNutritionProfile(validNutritionProfile)).toEqual({ valid: true });
+  });
+
+  it("rejects negative nutrients and missing source metadata", () => {
+    const result = validateNutritionProfile({
+      ...validNutritionProfile,
+      proteinGrams: -1,
+      sourceProvider: "",
+      sourceUrl: "not-a-url",
+    });
+
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.errors).toContain("Protein cannot be negative.");
+      expect(result.errors).toContain("Nutrition profile requires a source provider.");
+      expect(result.errors).toContain("Nutrition profile requires a valid source URL.");
+    }
+  });
+});
+
+describe("validateFoodPackageOffer", () => {
+  it("accepts a clearly marked MVP estimate", () => {
+    expect(validateFoodPackageOffer(validPackageOffer)).toEqual({ valid: true });
+  });
+
+  it("rejects invalid amounts and fractional cents", () => {
+    const result = validateFoodPackageOffer({
+      ...validPackageOffer,
+      amount: 0,
+      priceCents: 249.5,
+    });
+
+    expect(result.valid).toBe(false);
   });
 });
 

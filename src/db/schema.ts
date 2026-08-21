@@ -13,6 +13,7 @@ import type {
   Allergen,
   DietaryTag,
   FoodCategory,
+  PriceSourceType,
   StorageLocation,
   Unit,
 } from "@/domain";
@@ -42,6 +43,62 @@ export const foods = sqliteTable(
   },
   (table) => [
     uniqueIndex("foods_normalized_name_unique").on(table.normalizedName),
+  ],
+);
+
+export const foodNutrition = sqliteTable(
+  "food_nutrition",
+  {
+    foodId: text("food_id")
+      .primaryKey()
+      .references(() => foods.id, { onDelete: "cascade" }),
+    referenceAmount: real("reference_amount").notNull(),
+    referenceUnit: text("reference_unit").$type<Unit>().notNull(),
+    caloriesKcal: real("calories_kcal").notNull(),
+    proteinGrams: real("protein_grams").notNull(),
+    carbohydratesGrams: real("carbohydrates_grams").notNull(),
+    fatGrams: real("fat_grams").notNull(),
+    sourceProvider: text("source_provider").notNull(),
+    sourceExternalId: text("source_external_id").notNull(),
+    sourceUrl: text("source_url").notNull(),
+    sourceRetrievedAt: integer("source_retrieved_at", {
+      mode: "timestamp_ms",
+    }).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    check("food_nutrition_reference_positive", sql`${table.referenceAmount} > 0`),
+    check("food_nutrition_calories_non_negative", sql`${table.caloriesKcal} >= 0`),
+    check("food_nutrition_protein_non_negative", sql`${table.proteinGrams} >= 0`),
+    check("food_nutrition_carbs_non_negative", sql`${table.carbohydratesGrams} >= 0`),
+    check("food_nutrition_fat_non_negative", sql`${table.fatGrams} >= 0`),
+  ],
+);
+
+export const foodPackageOffers = sqliteTable(
+  "food_package_offers",
+  {
+    id: text("id").primaryKey(),
+    foodId: text("food_id")
+      .notNull()
+      .references(() => foods.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    amount: real("amount").notNull(),
+    unit: text("unit").$type<Unit>().notNull(),
+    priceCents: integer("price_cents").notNull(),
+    currency: text("currency").$type<"EUR">().notNull().default("EUR"),
+    sourceType: text("source_type").$type<PriceSourceType>().notNull(),
+    sourceProvider: text("source_provider"),
+    sourceUrl: text("source_url"),
+    priceObservedAt: integer("price_observed_at", {
+      mode: "timestamp_ms",
+    }).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index("food_package_offers_food_id_idx").on(table.foodId),
+    check("food_package_offers_amount_positive", sql`${table.amount} > 0`),
+    check("food_package_offers_price_positive", sql`${table.priceCents} > 0`),
   ],
 );
 

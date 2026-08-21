@@ -1,5 +1,6 @@
 import type { Quantity } from "./food";
 import type { InventoryItem } from "./inventory";
+import type { FoodPackageOffer, NutritionProfile } from "./nutrition";
 import type { Recipe } from "./recipe";
 
 export type ValidationResult =
@@ -61,3 +62,78 @@ export function validateRecipe(recipe: Recipe): ValidationResult {
   return errors.length > 0 ? { valid: false, errors } : { valid: true };
 }
 
+export function validateNutritionProfile(
+  profile: NutritionProfile,
+): ValidationResult {
+  const errors: string[] = [];
+
+  if (!profile.foodId.trim()) errors.push("Nutrition profile requires a food id.");
+  if (!Number.isFinite(profile.referenceAmount) || profile.referenceAmount <= 0) {
+    errors.push("Nutrition reference amount must be greater than zero.");
+  }
+  const nutrients = [
+    ["Calories", profile.caloriesKcal],
+    ["Protein", profile.proteinGrams],
+    ["Carbohydrates", profile.carbohydratesGrams],
+    ["Fat", profile.fatGrams],
+  ] as const;
+  for (const [name, value] of nutrients) {
+    if (!Number.isFinite(value) || value < 0) {
+      errors.push(`${name} cannot be negative.`);
+    }
+  }
+  if (!profile.sourceProvider.trim()) {
+    errors.push("Nutrition profile requires a source provider.");
+  }
+  if (!profile.sourceExternalId.trim()) {
+    errors.push("Nutrition profile requires an external source id.");
+  }
+  if (!isHttpUrl(profile.sourceUrl)) {
+    errors.push("Nutrition profile requires a valid source URL.");
+  }
+  if (!isIsoDate(profile.sourceRetrievedAt)) {
+    errors.push("Nutrition profile requires a valid retrieval date.");
+  }
+
+  return errors.length > 0 ? { valid: false, errors } : { valid: true };
+}
+
+export function validateFoodPackageOffer(
+  offer: FoodPackageOffer,
+): ValidationResult {
+  const errors: string[] = [];
+
+  if (!offer.id.trim()) errors.push("Package offer requires an id.");
+  if (!offer.foodId.trim()) errors.push("Package offer requires a food id.");
+  if (!offer.label.trim()) errors.push("Package offer requires a label.");
+  if (!Number.isFinite(offer.amount) || offer.amount <= 0) {
+    errors.push("Package amount must be greater than zero.");
+  }
+  if (!Number.isInteger(offer.priceCents) || offer.priceCents <= 0) {
+    errors.push("Package price must be a positive integer in cents.");
+  }
+  if (!isIsoDate(offer.priceObservedAt)) {
+    errors.push("Package offer requires a valid observation date.");
+  }
+  if (offer.sourceType === "retailer" && !offer.sourceProvider?.trim()) {
+    errors.push("Retailer price requires a source provider.");
+  }
+  if (offer.sourceUrl !== null && !isHttpUrl(offer.sourceUrl)) {
+    errors.push("Package offer source URL must be valid.");
+  }
+
+  return errors.length > 0 ? { valid: false, errors } : { valid: true };
+}
+
+function isHttpUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isIsoDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value));
+}

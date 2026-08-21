@@ -2,7 +2,21 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
 import type { DietaryTag, Food, IngredientRequirement, Unit } from "../domain";
-import { foods, recipeIngredients, recipes } from "./schema";
+import {
+  validateFoodPackageOffer,
+  validateNutritionProfile,
+} from "../domain";
+import {
+  foodNutrition,
+  foodPackageOffers,
+  foods,
+  recipeIngredients,
+  recipes,
+} from "./schema";
+import {
+  referenceNutritionProfiles,
+  referencePackageOffers,
+} from "./seed-data/optimization";
 
 const seedFoods: Food[] = [
   { id: "rice", name: "Reis", aliases: ["Langkornreis", "Basmatireis"], category: "grain", defaultUnit: "g", allergens: [] },
@@ -133,6 +147,42 @@ async function main() {
 
   await seedDb.insert(foods).values(seedFoods.map((food) => ({ ...food, normalizedName: food.name.toLocaleLowerCase("de-DE") }))).onConflictDoNothing();
 
+  for (const profile of referenceNutritionProfiles) {
+    const validation = validateNutritionProfile(profile);
+    if (!validation.valid) {
+      throw new Error(validation.errors.join(" "));
+    }
+    const values = {
+      ...profile,
+      sourceRetrievedAt: new Date(`${profile.sourceRetrievedAt}T12:00:00Z`),
+    };
+    await seedDb
+      .insert(foodNutrition)
+      .values(values)
+      .onConflictDoUpdate({
+        target: foodNutrition.foodId,
+        set: values,
+      });
+  }
+
+  for (const offer of referencePackageOffers) {
+    const validation = validateFoodPackageOffer(offer);
+    if (!validation.valid) {
+      throw new Error(validation.errors.join(" "));
+    }
+    const values = {
+      ...offer,
+      priceObservedAt: new Date(`${offer.priceObservedAt}T12:00:00Z`),
+    };
+    await seedDb
+      .insert(foodPackageOffers)
+      .values(values)
+      .onConflictDoUpdate({
+        target: foodPackageOffers.id,
+        set: values,
+      });
+  }
+
   for (const recipe of seedRecipes) {
     await seedDb.insert(recipes).values({
       id: recipe.id,
@@ -163,7 +213,10 @@ async function main() {
   }
 
   client.close();
-  console.log(`${seedFoods.length} Lebensmittel und ${seedRecipes.length} Rezepte sind verfügbar.`);
+  console.log(
+    `${seedFoods.length} Lebensmittel, ${seedRecipes.length} Rezepte und ` +
+      `${referenceNutritionProfiles.length} Optimierungsprofile sind verfügbar.`,
+  );
 }
 
 main().catch((error: unknown) => {
