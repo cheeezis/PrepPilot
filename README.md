@@ -44,3 +44,14 @@ npm run dev
 Die lokale SQLite-Datenbank wird standardmäßig unter `data/preppilot.db`
 angelegt und nicht in Git eingecheckt. Neue Schemaänderungen werden mit
 `npm run db:generate` als nachvollziehbare SQL-Migration erzeugt.
+
+## Rezept-Matching
+
+Der erste Match-Score bleibt bewusst einfach und erklärbar:
+
+- 80 Prozent: Abdeckung der benötigten Mengen aller Pflichtzutaten
+- 10 Prozent: Abdeckung optionaler Zutaten
+- 10 Prozent: Bonus für vorhandene Zutaten, die innerhalb von drei Tagen ablaufen
+
+Bei gleichem Score werden Rezepte mit weniger fehlenden Pflichtzutaten und
+anschließend mit kürzerer Gesamtzeit zuerst angezeigt.
