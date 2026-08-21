@@ -78,7 +78,7 @@ automatisierte Tests abgesichert.
 - [x] Fehlende Zutaten übernehmen
 - [x] Doppelte Einträge zusammenfassen
 - [x] Einträge abhaken
-- [ ] Eingekaufte Lebensmittel in den Vorrat übernehmen
+- [x] Eingekaufte Lebensmittel in den Vorrat übernehmen
 
 ## 8. MVP-Abnahme
 

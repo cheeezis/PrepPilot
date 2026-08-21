@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { STORAGE_LOCATIONS, UNITS } from "@/domain";
 
-const optionalDate = z
+export const optionalDateSchema = z
   .string()
   .refine(
     (value) => value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value),
@@ -17,8 +17,8 @@ export const inventoryFormSchema = z.object({
     .positive("Die Menge muss größer als null sein."),
   unit: z.enum(UNITS),
   storageLocation: z.enum(STORAGE_LOCATIONS),
-  expiresAt: optionalDate,
-  openedAt: optionalDate,
+  expiresAt: optionalDateSchema,
+  openedAt: optionalDateSchema,
 });
 
 export const inventoryUpdateFormSchema = inventoryFormSchema.omit({

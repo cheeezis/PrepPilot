@@ -7,6 +7,7 @@ export function getShoppingList() {
   return db
     .select({
       id: shoppingListItems.id,
+      foodId: shoppingListItems.foodId,
       foodName: foods.name,
       amount: shoppingListItems.amount,
       unit: shoppingListItems.unit,
