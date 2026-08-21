@@ -12,16 +12,7 @@ import {
 import { combineInventoryAmounts } from "@/features/inventory/merge";
 import { planInventoryConsumption } from "@/features/inventory/consume";
 import { getRecipeMatch } from "@/features/recipes/queries";
-
-export type RecipeActionState = {
-  status: "idle" | "error" | "success";
-  message: string;
-};
-
-export const initialRecipeActionState: RecipeActionState = {
-  status: "idle",
-  message: "",
-};
+import type { RecipeActionState } from "./recipe-action-state";
 
 const recipeIdSchema = z.string().regex(/^[a-z0-9-]+$/);
 

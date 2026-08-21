@@ -2,11 +2,8 @@
 
 import { useActionState } from "react";
 
-import {
-  addMissingIngredients,
-  cookRecipe,
-  initialRecipeActionState,
-} from "./actions";
+import { addMissingIngredients, cookRecipe } from "./actions";
+import { initialRecipeActionState } from "./recipe-action-state";
 
 export function RecipeActions({
   recipeId,
