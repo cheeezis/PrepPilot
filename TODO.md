@@ -50,13 +50,13 @@ dargestellt werden. Der Vorrat wird bei Bedarf von den Einkaufsmengen abgezogen.
 
 ## 3. Optimierungsfähige Lebensmitteldaten
 
-- [ ] Bezugsmenge für Nährwert- und Preisdaten definieren
-- [ ] Kalorien, Protein, Kohlenhydrate und Fett pro Lebensmittel modellieren
-- [ ] Preis, Packungsgröße und kaufbare Einheit modellieren
-- [ ] Quelle und Stand der Nährwert- und Preisdaten speichern
-- [ ] Validierung für unvollständige oder widersprüchliche Daten ergänzen
-- [ ] Datenbankschema und Migration erstellen
-- [ ] Lebensmittel eines Referenzgerichts mit realistischen Daten ausstatten
+- [x] Bezugsmenge für Nährwert- und Preisdaten definieren
+- [x] Kalorien, Protein, Kohlenhydrate und Fett pro Lebensmittel modellieren
+- [x] Preis, Packungsgröße und kaufbare Einheit modellieren
+- [x] Quelle und Stand der Nährwert- und Preisdaten speichern
+- [x] Validierung für unvollständige oder widersprüchliche Daten ergänzen
+- [x] Datenbankschema und Migration erstellen
+- [x] Lebensmittel eines Referenzgerichts mit realistischen Daten ausstatten
 
 ## 4. Optimierungsfähige Rezepte
 
@@ -70,7 +70,7 @@ dargestellt werden. Der Vorrat wird bei Bedarf von den Einkaufsmengen abgezogen.
 ## 5. Deterministische Berechnungs- und Optimierungsengine
 
 - [ ] Eingabeschema für Portionen, Kalorien, Protein, Makros und Budget definieren
-- [ ] Nährwerte pro Zutat, Gesamtgericht und Portion berechnen
+- [x] Nährwerte pro Zutat, Gesamtgericht und Portion berechnen
 - [ ] Kosten pro Zutat, Gesamtgericht und Portion berechnen
 - [ ] Benötigte Packungsanzahl und tatsächliche Einkaufskosten berechnen
 - [ ] Harte Bedingungen für Protein, Budget und ausgeschlossene Zutaten umsetzen
