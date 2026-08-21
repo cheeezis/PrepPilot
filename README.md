@@ -29,3 +29,17 @@ Die erste Version umfasst bewusst noch keine automatische Bilderkennung, Superma
 
 Den aktuellen Entwicklungsplan findest du in [TODO.md](./TODO.md).
 
+## Lokale Entwicklung
+
+Voraussetzung ist Node.js 24 LTS. Anschließend:
+
+```powershell
+npm install
+Copy-Item .env.example .env
+npm run db:migrate
+npm run dev
+```
+
+Die lokale SQLite-Datenbank wird standardmäßig unter `data/preppilot.db`
+angelegt und nicht in Git eingecheckt. Neue Schemaänderungen werden mit
+`npm run db:generate` als nachvollziehbare SQL-Migration erzeugt.

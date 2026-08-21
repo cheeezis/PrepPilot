@@ -21,7 +21,7 @@ automatisierte Tests abgesichert.
 - [x] Entwicklungsumgebung scaffolden
 - [x] Linting und Unit-Tests einrichten
 - [ ] Automatische Formatierung einrichten
-- [ ] `.env.example` und Setup-Anleitung ergänzen
+- [x] `.env.example` und Setup-Anleitung ergänzen
 
 ## 2. Domänen- und Datenmodell
 
@@ -31,7 +31,7 @@ automatisierte Tests abgesichert.
 - [x] `Recipe`, `RecipeIngredient` und Portionen modellieren
 - [x] Pflicht-, optionale und ersetzbare Zutaten abbilden
 - [x] Ernährungsformen, Allergene und Nährwerte abbilden
-- [ ] Datenbankschema und Migrationen erstellen
+- [x] Datenbankschema und Migrationen erstellen
 
 ## 3. Vorratsverwaltung
 
