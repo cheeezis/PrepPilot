@@ -8,6 +8,13 @@
       "when": 1787304845012,
       "tag": "0000_mysterious_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787306659487,
+      "tag": "0001_productive_khan",
+      "breakpoints": true
     }
   ]
 }

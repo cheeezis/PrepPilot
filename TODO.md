@@ -35,10 +35,13 @@ automatisierte Tests abgesichert.
 
 ## 3. Vorratsverwaltung
 
-- [ ] Vorräte anlegen, bearbeiten und löschen
-- [ ] Menge, Einheit und Lagerort erfassen
-- [ ] Öffnungs- und Verbrauchsdatum erfassen
-- [ ] Grundzutaten als dauerhaft vorhanden markieren
+- [x] Vorräte anzeigen
+- [x] Vorräte anlegen
+- [x] Vorräte bearbeiten
+- [x] Vorräte löschen
+- [x] Menge, Einheit und Lagerort erfassen
+- [x] Öffnungs- und Verbrauchsdatum erfassen
+- [x] Gleiche Vorräte ohne getrennte Verbrauchsdaten zusammenführen
 - [ ] Bestände nach dem Kochen reduzieren
 
 ## 4. Rezeptdatenbank
@@ -62,7 +65,7 @@ automatisierte Tests abgesichert.
 ## 6. Nutzeroberfläche
 
 - [ ] Onboarding und Präferenzen
-- [ ] Vorratsübersicht
+- [x] Vorratsübersicht
 - [ ] Rezept-Ranking mit Match-Score
 - [ ] Rezeptdetail mit vorhandenen und fehlenden Zutaten
 - [ ] Kochvorgang bestätigen

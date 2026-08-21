@@ -59,9 +59,6 @@ export const inventoryItems = sqliteTable(
       .notNull(),
     expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
     openedAt: integer("opened_at", { mode: "timestamp_ms" }),
-    isStaple: integer("is_staple", { mode: "boolean" })
-      .notNull()
-      .default(false),
     ...timestamps,
   },
   (table) => [
@@ -157,4 +154,3 @@ export const ingredientSubstitutes = sqliteTable(
     check("ingredient_substitutes_amount_positive", sql`${table.amount} > 0`),
   ],
 );
-

@@ -1,69 +1,182 @@
-import Image from "next/image";
+import {
+  getExpiringSoonCount,
+  getFoodOptions,
+  getInventory,
+} from "@/features/inventory/queries";
+import { InventoryForm } from "./inventory-form";
+import { InventoryItemActions } from "./inventory-item-actions";
 
-export default function Home() {
+const storageLabels = {
+  pantry: "Vorratsschrank",
+  fridge: "Kühlschrank",
+  freezer: "Gefrierschrank",
+} as const;
+
+const unitLabels = {
+  g: "g",
+  kg: "kg",
+  ml: "ml",
+  l: "l",
+  piece: "Stück",
+  tsp: "TL",
+  tbsp: "EL",
+} as const;
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [foodOptions, inventory, expiringSoon] = await Promise.all([
+    getFoodOptions(),
+    getInventory(),
+    getExpiringSoonCount(),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-[#f3f1e8] text-[#1f2921]">
+      <header className="border-b border-black/5 bg-[#fffdf7]">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded-2xl bg-[#d9e7cf] text-xl">
+              ◒
+            </div>
+            <div>
+              <p className="text-lg font-bold tracking-tight">PrepPilot</p>
+              <p className="text-xs text-[#6e776a]">Kochen, was schon da ist.</p>
+            </div>
+          </div>
+          <span className="rounded-full bg-[#eef2e8] px-3 py-1.5 text-xs font-medium text-[#4f604c]">
+            MVP · lokal
+          </span>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
+        <div className="mb-8 max-w-2xl">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#6d805f]">
+            Dein Vorrat
+          </p>
+          <h1 className="text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
+            Was ist gerade zu Hause?
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-4 max-w-xl text-base leading-7 text-[#697064]">
+            Erfasse deine Lebensmittel. PrepPilot nutzt sie später, um passende
+            Rezepte zu finden und angebrochene Vorräte rechtzeitig aufzubrauchen.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <section className="mb-8 grid gap-4 sm:grid-cols-3">
+          <Metric label="Lebensmittel" value={inventory.length.toString()} />
+          <Metric label="Bald verbrauchen" value={expiringSoon.toString()} />
+          <Metric
+            label="Ohne Verbrauchsdatum"
+            value={inventory
+              .filter((item) => item.expiresAt === null)
+              .length.toString()}
+          />
+        </section>
+
+        <div className="grid items-start gap-7 lg:grid-cols-[22rem_1fr]">
+          <section className="rounded-[1.75rem] bg-[#fffdf7] p-6 shadow-[0_18px_60px_rgba(44,58,39,0.08)]">
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#78846f]">
+                Neuer Eintrag
+              </p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                Vorrat hinzufügen
+              </h2>
+            </div>
+            <InventoryForm foods={foodOptions} />
+          </section>
+
+          <section className="rounded-[1.75rem] bg-[#fffdf7] p-6 shadow-[0_18px_60px_rgba(44,58,39,0.08)] sm:p-8">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#78846f]">
+                  Übersicht
+                </p>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                  Vorhandene Lebensmittel
+                </h2>
+              </div>
+              <span className="text-sm text-[#788076]">
+                {inventory.length} Einträge
+              </span>
+            </div>
+
+            {inventory.length === 0 ? (
+              <div className="grid min-h-72 place-items-center rounded-3xl border border-dashed border-[#cbd2c4] bg-[#f7f7f1] p-8 text-center">
+                <div>
+                  <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-[#e4ecdd] text-2xl">
+                    ⌁
+                  </div>
+                  <h3 className="font-semibold">Noch ist dein Vorrat leer.</h3>
+                  <p className="mt-2 max-w-sm text-sm leading-6 text-[#727a6f]">
+                    Füge links dein erstes Lebensmittel hinzu. Die Liste wird
+                    anschließend automatisch aktualisiert.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-[#ecece4]">
+                {inventory.map((item) => {
+                  return (
+                    <article
+                      key={item.id}
+                      className="py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
+                        <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e6eddc] font-semibold text-[#486044]">
+                          {item.foodName.slice(0, 1).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold">{item.foodName}</h3>
+                          <p className="mt-1 text-sm text-[#737a70]">
+                            {item.amount} {unitLabels[item.unit]} ·{" "}
+                            {storageLabels[item.storageLocation]}
+                            {item.expiresAt
+                              ? ` · bis ${formatDate(item.expiresAt)}`
+                              : ""}
+                          </p>
+                        </div>
+                        <InventoryItemActions
+                          id={item.id}
+                          foodName={item.foodName}
+                          amount={item.amount}
+                          unit={item.unit}
+                          storageLocation={item.storageLocation}
+                          expiresAt={toDateInputValue(item.expiresAt)}
+                          openedAt={toDateInputValue(item.openedAt)}
+                        />
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         </div>
-      </main>
+      </div>
+    </main>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-3xl border border-black/5 bg-[#fffdf7]/80 px-5 py-4">
+      <p className="text-2xl font-bold tracking-tight">{value}</p>
+      <p className="mt-1 text-sm text-[#70776d]">{label}</p>
     </div>
   );
+}
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(value);
+}
+
+function toDateInputValue(value: Date | null) {
+  return value?.toISOString().slice(0, 10) ?? null;
 }

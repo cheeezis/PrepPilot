@@ -59,7 +59,6 @@ describe("validateInventoryItem", () => {
       storageLocation: "pantry",
       expiresAt: null,
       openedAt: null,
-      isStaple: false,
     };
 
     expect(validateInventoryItem(item)).toEqual({
@@ -95,4 +94,3 @@ describe("validateRecipe", () => {
     });
   });
 });
-

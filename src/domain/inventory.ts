@@ -11,6 +11,4 @@ export type InventoryItem = {
   storageLocation: StorageLocation;
   expiresAt: string | null;
   openedAt: string | null;
-  isStaple: boolean;
 };
-

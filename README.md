@@ -37,6 +37,7 @@ Voraussetzung ist Node.js 24 LTS. Anschließend:
 npm install
 Copy-Item .env.example .env
 npm run db:migrate
+npm run db:seed
 npm run dev
 ```
 
