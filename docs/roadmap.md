@@ -24,6 +24,8 @@ Status: abgeschlossen
 Ziel: Vor technischem Aufbau ist anhand konkreter Beispiele nachweisbar, was
 ein gültiger und praktikabler Tagesplan ist.
 
+Status: in Bearbeitung
+
 - repräsentative Nutzerprofile mit Tageszielen und drei bis sechs Mahlzeiten
   definieren
 - Zielbereiche und Prioritäten für Kalorien, Protein, Fett und Kohlenhydrate
