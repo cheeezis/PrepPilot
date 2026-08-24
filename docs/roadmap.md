@@ -2,9 +2,11 @@
 
 Stand: 21. August 2026
 
-Diese Roadmap beschreibt überprüfbare Produktergebnisse. Sie legt noch keinen
-Tech-Stack und keine Architektur fest. Eine Phase beginnt erst, wenn die
-Abnahmekriterien der vorherigen Phase erfüllt sind.
+Diese Roadmap beschreibt überprüfbare Produktergebnisse. Die Produktphasen
+bauen aufeinander auf. Ein rein technisches Grundgerüst darf parallel
+vorbereitet werden, solange es keine noch offenen fachlichen Entscheidungen
+vorwegnimmt. Bestätigte technische Entscheidungen stehen in
+`docs/architecture.md`.
 
 ## Phase 0: Produktgrundlage
 
@@ -127,9 +129,11 @@ Mögliche Themen sind Vorräte, Packungsgrößen, Preise und Budget. Externe API
 und optionale KI-Funktionen werden jeweils als eigenständige Produktentscheidung
 bewertet und dürfen den verlässlichen Kernfluss nicht voraussetzen.
 
-## Nächster Entscheidungspunkt
+## Nächste Entscheidungspunkte
 
-Für Phase 1 und die fachliche Vorbereitung des Katalogs werden Tech-Stack und
-Architektur noch nicht benötigt. Die nächste Arbeit ist fachlich: konkrete
-Testprofile, Toleranzen und Kataloganforderungen festlegen. Erst wenn diese
-Regeln belastbar sind, wird eine technische Architektur gewählt.
+Fachlich bleiben die offenen Regeln und Testprofile aus Phase 1 maßgeblich,
+bevor die eigentliche Planungslogik umgesetzt wird.
+
+Parallel darf das technische Grundgerüst vorbereitet werden. Der Kern-Stack,
+das Monorepo und die grundlegenden Systemgrenzen sind bestätigt. Als Nächstes
+werden die ergänzenden Werkzeuge und die minimale Projektstruktur festgelegt.

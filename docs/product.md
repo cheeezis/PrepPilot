@@ -166,4 +166,4 @@ Erst vor Beginn der jeweiligen Umsetzung werden festgelegt:
 - konkrete Toleranzen und unterstützte Makro-Zielbereiche,
 - Größe, Herkunft und Qualitätskriterien des Startkatalogs,
 - erlaubte Portionsvarianten je Mahlzeit,
-- Tech-Stack, Architektur und Deployment-Ziel.
+- ergänzende Technologien, Architekturdetails und Deployment-Ziel.
