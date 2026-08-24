@@ -70,10 +70,35 @@ offen.
 - Das Testprofil bewertet die Planungsqualität, nicht die gesundheitliche
   Eignung der eingegebenen Ernährungsziele.
 
+## Vorschläge und Annäherungen
+
+PrepPilot zeigt bis zu drei Tagespläne. Vollständig gültige Pläne werden immer
+vor Annäherungen angezeigt.
+
+Existieren weniger als drei gültige Pläne, darf die Ergebnisliste mit den
+besten noch praktikablen Annäherungen aufgefüllt werden. Existiert kein gültiger
+Plan, wird dies ausdrücklich erklärt und PrepPilot zeigt bis zu drei
+Annäherungen. Jede verletzte Regel und die zugehörige Abweichung müssen sichtbar
+sein; eine Annäherung darf nicht als gültiger Plan erscheinen.
+
+Annäherungen werden in dieser fachlichen Priorität bewertet:
+
+1. Protein
+2. Kalorien
+3. Fett
+4. Kohlenhydrate
+
+Vor dieser Sortierung werden Kandidaten mit unbrauchbar großen Abweichungen
+ausgeschlossen. Die konkreten Ausschlussgrenzen und die genaue Berechnung des
+Scores sind noch festzulegen.
+
+Bei unveränderten Eingaben und Katalogdaten liefert das MVP reproduzierbar
+dieselbe Reihenfolge. Weitere Vorschläge, Nutzungshistorie und automatische
+Abwechslung werden erst nach dem MVP betrachtet.
+
 ## Noch offen
 
-- Priorisierung mehrerer ansonsten gültiger Tagespläne
-- Verhalten, wenn kein Tagesplan alle harten Regeln erfüllt
+- genaue Ausschlussgrenzen und Bewertung von Annäherungen
 - erlaubte Portionsvarianten je Mahlzeit
 - genaue Katalogkategorien für die fünf Mahlzeitenrollen
 - konkrete Größenverhältnisse der Mahlzeitenrollen
