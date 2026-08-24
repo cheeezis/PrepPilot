@@ -139,6 +139,7 @@ Nach erfolgreicher MVP-Validierung kann PrepPilot schrittweise erweitern:
 - Ernährungsformen, Ausschlüsse und Favoriten,
 - eigene Mahlzeiten und wiederverwendbare Vorlagen,
 - Austausch einzelner Mahlzeiten bei fortbestehenden Tageszielen,
+- flexible Mahlzeiten- oder Snack-Slots mit reserviertem Makro-Budget,
 - Vorräte, Packungsgrößen, Preise und Budget,
 - Rezeptimport und automatische Nährwertberechnung,
 - optionale KI-Unterstützung.

@@ -31,6 +31,32 @@ Die intern berechnete Fettuntergrenze beträgt `56,8 g`. Für die Anzeige wird
 sie auf `57 g` gerundet. Fachliche Vergleiche verwenden grundsätzlich den
 ungerundeten Wert.
 
+## Mahlzeitenstruktur von Testprofil A
+
+Die fünf Mahlzeitenslots orientieren sich an einem realen Tagesablauf. Die
+genannten Lebensmittel sind Beispiele und keine fest vorgegebenen Inhalte.
+
+| Slot | Rolle | Beispiele |
+| --- | --- | --- |
+| 1 | einfache erste Mahlzeit | Brot mit Hähnchenbrust oder Schinken |
+| 2 | einfacher Protein-Snack | Skyr |
+| 3 | konkret geplante leichte Mittagsmahlzeit | noch festzulegen |
+| 4 | einfacher Protein-Snack | Proteinriegel oder Shake |
+| 5 | vorbereitetes Hauptgericht | gekochtes Meal-Prep-Gericht |
+
+Das Mittagessen wird im MVP konkret geplant und in der Einkaufsliste
+berücksichtigt. Ein nicht konkret verplanter, flexibler Mahlzeitenslot ist eine
+spätere Erweiterung.
+
+Die leichte Mittagsmahlzeit wird kalt und ohne Kochen in höchstens fünf Minuten
+zusammengestellt. Sie soll sättigender und größer als ein Snack sein, aber
+kleiner als das vorbereitete Hauptgericht. Konkrete Kaloriengrenzen pro
+Mahlzeitenrolle werden erst anhand von Beispielplänen festgelegt.
+
+Bei sechs gewählten Mahlzeiten kann später ein zusätzlicher kleiner Snack
+hinzukommen, beispielsweise Linsenwaffeln. Die genaue Regel dafür ist noch
+offen.
+
 ## Bewertungsgrundsätze
 
 - Sobald das Protein-Mindestziel erreicht ist, wird zusätzliches Protein nicht
@@ -46,6 +72,8 @@ ungerundeten Wert.
 
 - Priorisierung mehrerer ansonsten gültiger Tagespläne
 - Verhalten, wenn kein Tagesplan alle harten Regeln erfüllt
-- Mahlzeitentypen und ihre Verteilung bei fünf Mahlzeiten
 - erlaubte Portionsvarianten je Mahlzeit
+- genaue Katalogkategorien für die fünf Mahlzeitenrollen
+- konkrete Größenverhältnisse der Mahlzeitenrollen
+- Regel für einen optionalen sechsten Snack
 - weitere Testprofile und unterstützte Zielbereiche
