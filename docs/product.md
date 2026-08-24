@@ -126,10 +126,22 @@ fachliche Abnahme der Planungslogik.
 ## Katalogstrategie
 
 Das MVP verwendet einen kleinen, lokal verfügbaren und fachlich geprüften
-Mahlzeitenkatalog. Eine externe API darf später als Importquelle untersucht
-werden, ist aber keine Laufzeitvoraussetzung des MVP. Vor einer Übernahme
-externer Inhalte müssen Nutzungsrechte, Speicherung, Attribution,
-Nährwertqualität und metrische Mengen geklärt sein.
+Lebensmittel- und Mahlzeitenkatalog. Der interne Lebensmittelkatalog kombiniert
+zwei Arten von Einträgen:
+
+- wenige markenspezifische Produkte werden manuell und exakt erfasst,
+- generische Lebensmittel werden aus geeigneten externen Datenquellen
+  übernommen.
+
+Externe Daten werden vor ihrer Verwendung importiert, vereinheitlicht und
+fachlich geprüft. Erst freigegebene Einträge dürfen für die Planerstellung
+verwendet werden. Jeder Eintrag hält seine Herkunft und den Stand der
+übernommenen Daten fest.
+
+Eine externe API ist damit eine mögliche Importquelle, aber keine
+Laufzeitvoraussetzung der Planung. Vor einer Übernahme externer Inhalte müssen
+Nutzungsrechte, Speicherung, Attribution, Nährwertqualität und metrische Mengen
+geklärt sein. Konkrete Anbieter sind noch nicht ausgewählt.
 
 ## Spätere Produktentwicklung
 

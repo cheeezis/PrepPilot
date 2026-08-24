@@ -44,6 +44,9 @@ Ziel: Ein kleiner Katalog deckt die benötigten Mahlzeitentypen und Zielbereiche
 mit verlässlichen Daten ab.
 
 - Qualitätsanforderungen für Mahlzeiten, Zutaten, Mengen und Nährwerte festlegen
+- internes Format für generische und markenspezifische Lebensmittel festlegen
+- mögliche Importquellen fachlich und rechtlich bewerten
+- Prüf- und Freigabeschritt für importierte Lebensmittel definieren
 - Frühstücke, Hauptgerichte, Snacks, Brotmahlzeiten und Shakes kuratieren
 - Daten auf einheitliche Einheiten und vollständige Nährwerte prüfen
 - Herkunft und Nutzungsrechte jedes Inhalts dokumentieren
