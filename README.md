@@ -11,6 +11,7 @@ Festlegung auf einen Tech-Stack.
 
 - [Produktdefinition](docs/product.md)
 - [Planungsregeln](docs/planning-rules.md)
+- [Katalog](docs/catalog.md)
 - [Roadmap](docs/roadmap.md)
 
 Der unter dem Git-Tag `prototype-v1` archivierte Prototyp ist keine Grundlage

@@ -61,6 +61,8 @@ offen.
 
 - Sobald das Protein-Mindestziel erreicht ist, wird zusätzliches Protein nicht
   automatisch besser bewertet.
+- Nährwerte werden intern mit ihren ungerundeten Dezimalwerten berechnet und
+  summiert. Gerundet wird ausschließlich für die Anzeige.
 - Praktikable Portionsmengen sind wichtiger als das exakte Treffen eines
   einzelnen Zielwerts.
 - Eine Verletzung des Kohlenhydratbereichs darf einen Vorschlag nicht allein
