@@ -18,7 +18,7 @@ erfüllt. Erweiterungen ab Phase 7 werden erst danach priorisiert.
 | --- | --- | --- |
 | 0 | Produkt klar ausgerichtet | abgeschlossen |
 | 1 | Regeln für einen guten Tagesplan festgelegt | abgeschlossen |
-| 2 | Technisches Grundgerüst lauffähig | in Bearbeitung |
+| 2 | Technisches Grundgerüst lauffähig | abgeschlossen |
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | ausstehend |
 | 4 | Tagesplaner nutzbar | ausstehend |
 | 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
@@ -90,7 +90,7 @@ Fundament, ohne bereits Produktfunktionen vorwegzunehmen.
 Anwendungsteile starten. Das Frontend erreicht den Backend-Systemcheck, das
 Backend erreicht PostgreSQL und alle grundlegenden Qualitätsprüfungen bestehen.
 
-**Status:** in Bearbeitung
+**Status:** abgeschlossen
 
 Bestätigte Architekturentscheidungen stehen in `docs/architecture.md`.
 
@@ -224,6 +224,6 @@ Erfolgskriterien und eine priorisierte Reihenfolge.
 
 ## Nächster Meilenstein
 
-Die fachlichen Planungsregeln aus Phase 1 sind ausreichend, um mit der
-Entwicklung zu beginnen. Als Nächstes startet Phase 2 mit dem minimalen
-technischen Grundgerüst auf Basis der bereits ausgewählten Architektur.
+Das technische Grundgerüst aus Phase 2 ist reproduzierbar eingerichtet und
+vollständig geprüft. Als Nächstes startet Phase 3 mit dem Datenmodell und einem
+kleinen verlässlichen Lebensmittel- und Mahlzeitenkatalog.
