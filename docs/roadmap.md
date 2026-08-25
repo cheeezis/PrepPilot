@@ -18,7 +18,7 @@ erfüllt. Erweiterungen ab Phase 7 werden erst danach priorisiert.
 | --- | --- | --- |
 | 0 | Produkt klar ausgerichtet | abgeschlossen |
 | 1 | Regeln für einen guten Tagesplan festgelegt | abgeschlossen |
-| 2 | Technisches Grundgerüst lauffähig | ausstehend |
+| 2 | Technisches Grundgerüst lauffähig | in Bearbeitung |
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | ausstehend |
 | 4 | Tagesplaner nutzbar | ausstehend |
 | 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
@@ -90,7 +90,7 @@ Fundament, ohne bereits Produktfunktionen vorwegzunehmen.
 Anwendungsteile starten. Das Frontend erreicht den Backend-Systemcheck, das
 Backend erreicht PostgreSQL und alle grundlegenden Qualitätsprüfungen bestehen.
 
-**Status:** ausstehend
+**Status:** in Bearbeitung
 
 Bestätigte Architekturentscheidungen stehen in `docs/architecture.md`.
 

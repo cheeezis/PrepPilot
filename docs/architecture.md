@@ -1,6 +1,6 @@
 # Architektur
 
-Stand: 24. August 2026
+Stand: 25. August 2026
 
 Dieses Dokument hält bestätigte technische Entscheidungen fest. Details werden
 schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
@@ -14,11 +14,19 @@ schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
 
 ## Bestätigter Kern-Stack
 
-- Frontend: React mit TypeScript
-- Backend: Python mit FastAPI
+- Frontend: React-SPA mit TypeScript und Vite 8
+- Frontend-Laufzeit und Paketverwaltung: Node.js 24 LTS mit npm
+- Backend: Python 3.14 mit FastAPI
+- Python-Umgebung und Paketverwaltung: `venv` aus der Standardbibliothek und pip
 - Datenbank: PostgreSQL
+- Datenbankzugriff: synchrones SQLAlchemy 2 mit psycopg 3
+- Datenbankmigrationen: Alembic
 
-Konkrete Versionen und ergänzende Bibliotheken sind noch nicht ausgewählt.
+Frontend-Abhängigkeiten werden über die npm-Lockdatei reproduzierbar
+festgehalten. Direkte Backend-Abhängigkeiten stehen mit fester Version in
+`pyproject.toml`; pip löst deren transitive Abhängigkeiten bei der Installation
+auf. Ergänzende Bibliotheken werden erst ausgewählt, wenn die jeweilige Phase
+sie benötigt.
 
 ## Repository-Form
 
@@ -71,12 +79,31 @@ mit klar getrennten Fachbereichen, nicht als Sammlung von Microservices.
 PostgreSQL speichert die internen Lebensmittel, Mahlzeiten und später erzeugte
 Pläne. Ausschließlich das Backend greift direkt auf die Datenbank zu.
 
+Der Datenbankzugriff erfolgt zunächst synchron. Das passt zur ebenso synchronen
+Planungslogik und vermeidet im MVP die zusätzliche Komplexität asynchroner
+Sessions. SQLAlchemy bildet die Python-seitige Datenzugriffsschicht, psycopg
+stellt die Verbindung zu PostgreSQL her und Alembic versioniert spätere
+Schemaänderungen. Die Alembic-Umgebung wird erst mit dem ersten Datenmodell in
+Phase 3 angelegt.
+
+## Lokale Entwicklungsumgebung
+
+PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die
+notwendige Entwicklungskonfiguration werden dadurch im Repository festgehalten
+und lassen sich auf einem neuen Rechner reproduzieren.
+
+Die Entwicklungsumgebung verwendet das offizielle
+`postgres:18.6-bookworm`-Image. Daten liegen in einem benannten Docker-Volume
+und bleiben beim Stoppen oder Ersetzen des Containers erhalten.
+
+Frontend und Backend laufen während der lokalen Entwicklung zunächst direkt
+auf dem Host. Sie werden im MVP nicht allein aus Gründen der Einheitlichkeit
+containerisiert. Damit bleibt schnelles Neuladen und Debugging unkompliziert,
+während nur die zustandsbehaftete Infrastruktur isoliert betrieben wird.
+
 ## Noch zu entscheiden
 
-- Frontend-Build- und Testwerkzeuge
-- Python-Projekt- und Abhängigkeitsverwaltung
-- Datenbankzugriff und Migrationen
+- Frontend-Testwerkzeuge
 - genaue API-Gestaltung
 - interne Backend-Module und Abhängigkeitsrichtung
-- lokale Entwicklungsumgebung und Containerisierung
 - CI/CD und Deployment-Ziel
