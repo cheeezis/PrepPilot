@@ -1,6 +1,6 @@
 # Produktdefinition
 
-Stand: 21. August 2026
+Stand: 25. August 2026
 
 ## Vision
 
@@ -54,8 +54,9 @@ Mahlzeit festlegen.
 - Praktikable Mengen sind wichtiger als rechnerische Perfektion.
 - Die Planung ist im MVP deterministisch und nachvollziehbar.
 
-Die genauen Toleranzen und unterstützten Zielbereiche werden vor der
-Implementierung der Planungslogik anhand des kuratierten Katalogs festgelegt.
+Die anfänglichen Toleranzen stehen in `docs/planning-rules.md`. Welche Zielwerte
+der kuratierte Katalog zuverlässig abdeckt, wird während der Daten- und
+Planungsphasen praktisch überprüft.
 
 ## Primärer Nutzerfluss
 
@@ -103,9 +104,9 @@ Das MVP gilt als erfolgreich, wenn:
 - Testnutzer den erzeugten Plan als praktisch genug für einen realen
   Wochenversuch bewerten.
 
-Vor der Entwicklung werden konkrete Testprofile für unterschiedliche
-Zielwerte und drei bis sechs Mahlzeiten festgelegt. Diese Profile bilden die
-fachliche Abnahme der Planungslogik.
+Während Katalog und Planungslogik entstehen, werden konkrete Testprofile für
+unterschiedliche Zielwerte und drei bis sechs Mahlzeiten ergänzt. Diese Profile
+bilden die technische und fachliche Abnahme der Planungslogik.
 
 ## Bewusste Nicht-Ziele des MVP
 

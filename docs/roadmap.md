@@ -1,139 +1,229 @@
-# Produkt-Roadmap
+# Produkt- und Entwicklungs-Roadmap
 
-Stand: 21. August 2026
+Stand: 25. August 2026
 
-Diese Roadmap beschreibt überprüfbare Produktergebnisse. Die Produktphasen
-bauen aufeinander auf. Ein rein technisches Grundgerüst darf parallel
-vorbereitet werden, solange es keine noch offenen fachlichen Entscheidungen
-vorwegnimmt. Bestätigte technische Entscheidungen stehen in
-`docs/architecture.md`.
+Diese Roadmap führt PrepPilot von der Produktidee zu einem validierten Minimum
+Viable Product (MVP), also der kleinsten sinnvoll nutzbaren Produktversion, und
+anschließend zu möglichen Erweiterungen. Die Phasen bauen aufeinander auf. Eine
+Phase gilt erst als abgeschlossen, wenn ihr überprüfbares Abnahmekriterium
+erfüllt ist.
 
-## Phase 0: Produktgrundlage
+Der MVP umfasst die Phasen 0 bis 6. Nach Phase 5 ist die erste Version nutzbar;
+Phase 6 prüft mit realen Nutzern, ob sie das Produktversprechen tatsächlich
+erfüllt. Erweiterungen ab Phase 7 werden erst danach priorisiert.
 
-Ziel: Das zu lösende Problem und die Grenze des ersten Produkts sind eindeutig.
+## Aktueller Stand
 
-- Problemstatement, Zielgruppe und Produktversprechen festhalten
+| Phase | Ergebnis | Status |
+| --- | --- | --- |
+| 0 | Produkt klar ausgerichtet | abgeschlossen |
+| 1 | Regeln für einen guten Tagesplan festgelegt | abgeschlossen |
+| 2 | Technisches Grundgerüst lauffähig | ausstehend |
+| 3 | Lebensmittel- und Mahlzeitendaten verfügbar | ausstehend |
+| 4 | Tagesplaner nutzbar | ausstehend |
+| 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
+| 6 | MVP mit Zielnutzern validiert | ausstehend |
+| 7 | Abwechslungsreiche Wochenplanung | später |
+| 8 | Personalisierung und erweiterter Einkauf | später |
+
+## Phase 0: Produkt ausrichten
+
+**Ziel:** Es ist eindeutig, für wen PrepPilot welches Problem löst und was der
+erste Produktumfang bewusst nicht leistet.
+
+**Umfang:**
+
+- Problemstatement, Zielgruppe und Produktversprechen festlegen
 - primären Nutzerfluss definieren
 - MVP und bewusste Nicht-Ziele abgrenzen
 - messbare Erfolgskriterien formulieren
 
-Abnahme: Die Produktdefinition in `docs/product.md` ist bestätigt.
+**Abnahme:** Die Produktdefinition in `docs/product.md` ist gemeinsam bestätigt.
 
-Status: abgeschlossen
+**Status:** abgeschlossen
 
-## Phase 1: Fachliches Planungsmodell
+## Phase 1: Regeln für einen guten Tagesplan festlegen
 
-Ziel: Vor technischem Aufbau ist anhand konkreter Beispiele nachweisbar, was
-ein gültiger und praktikabler Tagesplan ist.
+**Ziel:** Vor der technischen Umsetzung ist verständlich, wann ein Tagesplan
+gültig, praktikabel oder nur eine Annäherung ist.
 
-Status: in Bearbeitung
+**Umfang:**
 
-- repräsentative Nutzerprofile mit Tageszielen und drei bis sechs Mahlzeiten
-  definieren
-- Zielbereiche und Prioritäten für Kalorien, Protein, Fett und Kohlenhydrate
-  konkretisieren
-- Mahlzeitentypen und praktikable Portionsvarianten festlegen
-- Regeln für nicht oder nur teilweise erfüllbare Ziele bestimmen
-- einen kleinen Beispieldatensatz manuell durchplanen
+- ein reales Referenzprofil mit Tageszielen und Mahlzeitenanzahl definieren
+- Referenzprofile für drei bis sechs Mahlzeiten definieren
+- harte und weiche Regeln für Kalorien und Makronährstoffe unterscheiden
+- grundlegende Mahlzeitenrollen beschreiben
+- grundlegende Portionsskalierung und Größenordnung der Mahlzeiten festlegen
+- Priorität von Protein, Kalorien, Fett und Kohlenhydraten festlegen
+- zulässige Annäherungen, Ausschlussgrenzen und ihre Reihenfolge festlegen
+- Rundungs- und Transparenzregeln bestimmen
 
-Abnahme: Für jedes Testprofil lässt sich eindeutig entscheiden, welcher Plan
-gültig ist, wie Vorschläge verglichen werden und welche Abweichung angezeigt
-wird.
+**Abnahme:** Nährwertsummen und Mahlzeitenstrukturen können anhand von
+`docs/planning-rules.md` eindeutig als gültig, Annäherung oder unbrauchbar
+bewertet und nachvollziehbar geordnet werden. Die Regeln reichen aus, um
+Datenmodell und Planungslogik zu entwickeln. Datenabhängige Details dürfen in
+den dafür vorgesehenen Entwicklungsphasen überprüft und angepasst werden.
 
-## Phase 2: Kataloggrundlage
+**Status:** abgeschlossen
 
-Ziel: Ein kleiner Katalog deckt die benötigten Mahlzeitentypen und Zielbereiche
-mit verlässlichen Daten ab.
+Konkrete Grundportionen und Katalogkategorien folgen in Phase 3. Weitere
+Zielprofile und Grenzfälle werden zusammen mit der Planungslogik in Phase 4
+getestet.
 
-- Qualitätsanforderungen für Mahlzeiten, Zutaten, Mengen und Nährwerte festlegen
-- internes Format für generische und markenspezifische Lebensmittel festlegen
-- mögliche Importquellen fachlich und rechtlich bewerten
-- Prüf- und Freigabeschritt für importierte Lebensmittel definieren
-- Frühstücke, Hauptgerichte, Snacks, Brotmahlzeiten und Shakes kuratieren
-- Daten auf einheitliche Einheiten und vollständige Nährwerte prüfen
-- Herkunft und Nutzungsrechte jedes Inhalts dokumentieren
-- Abdeckung gegen die Testprofile aus Phase 1 prüfen
+## Phase 2: Technisches Grundgerüst aufbauen
 
-Abnahme: Der Katalog kann für jedes unterstützte Testprofil mindestens zwei
-praktikable Tagespläne bilden und ist ohne Live-API verfügbar.
+**Ziel:** Frontend, Backend und Datenbank bilden ein reproduzierbares, testbares
+Fundament, ohne bereits Produktfunktionen vorwegzunehmen.
 
-## Phase 3: Planbarer Produktkern
+**Umfang:**
 
-Ziel: Der vollständige Kernfluss funktioniert mit echten Katalogdaten.
+- ergänzende Entwicklungswerkzeuge und unterstützte Versionen auswählen
+- minimale Monorepo-Struktur für Frontend und Backend festlegen
+- React-/TypeScript-Frontend lokal starten
+- FastAPI-Backend lokal starten
+- PostgreSQL lokal bereitstellen und mit dem Backend verbinden
+- einen einfachen Systemcheck zwischen Frontend, Backend und Datenbank einrichten
+- grundlegende Formatierung, Typprüfung und Tests ausführbar machen
+- lokale Einrichtung nachvollziehbar dokumentieren
 
-- Tagesziele und Mahlzeitenanzahl erfassen
-- zwei bis drei nachvollziehbare Tagespläne erzeugen
-- Mahlzeiten, Portionsmengen, Tageswerte und Abweichungen darstellen
-- einen Vorschlag auswählen
-- fachliche Regeln und Grenzfälle automatisiert prüfen
+**Abnahme:** Nach einer frischen Einrichtung lassen sich alle drei
+Anwendungsteile starten. Das Frontend erreicht den Backend-Systemcheck, das
+Backend erreicht PostgreSQL und alle grundlegenden Qualitätsprüfungen bestehen.
 
-Abnahme: Alle vereinbarten Testprofile liefern reproduzierbare Ergebnisse und
-der Nutzer kann einen Tagesplan ohne zusätzliche Berechnung auswählen.
+**Status:** ausstehend
 
-## Phase 4: Wochenplan und Einkauf
+Bestätigte Architekturentscheidungen stehen in `docs/architecture.md`.
 
-Ziel: Aus dem gewählten Tagesplan entsteht ein praktisch nutzbarer Wocheneinkauf.
+## Phase 3: Daten- und Kataloggrundlage schaffen
 
-- Tagesplan für sieben Tage darstellen
-- Zutaten über alle Mahlzeiten und Tage korrekt aggregieren
+**Ziel:** PrepPilot besitzt einen kleinen, verlässlichen internen Datenbestand,
+aus dem sich realistische Tagespläne bilden lassen.
+
+**Umfang:**
+
+- Lebensmittel, Nährwerte, Mahlzeiten, Zutaten und Portionen modellieren
+- Datenbanktabellen und nachvollziehbare Migrationen anlegen
+- generische und markenspezifische Lebensmittel unterscheiden
+- Anforderungen an Datenqualität, Einheiten, Herkunft und Freigabe festlegen
+- externe Datenquellen fachlich und rechtlich bewerten
+- einen kleinen Katalog aus einfachen Mahlzeiten, Snacks und Hauptgerichten
+  bereitstellen
+- passende Katalogkategorien, Grundportionen und erlaubte Portionsfaktoren
+  festlegen
+- konkrete Mahlzeiten für alle Rollen einschließlich des späten Snacks
+  bereitstellen
+- Katalogdaten gegen mehrere repräsentative Zielprofile prüfen
+
+**Abnahme:** Die Datenbank kann reproduzierbar neu aufgebaut werden. Der
+freigegebene Katalog enthält vollständige, nachvollziehbare Daten und ermöglicht
+für jedes unterstützte Testprofil manuell mindestens zwei praktikable
+Tagespläne. Die Planung benötigt keine Live-Verbindung zu einer externen
+Lebensmittel-API.
+
+**Status:** ausstehend
+
+## Phase 4: Tagesplaner umsetzen
+
+**Ziel:** Ein Nutzer erhält aus seinen Tageszielen zwei bis drei
+nachvollziehbare Tagespläne und kann einen davon auswählen.
+
+**Umfang:**
+
+- Kalorien, Protein, Fett, Kohlenhydrate und Mahlzeitenanzahl erfassen
+- Mahlzeiten und praktikable Portionen zu Tagesplänen kombinieren
+- gültige Pläne und transparente Annäherungen bewerten
+- zwei bis drei reproduzierbare Vorschläge anzeigen
+- Nährwerte je Mahlzeit und für den gesamten Tag darstellen
+- festgelegte Ausschlussgrenzen und Bewertungslogik anhand weiterer
+  Zielprofile und realer Katalogdaten überprüfen
+- Planungslogik und zentrale Grenzfälle automatisiert testen
+
+**Abnahme:** Alle unterstützten Testprofile liefern reproduzierbare und fachlich
+erklärbare Ergebnisse. Ein Nutzer kann ohne zusätzliche Berechnung einen
+Tagesplan auswählen und jede relevante Zielabweichung erkennen.
+
+**Status:** ausstehend
+
+## Phase 5: Wochenplan und Einkaufsliste umsetzen
+
+**Ziel:** Aus dem ausgewählten Tagesplan entsteht ein praktisch verwendbarer
+Plan samt Einkauf für sieben Tage.
+
+**Umfang:**
+
+- ausgewählten Tagesplan für sieben Tage darstellen
+- Zutatenmengen über alle Mahlzeiten und Tage korrekt aggregieren
 - Einheiten und Mengen verständlich ausgeben
-- Einkaufsliste mobil nutzbar machen
-- vollständigen primären Nutzerfluss testen
+- Einkaufsliste auf mobilen und größeren Bildschirmen nutzbar machen
+- vollständigen Nutzerfluss automatisiert testen
 
-Abnahme: Ein Testnutzer erstellt in höchstens drei Minuten einen Plan und kann
-die ausgegebene Einkaufsliste ohne externen Rechner verwenden.
+**Abnahme:** Ein Testnutzer erstellt in höchstens drei Minuten einen Wochenplan
+und kann dessen Einkaufsliste ohne externen Rechner verwenden. Nährwerte und
+Einkaufsmengen stimmen rechnerisch mit dem gewählten Plan überein.
 
-## Phase 5: MVP-Validierung
+**Status:** ausstehend
 
-Ziel: Reale Nutzung entscheidet, ob der Produktkern trägt.
+## Phase 6: MVP mit Zielnutzern validieren
 
-- mehrere Zielnutzer einen realen Wochenplan erstellen lassen
-- Verständlichkeit, Vertrauen, Planqualität und tatsächliche Nutzbarkeit
-  beobachten
-- Abbrüche und manuelle Korrekturen erfassen
+**Ziel:** Reale Nutzung zeigt, ob PrepPilot verständlich ist und einen
+praktischen Wochenversuch ermöglicht.
+
+**Umfang:**
+
+- Zahl und Auswahl der Testpersonen sowie den Ablauf vor Beginn festlegen
+- mehrere Personen aus der Zielgruppe einen Wochenplan erstellen lassen
+- Verständlichkeit, Vertrauen und wahrgenommene Planqualität beobachten
+- Abbrüche, Rückfragen und manuelle Korrekturen erfassen
 - Erfolgskriterien aus der Produktdefinition auswerten
-- nur die wichtigsten Probleme vor einer Erweiterung beheben
+- blockierende Probleme vor jeder Erweiterung beheben
 
-Abnahme: Nutzer bewerten mindestens einen erzeugten Plan als praktisch genug
-für einen realen Wochenversuch. Rechenfehler und blockierende Probleme sind
-behoben.
+**Abnahme:** Die vorab festgelegte Testgruppe schließt den primären Nutzerfluss
+ohne Hilfe ab. Mindestens ein erzeugter Plan wird als praktisch genug für einen
+realen Wochenversuch bewertet. Rechenfehler und blockierende Bedienprobleme
+sind behoben.
 
-## Phase 6: Wochenvielfalt
+**Status:** ausstehend
 
-Ziel: PrepPilot entwickelt sich vom wiederholten Tagesplan zu einem flexiblen
-Wochenplan.
+## Phase 7: Wochenplanung abwechslungsreicher machen
 
-- mehrere unterschiedliche Tagespläne zulassen
-- gewünschte Wiederholung und Abwechslung steuerbar machen
-- einzelne Mahlzeiten austauschbar machen, ohne Tagesziele aus dem Blick zu
-  verlieren
+**Ziel:** Nutzer erhalten mehr Abwechslung und Kontrolle, ohne dass die Planung
+kompliziert oder weniger verlässlich wird.
+
+**Möglicher Umfang:**
+
+- mehrere unterschiedliche Tagespläne innerhalb einer Woche
+- steuerbare Wiederholung und Abwechslung
+- einzelne Mahlzeiten austauschen, ohne Tagesziele aus dem Blick zu verlieren
+- flexible Mahlzeiten- oder Snack-Slots
+- Nutzungshistorie und weitere Vorschläge
 - Einkaufsliste für gemischte Wochenpläne aktualisieren
 
-Abnahme: Nutzer erhalten mehr Abwechslung, ohne dass Planung und Einkauf
-spürbar komplizierter werden.
+**Abnahme:** Wird nach der MVP-Validierung anhand des bestätigten Nutzerbedarfs
+konkretisiert.
 
-## Phase 7: Personalisierung
+**Status:** später
 
-Ziel: Häufig bestätigte persönliche Anforderungen werden unterstützt.
+## Phase 8: Personalisierung und Einkauf erweitern
 
-Mögliche Themen sind Ernährungsformen, Ausschlüsse, Favoriten, eigene
-Mahlzeiten, Vorlagen und gespeicherte Pläne. Ihre Reihenfolge wird erst anhand
-des MVP-Feedbacks festgelegt.
+**Ziel:** Nur nachgewiesene persönliche und organisatorische Anforderungen
+werden ergänzt, ohne PrepPilot zu einem allgemeinen Haushaltsmanager zu machen.
 
-## Phase 8: Erweiterte Einkaufsplanung
+**Möglicher Umfang:**
 
-Ziel: Nur bei nachgewiesenem Bedarf werden Haushalt und Kosten stärker
-berücksichtigt.
+- Ernährungsformen, Ausschlüsse und Favoriten
+- eigene Mahlzeiten, Vorlagen und gespeicherte Pläne
+- Benutzerkonten und geräteübergreifende Nutzung
+- Vorräte, Packungsgrößen, Preise und Budget
+- Rezeptimport und automatische Nährwertberechnung
+- optionale KI-Unterstützung
 
-Mögliche Themen sind Vorräte, Packungsgrößen, Preise und Budget. Externe APIs
-und optionale KI-Funktionen werden jeweils als eigenständige Produktentscheidung
-bewertet und dürfen den verlässlichen Kernfluss nicht voraussetzen.
+**Abnahme:** Einzelne Themen erhalten erst nach der MVP-Validierung eigene
+Erfolgskriterien und eine priorisierte Reihenfolge.
 
-## Nächste Entscheidungspunkte
+**Status:** später
 
-Fachlich bleiben die offenen Regeln und Testprofile aus Phase 1 maßgeblich,
-bevor die eigentliche Planungslogik umgesetzt wird.
+## Nächster Meilenstein
 
-Parallel darf das technische Grundgerüst vorbereitet werden. Der Kern-Stack,
-das Monorepo und die grundlegenden Systemgrenzen sind bestätigt. Als Nächstes
-werden die ergänzenden Werkzeuge und die minimale Projektstruktur festgelegt.
+Die fachlichen Planungsregeln aus Phase 1 sind ausreichend, um mit der
+Entwicklung zu beginnen. Als Nächstes startet Phase 2 mit dem minimalen
+technischen Grundgerüst auf Basis der bereits ausgewählten Architektur.
