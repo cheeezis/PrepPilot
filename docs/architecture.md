@@ -101,9 +101,24 @@ auf dem Host. Sie werden im MVP nicht allein aus Gründen der Einheitlichkeit
 containerisiert. Damit bleibt schnelles Neuladen und Debugging unkompliziert,
 während nur die zustandsbehaftete Infrastruktur isoliert betrieben wird.
 
+## Qualitäts- und Testwerkzeuge
+
+Das Frontend verwendet Oxlint für statische Codeprüfungen, den
+TypeScript-Compiler für die Typprüfung und Vitest für schnelle automatisierte
+Tests. Vitest nutzt dieselbe Transformationsgrundlage wie Vite. Playwright ist
+für spätere Tests vollständiger Nutzerflüsse vorgesehen, nicht für einzelne
+Funktionen.
+
+Das Backend verwendet Ruff für Linting und Formatierung, mypy für die statische
+Typprüfung und pytest für automatisierte Tests.
+
+Die normalen Testläufe benötigen keine gestarteten Server oder externe
+Infrastruktur. Abhängigkeiten wie PostgreSQL werden in diesen Tests gezielt
+ersetzt. Separate Integrationstests dürfen später die echte Infrastruktur
+prüfen und werden als solche kenntlich gemacht.
+
 ## Noch zu entscheiden
 
-- Frontend-Testwerkzeuge
 - genaue API-Gestaltung
 - interne Backend-Module und Abhängigkeitsrichtung
 - CI/CD und Deployment-Ziel
