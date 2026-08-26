@@ -30,6 +30,14 @@ PostgreSQL starten:
 docker compose up -d
 ```
 
+Datenbankschema auf den aktuellen Stand bringen:
+
+```powershell
+Set-Location backend
+.\.venv\Scripts\python.exe -m alembic upgrade head
+Set-Location ..
+```
+
 Backend in einem eigenen Terminal starten:
 
 ```powershell
@@ -52,8 +60,8 @@ Backend:
 ```powershell
 Set-Location backend
 .\.venv\Scripts\python.exe -m pytest
-.\.venv\Scripts\python.exe -m ruff check src tests
-.\.venv\Scripts\python.exe -m ruff format --check src tests
+.\.venv\Scripts\python.exe -m ruff check src tests migrations
+.\.venv\Scripts\python.exe -m ruff format --check src tests migrations
 .\.venv\Scripts\python.exe -m mypy src tests
 Set-Location ..
 ```

@@ -19,7 +19,7 @@ erfüllt. Erweiterungen ab Phase 7 werden erst danach priorisiert.
 | 0 | Produkt klar ausgerichtet | abgeschlossen |
 | 1 | Regeln für einen guten Tagesplan festgelegt | abgeschlossen |
 | 2 | Technisches Grundgerüst lauffähig | abgeschlossen |
-| 3 | Lebensmittel- und Mahlzeitendaten verfügbar | ausstehend |
+| 3 | Lebensmittel- und Mahlzeitendaten verfügbar | in Bearbeitung |
 | 4 | Tagesplaner nutzbar | ausstehend |
 | 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
 | 6 | MVP mit Zielnutzern validiert | ausstehend |
@@ -120,7 +120,9 @@ für jedes unterstützte Testprofil manuell mindestens zwei praktikable
 Tagespläne. Die Planung benötigt keine Live-Verbindung zu einer externen
 Lebensmittel-API.
 
-**Status:** ausstehend
+**Status:** in Bearbeitung
+
+Das bestätigte MVP-Datenmodell steht in `docs/data-model.md`.
 
 ## Phase 4: Tagesplaner umsetzen
 
@@ -211,9 +213,12 @@ werden ergänzt, ohne PrepPilot zu einem allgemeinen Haushaltsmanager zu machen.
 **Möglicher Umfang:**
 
 - Ernährungsformen, Ausschlüsse und Favoriten
+- zusätzliche Nährwerte wie Zucker, Ballaststoffe und Salz
+- Allergendaten und darauf aufbauende Filter
 - eigene Mahlzeiten, Vorlagen und gespeicherte Pläne
 - Benutzerkonten und geräteübergreifende Nutzung
 - Vorräte, Packungsgrößen, Preise und Budget
+- Produkt- und Mahlzeitenbilder
 - Rezeptimport und automatische Nährwertberechnung
 - optionale KI-Unterstützung
 
