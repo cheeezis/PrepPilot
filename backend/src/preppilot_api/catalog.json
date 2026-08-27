@@ -260,10 +260,11 @@
       "preparation_minutes": 5,
       "instructions": "Spread the cream cheese on the bread and top with chicken and sliced tomato.",
       "roles": ["first_meal"],
+      "portion_factors": [0.5, 1, 1.5],
       "ingredients": [
         {"food_key": "wholegrain_bread", "amount": 100},
         {"food_key": "chicken_breast", "amount": 150},
-        {"food_key": "light_cream_cheese", "amount": 20},
+        {"food_key": "light_cream_cheese", "amount": 25},
         {"food_key": "tomato", "amount": 100}
       ]
     },
@@ -273,6 +274,7 @@
       "preparation_minutes": 5,
       "instructions": "Mix the oats with skyr and add the sliced banana.",
       "roles": ["first_meal"],
+      "portion_factors": [0.5, 1, 1.5],
       "ingredients": [
         {"food_key": "oats", "amount": 60},
         {"food_key": "skyr", "amount": 250},
@@ -285,8 +287,9 @@
       "preparation_minutes": 12,
       "instructions": "Cook the eggs in butter and serve with bread and tomato.",
       "roles": ["quick_lunch"],
+      "portion_factors": [0.5, 1, 1.5],
       "ingredients": [
-        {"food_key": "egg", "amount": 180},
+        {"food_key": "egg", "amount": 220},
         {"food_key": "butter", "amount": 5},
         {"food_key": "wholegrain_bread", "amount": 80},
         {"food_key": "tomato", "amount": 100}
@@ -298,10 +301,11 @@
       "preparation_minutes": 10,
       "instructions": "Fill the wrap with chicken, cream cheese and sliced cucumber.",
       "roles": ["quick_lunch"],
+      "portion_factors": [0.5, 1, 1.5],
       "ingredients": [
         {"food_key": "wheat_wrap", "amount": 70},
         {"food_key": "chicken_breast", "amount": 150},
-        {"food_key": "light_cream_cheese", "amount": 20},
+        {"food_key": "light_cream_cheese", "amount": 25},
         {"food_key": "cucumber", "amount": 100}
       ]
     },
@@ -311,6 +315,7 @@
       "preparation_minutes": 3,
       "instructions": "Slice the banana and serve it with the skyr.",
       "roles": ["protein_snack"],
+      "portion_factors": [0.5, 1, 1.5, 2],
       "ingredients": [
         {"food_key": "skyr", "amount": 300},
         {"food_key": "banana", "amount": 120}
@@ -322,6 +327,7 @@
       "preparation_minutes": 3,
       "instructions": "Shake the milk and whey powder until smooth.",
       "roles": ["protein_snack"],
+      "portion_factors": [0.5, 1, 1.5, 2],
       "ingredients": [
         {"food_key": "milk_1_5", "amount": 300},
         {"food_key": "whey", "amount": 40}
@@ -333,6 +339,7 @@
       "preparation_minutes": 30,
       "instructions": "Cook the rice, fry the chicken in oil and steam the broccoli.",
       "roles": ["main_meal"],
+      "portion_factors": [0.5, 1, 1.5],
       "ingredients": [
         {"food_key": "chicken_breast", "amount": 250},
         {"food_key": "rice_dry", "amount": 100},
@@ -346,6 +353,7 @@
       "preparation_minutes": 30,
       "instructions": "Cook the couscous and combine it with cooked chicken, chickpeas and tomato.",
       "roles": ["main_meal"],
+      "portion_factors": [0.5, 1, 1.5],
       "ingredients": [
         {"food_key": "chicken_breast", "amount": 180},
         {"food_key": "couscous_dry", "amount": 80},
@@ -360,6 +368,7 @@
       "preparation_minutes": 3,
       "instructions": "Serve the cottage cheese with the rice cakes.",
       "roles": ["late_snack"],
+      "portion_factors": [0.5, 1],
       "ingredients": [
         {"food_key": "cottage_cheese", "amount": 150},
         {"food_key": "rice_cakes", "amount": 20}
@@ -371,6 +380,7 @@
       "preparation_minutes": 5,
       "instructions": "Top the bread with turkey and serve with sliced cucumber.",
       "roles": ["late_snack"],
+      "portion_factors": [0.5, 1],
       "ingredients": [
         {"food_key": "turkey_slices", "amount": 100},
         {"food_key": "wholegrain_bread", "amount": 40},

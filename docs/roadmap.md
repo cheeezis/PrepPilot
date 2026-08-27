@@ -194,7 +194,9 @@ sind behoben.
 
 Das vereinfachte MVP-Datenmodell, eine neue Ausgangsmigration und der
 reproduzierbare Katalogaufbau sind umgesetzt. Der erste Arbeitskatalog enthält
-je zwei Mahlzeiten für alle fünf Rollen; seine Nährwerte sind zunächst offen als
-kuratierte Näherungen gekennzeichnet. Als Nächstes werden diese Werte gegen die
-festgelegten Quellen geprüft und der Katalog gegen die Referenzprofile
+je zwei Mahlzeiten für alle fünf Rollen. Praktikable Portionsfaktoren sind pro
+Mahlzeit begrenzt und ermöglichen für jede Referenzstruktur von drei bis sechs
+Mahlzeiten mindestens zwei gültige Kombinationen. Die Nährwerte sind zunächst
+offen als kuratierte Näherungen gekennzeichnet. Als Nächstes werden diese Werte
+gegen die festgelegten Quellen geprüft und der Katalog anschließend erneut
 ausgewertet und angepasst.

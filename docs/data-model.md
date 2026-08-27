@@ -23,6 +23,8 @@ Lebensmitteln und Mengen berechnet und nicht zusätzlich gespeichert.
   kurzer Anleitung
 - `meal_ingredients`: Lebensmittel und bereits normalisierte Menge in der
   Grundportion einer Mahlzeit
+- `meal_portion_factors`: ausdrücklich erlaubte Skalierungsfaktoren einer
+  Mahlzeit
 - `meal_roles`: mögliche Rollen einer Mahlzeit im Tagesplan
 
 Die Rollen sind erste Mahlzeit, leichte Mittagsmahlzeit, Protein-Snack,
@@ -30,9 +32,11 @@ Hauptgericht und später Snack. Generische und markenspezifische Lebensmittel
 nutzen dieselbe Struktur; eine fehlende Marke kennzeichnet ein generisches
 Lebensmittel.
 
-Jede Mahlzeit besitzt genau eine kuratierte Grundportion. Der Planer darf die
-gesamte Mahlzeit zunächst mit den Faktoren `0.5`, `1.0`, `1.5` oder `2.0`
-skalieren. Einzelne Zutaten werden nicht unabhängig voneinander optimiert.
+Jede Mahlzeit besitzt genau eine kuratierte Grundportion. Für sie wird eine
+Teilmenge der Faktoren `0.5`, `1.0`, `1.5` und `2.0` ausdrücklich freigegeben.
+Dadurch können beispielsweise Hauptgerichte bei `1.5` und kleine späte Snacks
+bei `1.0` begrenzt werden. Der Planer darf nur diese Faktoren verwenden;
+einzelne Zutaten werden nicht unabhängig voneinander optimiert.
 
 ## Mengen und Näherungen
 

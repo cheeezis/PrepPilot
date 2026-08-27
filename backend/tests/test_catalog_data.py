@@ -37,13 +37,12 @@ def test_quick_lunches_respect_the_time_limit() -> None:
 def test_catalog_supports_two_valid_plans_for_each_reference_structure() -> None:
     catalog = load_catalog()
     foods = {food.key: food for food in catalog.foods}
-    factors = (Decimal("0.5"), Decimal("1"), Decimal("1.5"), Decimal("2"))
     options = {
         role: tuple(
             calculate_meal_nutrients(meal, foods).scaled(factor)
             for meal in catalog.meals
             if role in meal.roles
-            for factor in factors
+            for factor in meal.portion_factors
         )
         for role in MealRole
     }
@@ -109,6 +108,7 @@ def test_rejects_meal_with_unknown_food() -> None:
           "preparation_minutes": 1,
           "instructions": "Test.",
           "roles": ["main_meal"],
+          "portion_factors": [1],
           "ingredients": [{"food_key": "missing", "amount": 1}]
         }
       ]

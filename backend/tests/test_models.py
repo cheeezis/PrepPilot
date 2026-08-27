@@ -6,15 +6,21 @@ def test_catalog_schema_contains_only_the_mvp_tables() -> None:
         "foods",
         "meals",
         "meal_ingredients",
+        "meal_portion_factors",
         "meal_roles",
     }
 
 
 def test_link_tables_use_composite_primary_keys() -> None:
     meal_ingredients = Base.metadata.tables["meal_ingredients"]
+    meal_portion_factors = Base.metadata.tables["meal_portion_factors"]
     meal_roles = Base.metadata.tables["meal_roles"]
 
     assert list(meal_ingredients.primary_key.columns.keys()) == ["meal_id", "food_id"]
+    assert list(meal_portion_factors.primary_key.columns.keys()) == [
+        "meal_id",
+        "factor",
+    ]
     assert list(meal_roles.primary_key.columns.keys()) == ["meal_id", "role"]
 
 

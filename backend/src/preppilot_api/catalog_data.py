@@ -35,12 +35,22 @@ class MealDefinition(CatalogModel):
     preparation_minutes: int = Field(ge=0)
     instructions: str = Field(min_length=1)
     roles: tuple[MealRole, ...] = Field(min_length=1)
+    portion_factors: tuple[Decimal, ...] = Field(min_length=1)
     ingredients: tuple[MealIngredientDefinition, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_unique_assignments(self) -> "MealDefinition":
         if len(set(self.roles)) != len(self.roles):
             raise ValueError(f"Meal {self.key!r} contains duplicate roles")
+        allowed_factors = {Decimal("0.5"), Decimal("1"), Decimal("1.5"), Decimal("2")}
+        if any(factor not in allowed_factors for factor in self.portion_factors):
+            raise ValueError(
+                f"Meal {self.key!r} contains an unsupported portion factor"
+            )
+        if tuple(sorted(set(self.portion_factors))) != self.portion_factors:
+            raise ValueError(
+                f"Meal {self.key!r} portion factors must be unique and sorted"
+            )
         food_keys = [ingredient.food_key for ingredient in self.ingredients]
         if len(set(food_keys)) != len(food_keys):
             raise ValueError(f"Meal {self.key!r} contains duplicate ingredients")

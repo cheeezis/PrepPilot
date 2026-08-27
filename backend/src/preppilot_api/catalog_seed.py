@@ -7,12 +7,14 @@ from preppilot_api.models import (
     Food,
     Meal,
     MealIngredient,
+    MealPortionFactor,
     MealRoleAssignment,
 )
 
 
 def replace_catalog(session: Session, catalog: Catalog) -> None:
     session.execute(delete(MealRoleAssignment))
+    session.execute(delete(MealPortionFactor))
     session.execute(delete(MealIngredient))
     session.execute(delete(Meal))
     session.execute(delete(Food))
@@ -56,6 +58,10 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
         session.add_all(
             MealRoleAssignment(meal_id=meal.id, role=role)
             for role in meal_definition.roles
+        )
+        session.add_all(
+            MealPortionFactor(meal_id=meal.id, factor=factor)
+            for factor in meal_definition.portion_factors
         )
 
 

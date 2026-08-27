@@ -8,6 +8,7 @@ from preppilot_api.models import (
     Food,
     Meal,
     MealIngredient,
+    MealPortionFactor,
     MealRoleAssignment,
 )
 
@@ -35,6 +36,9 @@ def test_replaces_database_catalog_reproducibly() -> None:
         assert session.scalar(
             select(func.count()).select_from(MealRoleAssignment)
         ) == sum(len(meal.roles) for meal in catalog.meals)
+        assert session.scalar(
+            select(func.count()).select_from(MealPortionFactor)
+        ) == sum(len(meal.portion_factors) for meal in catalog.meals)
 
 
 def test_seed_keeps_normalized_ingredient_amounts() -> None:

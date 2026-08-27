@@ -98,6 +98,21 @@ class MealIngredient(Base):
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 3))
 
 
+class MealPortionFactor(Base):
+    __tablename__ = "meal_portion_factors"
+    __table_args__ = (
+        CheckConstraint(
+            "factor IN (0.5, 1.0, 1.5, 2.0)",
+            name="ck_meal_portion_factors_supported",
+        ),
+    )
+
+    meal_id: Mapped[int] = mapped_column(
+        ForeignKey("meals.id", ondelete="CASCADE"), primary_key=True
+    )
+    factor: Mapped[Decimal] = mapped_column(Numeric(2, 1), primary_key=True)
+
+
 class MealRoleAssignment(Base):
     __tablename__ = "meal_roles"
 
