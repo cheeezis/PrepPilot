@@ -35,8 +35,29 @@ Datenbankschema auf den aktuellen Stand bringen:
 ```powershell
 Set-Location backend
 .\.venv\Scripts\python.exe -m alembic upgrade head
+.\.venv\Scripts\python.exe -m preppilot_api.catalog_seed
 Set-Location ..
 ```
+
+`catalog_seed` ersetzt den Inhalt der vier Katalogtabellen durch den im
+Repository versionierten MVP-Katalog. Der Befehl ist für die lokale
+Entwicklungsdatenbank gedacht.
+
+Die experimentelle Phase-3-Migrationshistorie wurde am 27. August 2026 durch
+ein vereinfachtes Ausgangsschema ersetzt. Existiert noch eine damit aufgebaute
+lokale Datenbank, muss das ausschließlich für PrepPilot verwendete Docker-Volume
+einmal neu erstellt werden:
+
+```powershell
+docker compose down -v
+docker compose up -d
+Set-Location backend
+.\.venv\Scripts\python.exe -m alembic upgrade head
+.\.venv\Scripts\python.exe -m preppilot_api.catalog_seed
+Set-Location ..
+```
+
+`docker compose down -v` entfernt alle Daten der lokalen PrepPilot-Datenbank.
 
 Backend in einem eigenen Terminal starten:
 

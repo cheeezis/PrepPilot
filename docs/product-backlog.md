@@ -1,6 +1,6 @@
 # Produkt-Backlog
 
-Stand: 26. August 2026
+Stand: 27. August 2026
 
 Dieses Backlog sammelt interessante Produktideen, die noch nicht Teil der
 beschlossenen MVP-Roadmap sind. Ein Eintrag ist keine Umsetzungszusage. Bevor
@@ -9,25 +9,45 @@ den kleinsten sinnvollen Umfang und den passenden Zeitpunkt.
 
 ## Katalog und Datenimport
 
+### Externe Rezepte automatisch importieren
+
+Eine spätere Importpipeline könnte Zutatenbezeichnungen und Mengen externer
+Rezepte automatisch auf den internen Lebensmittelkatalog sowie Gramm oder
+Milliliter abbilden. Direkte metrische Angaben werden übernommen. Für Teelöffel
+und Esslöffel gelten einfache globale PrepPilot-Regeln; nichtmetrische
+Stückangaben verwenden bevorzugt einen aus FoodData Central übernommenen oder
+intern festgelegten Lebensmittelstandard.
+
+Nur vollständig normalisierte Rezepte dürfen in den produktiven Katalog
+gelangen. Der Planer bleibt dadurch unabhängig von Rezeptquellen,
+Haushaltsmaßen und Importfehlern.
+
 ### Unvollständige Importe manuell prüfen
 
-Externe Rezepte mit unbekannten Zutaten, uneindeutigen Mengen oder fehlenden
-Angaben könnten als `review_required` gespeichert und später in einer
-Prüfoberfläche vervollständigt werden. Im MVP wird ein unvollständiger Import
-stattdessen nachvollziehbar abgebrochen, damit keine teilweise verwendbaren
-Rezepte in die Planung gelangen.
+Kann eine relevante Zutat oder Menge nicht sicher normalisiert werden, wird das
+gesamte Rezept in einer Prüfwarteschlange zurückgestellt. Die Prüfung soll den
+konkreten Grund zeigen, beispielsweise eine unbekannte Zutat, eine nicht
+erkannte Einheit oder ein fehlendes Stückgewicht.
+
+In der Prüfung kann eine Zutatenzuordnung korrigiert, ein wiederverwendbarer
+Lebensmittelstandard ergänzt, eine rezeptbezogene Menge festgelegt oder das
+Rezept verworfen werden. Nach einer wiederverwendbaren Ergänzung sollen alle
+betroffenen Importe erneut verarbeitet werden können. Einen generischen
+Gewichts-Fallback für relevante Zutaten gibt es nicht.
 
 ### Rezepte durch Nutzer importieren
 
 Nutzer könnten eigene Rezeptquellen angeben und daraus Mahlzeiten samt
-berechneten Nährwerten anlegen. Der Importprozess in Phase 3 dient zunächst nur
-dem reproduzierbaren Aufbau des internen PrepPilot-Katalogs.
+angenäherten Nährwerten anlegen. Diese Funktion baut auf der getrennten
+Importpipeline und Prüfwarteschlange auf und gehört nicht zum MVP.
 
 ### KI-unterstützte Katalogpflege
 
-Eine KI könnte Zutaten zuordnen, Mahlzeiten kategorisieren und problematische
-Importe zur Prüfung vorbereiten. Automatisch vorgeschlagene Daten müssten
-weiterhin nachvollziehbar und regelbasiert validiert werden.
+Ein LLM könnte in der Prüfwarteschlange Zutatenzuordnungen, passende
+FoodData-Central-Portionen oder plausible Standardgewichte vorschlagen und die
+Vorschläge begründen. Deterministische Validierung und die Freigabegrenze zum
+produktiven Katalog bleiben davon getrennt; ein LLM-Vorschlag darf ein
+unvollständiges Rezept nicht selbstständig freigeben.
 
 ## Flexiblere Planung
 

@@ -99,15 +99,17 @@ aus dem sich realistische Tagespläne bilden lassen.
 
 **Umfang:**
 
-- Lebensmittel, Nährwerte, Mahlzeiten, Zutaten und Portionen modellieren
+- Lebensmittel, Nährwerte, Mahlzeiten und normalisierte Zutatenmengen
+  modellieren
 - Datenbanktabellen und nachvollziehbare Migrationen anlegen
 - generische und markenspezifische Lebensmittel unterscheiden
 - Anforderungen an Datenqualität, Einheiten, Herkunft und Freigabe festlegen
 - externe Datenquellen fachlich und rechtlich bewerten
-- externe Zutatenbezeichnungen und Mengen reproduzierbar normalisieren
-- Lebensmittel aus externen Quellen eindeutig internen Datensätzen zuordnen
-- ausgewählte Lebensmittel- und Rezeptquellen über einen nachvollziehbaren
-  Importprozess anbinden
+- geeignete Lebensmittel und Nährwerte nachvollziehbar aus FoodData Central,
+  Open Food Facts oder Herstellerangaben auswählen
+- sämtliche Zutatenmengen des freigegebenen Katalogs direkt in Gramm oder
+  Millilitern kuratieren
+- den versionierten Katalog reproduzierbar in die Datenbank laden
 - einen kleinen Katalog aus einfachen Mahlzeiten, Snacks und Hauptgerichten
   bereitstellen
 - passende Katalogkategorien, Grundportionen und erlaubte Portionsfaktoren
@@ -120,7 +122,7 @@ aus dem sich realistische Tagespläne bilden lassen.
 freigegebene Katalog enthält vollständige, nachvollziehbare Daten und ermöglicht
 für jedes unterstützte Testprofil manuell mindestens zwei praktikable
 Tagespläne. Die Planung benötigt keine Live-Verbindung zu einer externen
-Lebensmittel-API.
+Lebensmittel-API und keine Verarbeitung externer Rezeptmaße.
 
 **Status:** in Bearbeitung
 
@@ -190,7 +192,9 @@ sind behoben.
 
 ## Nächster Meilenstein
 
-Das MVP-Datenmodell und der reproduzierbare Import aus TheMealDB und FoodData
-Central funktionieren für ein vollständiges Referenzrezept. Als Nächstes wird
-der kleine MVP-Katalog mit einfachen Mahlzeiten, Snacks und weiteren
-Hauptgerichten aufgebaut und gegen die Referenzprofile geprüft.
+Das vereinfachte MVP-Datenmodell, eine neue Ausgangsmigration und der
+reproduzierbare Katalogaufbau sind umgesetzt. Der erste Arbeitskatalog enthält
+je zwei Mahlzeiten für alle fünf Rollen; seine Nährwerte sind zunächst offen als
+kuratierte Näherungen gekennzeichnet. Als Nächstes werden diese Werte gegen die
+festgelegten Quellen geprüft und der Katalog gegen die Referenzprofile
+ausgewertet und angepasst.

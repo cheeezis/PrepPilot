@@ -1,6 +1,6 @@
 # Architektur
 
-Stand: 25. August 2026
+Stand: 27. August 2026
 
 Dieses Dokument hält bestätigte technische Entscheidungen fest. Details werden
 schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
@@ -85,6 +85,25 @@ Sessions. SQLAlchemy bildet die Python-seitige Datenzugriffsschicht, psycopg
 stellt die Verbindung zu PostgreSQL her und Alembic versioniert spätere
 Schemaänderungen. Die Alembic-Umgebung wird erst mit dem ersten Datenmodell in
 Phase 3 angelegt.
+
+## Katalog- und Importgrenze
+
+Der produktive Mahlzeitenkatalog ist die dauerhafte Schnittstelle zur
+Planungslogik. Er enthält ausschließlich vollständige Zutatenzuordnungen und
+bereits normalisierte Mengen in Gramm oder Millilitern. Der Planer kennt weder
+externe Rezeptformate noch Haushaltsmaße, Portionstabellen oder unsichere
+Zuordnungen.
+
+Der MVP-Katalog wird klein gehalten, im Repository versioniert und
+reproduzierbar in PostgreSQL geladen. FoodData Central, Open Food Facts und
+Herstellerangaben dienen nur als Quellen für ausgewählte Katalogwerte; der
+laufende Planer ruft sie nicht auf.
+
+Ein späterer Rezeptimport bildet einen getrennten Eingangsbereich. Erst ein
+vollständig normalisiertes Rezept darf in den produktiven Katalog übernommen
+werden. Fehlende Umrechnungen führen zu einer Prüfwarteschlange und nicht zu
+einem unsicheren generischen Gewichts-Fallback. Diese Import- und Prüflogik wird
+nicht vorsorglich im MVP implementiert.
 
 ## Lokale Entwicklungsumgebung
 

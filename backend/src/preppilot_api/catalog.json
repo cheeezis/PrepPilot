@@ -1,0 +1,381 @@
+{
+  "foods": [
+    {
+      "key": "wholegrain_bread",
+      "name": "Wholegrain bread",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 247,
+      "protein_per_100": 13,
+      "carbs_per_100": 41,
+      "fat_per_100": 3.4,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "chicken_breast",
+      "name": "Chicken breast, raw",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 120,
+      "protein_per_100": 23,
+      "carbs_per_100": 0,
+      "fat_per_100": 2.5,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "light_cream_cheese",
+      "name": "Light cream cheese",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 160,
+      "protein_per_100": 8,
+      "carbs_per_100": 5,
+      "fat_per_100": 11,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "tomato",
+      "name": "Tomato",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 18,
+      "protein_per_100": 0.9,
+      "carbs_per_100": 3.9,
+      "fat_per_100": 0.2,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical generic food values reviewed 2026-08-27"
+    },
+    {
+      "key": "oats",
+      "name": "Rolled oats",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 372,
+      "protein_per_100": 13.5,
+      "carbs_per_100": 58.7,
+      "fat_per_100": 7,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "skyr",
+      "name": "Plain skyr",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 63,
+      "protein_per_100": 11,
+      "carbs_per_100": 4,
+      "fat_per_100": 0.2,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "banana",
+      "name": "Banana",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 89,
+      "protein_per_100": 1.1,
+      "carbs_per_100": 22.8,
+      "fat_per_100": 0.3,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical generic food values reviewed 2026-08-27"
+    },
+    {
+      "key": "egg",
+      "name": "Whole egg",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 143,
+      "protein_per_100": 12.6,
+      "carbs_per_100": 0.7,
+      "fat_per_100": 9.5,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical generic food values reviewed 2026-08-27"
+    },
+    {
+      "key": "milk_1_5",
+      "name": "Milk, 1.5% fat",
+      "brand": null,
+      "unit": "ml",
+      "calories_per_100": 47,
+      "protein_per_100": 3.4,
+      "carbs_per_100": 4.9,
+      "fat_per_100": 1.5,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "butter",
+      "name": "Butter",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 717,
+      "protein_per_100": 0.9,
+      "carbs_per_100": 0.1,
+      "fat_per_100": 81.1,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "wheat_wrap",
+      "name": "Wheat tortilla wrap",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 310,
+      "protein_per_100": 8.5,
+      "carbs_per_100": 52,
+      "fat_per_100": 7.5,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "cucumber",
+      "name": "Cucumber",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 15,
+      "protein_per_100": 0.7,
+      "carbs_per_100": 3.6,
+      "fat_per_100": 0.1,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical generic food values reviewed 2026-08-27"
+    },
+    {
+      "key": "whey",
+      "name": "Whey protein powder",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 380,
+      "protein_per_100": 75,
+      "carbs_per_100": 8,
+      "fat_per_100": 6,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "rice_dry",
+      "name": "Long-grain rice, dry",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 360,
+      "protein_per_100": 7.5,
+      "carbs_per_100": 79,
+      "fat_per_100": 0.7,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "olive_oil",
+      "name": "Olive oil",
+      "brand": null,
+      "unit": "ml",
+      "calories_per_100": 824,
+      "protein_per_100": 0,
+      "carbs_per_100": 0,
+      "fat_per_100": 91.6,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values per 100 ml reviewed 2026-08-27"
+    },
+    {
+      "key": "broccoli",
+      "name": "Broccoli",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 34,
+      "protein_per_100": 2.8,
+      "carbs_per_100": 6.6,
+      "fat_per_100": 0.4,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical generic food values reviewed 2026-08-27"
+    },
+    {
+      "key": "chickpeas_cooked",
+      "name": "Chickpeas, cooked",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 164,
+      "protein_per_100": 8.9,
+      "carbs_per_100": 27.4,
+      "fat_per_100": 2.6,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical generic food values reviewed 2026-08-27"
+    },
+    {
+      "key": "couscous_dry",
+      "name": "Couscous, dry",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 376,
+      "protein_per_100": 12.8,
+      "carbs_per_100": 77.4,
+      "fat_per_100": 0.6,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "cottage_cheese",
+      "name": "Cottage cheese",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 98,
+      "protein_per_100": 12.4,
+      "carbs_per_100": 3.4,
+      "fat_per_100": 4.3,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "rice_cakes",
+      "name": "Plain rice cakes",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 387,
+      "protein_per_100": 8,
+      "carbs_per_100": 81,
+      "fat_per_100": 3,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    },
+    {
+      "key": "turkey_slices",
+      "name": "Turkey breast slices",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 110,
+      "protein_per_100": 22,
+      "carbs_per_100": 2,
+      "fat_per_100": 2,
+      "source_name": "preppilot_estimate",
+      "source_reference": "Typical product values reviewed 2026-08-27"
+    }
+  ],
+  "meals": [
+    {
+      "key": "chicken_bread",
+      "name": "Wholegrain bread with chicken",
+      "preparation_minutes": 5,
+      "instructions": "Spread the cream cheese on the bread and top with chicken and sliced tomato.",
+      "roles": ["first_meal"],
+      "ingredients": [
+        {"food_key": "wholegrain_bread", "amount": 100},
+        {"food_key": "chicken_breast", "amount": 150},
+        {"food_key": "light_cream_cheese", "amount": 20},
+        {"food_key": "tomato", "amount": 100}
+      ]
+    },
+    {
+      "key": "oats_skyr_bowl",
+      "name": "Oats and skyr bowl",
+      "preparation_minutes": 5,
+      "instructions": "Mix the oats with skyr and add the sliced banana.",
+      "roles": ["first_meal"],
+      "ingredients": [
+        {"food_key": "oats", "amount": 60},
+        {"food_key": "skyr", "amount": 250},
+        {"food_key": "banana", "amount": 100}
+      ]
+    },
+    {
+      "key": "scrambled_eggs",
+      "name": "Scrambled eggs with bread",
+      "preparation_minutes": 12,
+      "instructions": "Cook the eggs in butter and serve with bread and tomato.",
+      "roles": ["quick_lunch"],
+      "ingredients": [
+        {"food_key": "egg", "amount": 180},
+        {"food_key": "butter", "amount": 5},
+        {"food_key": "wholegrain_bread", "amount": 80},
+        {"food_key": "tomato", "amount": 100}
+      ]
+    },
+    {
+      "key": "chicken_wrap",
+      "name": "Quick chicken wrap",
+      "preparation_minutes": 10,
+      "instructions": "Fill the wrap with chicken, cream cheese and sliced cucumber.",
+      "roles": ["quick_lunch"],
+      "ingredients": [
+        {"food_key": "wheat_wrap", "amount": 70},
+        {"food_key": "chicken_breast", "amount": 150},
+        {"food_key": "light_cream_cheese", "amount": 20},
+        {"food_key": "cucumber", "amount": 100}
+      ]
+    },
+    {
+      "key": "skyr_banana",
+      "name": "Skyr with banana",
+      "preparation_minutes": 3,
+      "instructions": "Slice the banana and serve it with the skyr.",
+      "roles": ["protein_snack"],
+      "ingredients": [
+        {"food_key": "skyr", "amount": 300},
+        {"food_key": "banana", "amount": 120}
+      ]
+    },
+    {
+      "key": "whey_shake",
+      "name": "Whey shake",
+      "preparation_minutes": 3,
+      "instructions": "Shake the milk and whey powder until smooth.",
+      "roles": ["protein_snack"],
+      "ingredients": [
+        {"food_key": "milk_1_5", "amount": 300},
+        {"food_key": "whey", "amount": 40}
+      ]
+    },
+    {
+      "key": "chicken_rice_broccoli",
+      "name": "Chicken with rice and broccoli",
+      "preparation_minutes": 30,
+      "instructions": "Cook the rice, fry the chicken in oil and steam the broccoli.",
+      "roles": ["main_meal"],
+      "ingredients": [
+        {"food_key": "chicken_breast", "amount": 250},
+        {"food_key": "rice_dry", "amount": 100},
+        {"food_key": "broccoli", "amount": 200},
+        {"food_key": "olive_oil", "amount": 10}
+      ]
+    },
+    {
+      "key": "chicken_couscous",
+      "name": "Chicken couscous with chickpeas",
+      "preparation_minutes": 30,
+      "instructions": "Cook the couscous and combine it with cooked chicken, chickpeas and tomato.",
+      "roles": ["main_meal"],
+      "ingredients": [
+        {"food_key": "chicken_breast", "amount": 180},
+        {"food_key": "couscous_dry", "amount": 80},
+        {"food_key": "chickpeas_cooked", "amount": 150},
+        {"food_key": "tomato", "amount": 150},
+        {"food_key": "olive_oil", "amount": 5}
+      ]
+    },
+    {
+      "key": "cottage_cheese_rice_cakes",
+      "name": "Cottage cheese with rice cakes",
+      "preparation_minutes": 3,
+      "instructions": "Serve the cottage cheese with the rice cakes.",
+      "roles": ["late_snack"],
+      "ingredients": [
+        {"food_key": "cottage_cheese", "amount": 150},
+        {"food_key": "rice_cakes", "amount": 20}
+      ]
+    },
+    {
+      "key": "turkey_bread_snack",
+      "name": "Turkey and cucumber bread",
+      "preparation_minutes": 5,
+      "instructions": "Top the bread with turkey and serve with sliced cucumber.",
+      "roles": ["late_snack"],
+      "ingredients": [
+        {"food_key": "turkey_slices", "amount": 100},
+        {"food_key": "wholegrain_bread", "amount": 40},
+        {"food_key": "cucumber", "amount": 100}
+      ]
+    }
+  ]
+}

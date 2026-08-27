@@ -1,6 +1,6 @@
 # Produktdefinition
 
-Stand: 25. August 2026
+Stand: 27. August 2026
 
 ## Vision
 
@@ -130,19 +130,21 @@ Das MVP verwendet einen kleinen, lokal verfügbaren und fachlich geprüften
 Lebensmittel- und Mahlzeitenkatalog. Der interne Lebensmittelkatalog kombiniert
 zwei Arten von Einträgen:
 
-- wenige markenspezifische Produkte werden manuell und exakt erfasst,
+- wenige markenspezifische Produkte werden anhand ihrer Kennzeichnung erfasst,
 - generische Lebensmittel werden aus geeigneten externen Datenquellen
   übernommen.
 
-Externe Daten werden vor ihrer Verwendung importiert, vereinheitlicht und
-fachlich geprüft. Erst freigegebene Einträge dürfen für die Planerstellung
-verwendet werden. Jeder Eintrag hält seine Herkunft und den Stand der
-übernommenen Daten fest.
+Alle Mahlzeiten des MVP werden intern kuratiert. Ihre Zutatenmengen liegen vor
+der Verwendung vollständig in Gramm oder Millilitern vor. Nährwerte und Mengen
+sind nachvollziehbare Durchschnittswerte beziehungsweise Näherungen; das MVP
+beansprucht keine medizinische oder laborgenaue Berechnung. Jeder Eintrag hält
+seine Herkunft fest.
 
-Eine externe API ist damit eine mögliche Importquelle, aber keine
-Laufzeitvoraussetzung der Planung. Vor einer Übernahme externer Inhalte müssen
-Nutzungsrechte, Speicherung, Attribution, Nährwertqualität und metrische Mengen
-geklärt sein. Konkrete Anbieter sind noch nicht ausgewählt.
+FoodData Central ist die bevorzugte Quelle für generische Lebensmittel und
+übliche Stückgewichte. Open Food Facts kann ergänzend für konkrete
+Markenprodukte verwendet werden. Externe APIs sind Recherche- oder
+Übernahmequellen, aber keine Laufzeitvoraussetzung der Planung. Rezept-APIs und
+die automatische Normalisierung externer Rezeptmengen gehören nicht zum MVP.
 
 ## Spätere Produktentwicklung
 
