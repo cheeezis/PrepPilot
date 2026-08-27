@@ -19,7 +19,7 @@ erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 | 0 | Produkt klar ausgerichtet | abgeschlossen |
 | 1 | Regeln für einen guten Tagesplan festgelegt | abgeschlossen |
 | 2 | Technisches Grundgerüst lauffähig | abgeschlossen |
-| 3 | Lebensmittel- und Mahlzeitendaten verfügbar | in Bearbeitung |
+| 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
 | 4 | Tagesplaner nutzbar | ausstehend |
 | 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
 | 6 | MVP mit Zielnutzern validiert | ausstehend |
@@ -124,7 +124,7 @@ für jedes unterstützte Testprofil manuell mindestens zwei praktikable
 Tagespläne. Die Planung benötigt keine Live-Verbindung zu einer externen
 Lebensmittel-API und keine Verarbeitung externer Rezeptmaße.
 
-**Status:** in Bearbeitung
+**Status:** abgeschlossen
 
 Das bestätigte MVP-Datenmodell steht in `docs/data-model.md`.
 
@@ -192,11 +192,15 @@ sind behoben.
 
 ## Nächster Meilenstein
 
-Das vereinfachte MVP-Datenmodell, eine neue Ausgangsmigration und der
-reproduzierbare Katalogaufbau sind umgesetzt. Der erste Arbeitskatalog enthält
-je zwei Mahlzeiten für alle fünf Rollen. Praktikable Portionsfaktoren sind pro
-Mahlzeit begrenzt und ermöglichen für jede Referenzstruktur von drei bis sechs
-Mahlzeiten mindestens zwei gültige Kombinationen. Die Nährwerte sind zunächst
-offen als kuratierte Näherungen gekennzeichnet. Als Nächstes werden diese Werte
-gegen die festgelegten Quellen geprüft und der Katalog anschließend erneut
-ausgewertet und angepasst.
+Phase 3 ist abgeschlossen. Der versionierte Arbeitskatalog enthält 21
+Lebensmittel und je zwei Mahlzeiten für alle fünf Rollen. Sämtliche Nährwerte
+sind gegen FoodData Central oder ein konkretes europäisches
+Herstelleretikett geprüft und ihre Herkunft ist direkt am Katalogeintrag
+festgehalten. Die Kohlenhydratwerte verwenden einheitlich die europäische
+Definition ohne Ballaststoffe. Nach der erneuten Auswertung ermöglichen die
+freigegebenen Portionsfaktoren für jede Referenzstruktur von drei bis sechs
+Mahlzeiten mindestens zwei gültige Kombinationen.
+
+Als Nächstes beginnt Phase 4 mit der Planungslogik: Aus Tageszielen und
+Mahlzeitenanzahl werden reproduzierbar zwei bis drei gültige Tagespläne oder
+transparent bewertete Annäherungen erzeugt.

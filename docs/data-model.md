@@ -70,6 +70,13 @@ Food Facts kann ergänzend für konkrete Markenprodukte dienen. Bei wenigen
 markenspezifischen MVP-Einträgen dürfen stattdessen die Angaben des
 Herstelleretiketts übernommen werden.
 
+FoodData-Central-Daten stehen unter CC0 und dürfen mit Quellenangabe in den
+versionierten Katalog übernommen werden. Im MVP werden ergänzend nur einzelne,
+öffentlich angegebene Hersteller-Nährwerte kuratiert und mit der konkreten
+Produktseite referenziert. Open Food Facts wird aktuell nicht als Datenquelle
+kopiert, weil der kleine Katalog damit keinen zusätzlichen Nutzen gewinnt und
+eine spätere Übernahme die ODbL-Bedingungen gesondert berücksichtigen müsste.
+
 Der Katalog wird versioniert im Repository gepflegt und reproduzierbar in die
 Datenbank geladen. Jeder freigegebene Eintrag besitzt die vier benötigten
 Nährwerte, eine Basiseinheit und eine nachvollziehbare Quelle. Die Planung
@@ -82,6 +89,20 @@ Sie sind keine nutzerseitigen Bezeichnungen.
 Nährwerte und Standardmengen sind Durchschnittswerte beziehungsweise bewusste
 Näherungen. Das MVP optimiert auf konsistente und plausible Berechnungen, nicht
 auf medizinische oder laborgenaue Aussagen.
+
+`carbs_per_100` verwendet die Bedeutung der europäischen
+Nährwertkennzeichnung: erfasst werden vom Menschen verwertbare Kohlenhydrate;
+Ballaststoffe sind nicht enthalten. Das entspricht den Angaben, die Nutzer in
+Deutschland auf Verpackungen sehen. FoodData Central weist Kohlenhydrate bei
+vielen generischen Lebensmitteln dagegen „by difference“ einschließlich
+Ballaststoffen aus. In diesen Fällen wird der veröffentlichte Ballaststoffwert
+einmalig beim Kuratieren abgezogen und die Umrechnung in der Quellenreferenz
+festgehalten. Zur Laufzeit findet keine solche Umrechnung statt.
+
+Bei produktabhängigen generischen Katalogeinträgen darf ein konkretes
+europäisches Herstelleretikett als repräsentativer Näherungswert dienen. Der
+Katalog schreibt dadurch keine Marke für die spätere Einkaufsliste vor; die
+Produktbezeichnung steht ausschließlich in der Quellenreferenz.
 
 ## Grenze zum späteren Rezeptimport
 

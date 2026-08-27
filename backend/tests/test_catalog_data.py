@@ -18,6 +18,14 @@ def test_loads_complete_versioned_catalog() -> None:
     assert {food.unit.value for food in catalog.foods} == {"g", "ml"}
 
 
+def test_every_food_has_a_reviewed_traceable_source() -> None:
+    catalog = load_catalog()
+
+    for food in catalog.foods:
+        assert food.source_name != "preppilot_estimate", food.key
+        assert food.source_reference, food.key
+
+
 def test_catalog_has_two_meals_for_every_role() -> None:
     catalog = load_catalog()
     role_counts = Counter(role for meal in catalog.meals for role in meal.roles)

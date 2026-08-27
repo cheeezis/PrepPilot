@@ -10,10 +10,10 @@ def test_calculates_meal_nutrients_from_normalized_ingredients() -> None:
     meal = next(meal for meal in catalog.meals if meal.key == "whey_shake")
 
     assert calculate_meal_nutrients(meal, foods) == Nutrients(
-        calories=Decimal("293"),
-        protein=Decimal("40.2"),
-        carbs=Decimal("17.9"),
-        fat=Decimal("6.9"),
+        calories=Decimal("290.6"),
+        protein=Decimal("41.4"),
+        carbs=Decimal("16.82"),
+        fat=Decimal("6.3"),
     )
 
 
