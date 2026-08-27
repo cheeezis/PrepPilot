@@ -1,16 +1,16 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 25. August 2026
+Stand: 27. August 2026
 
 Diese Roadmap führt PrepPilot von der Produktidee zu einem validierten Minimum
-Viable Product (MVP), also der kleinsten sinnvoll nutzbaren Produktversion, und
-anschließend zu möglichen Erweiterungen. Die Phasen bauen aufeinander auf. Eine
-Phase gilt erst als abgeschlossen, wenn ihr überprüfbares Abnahmekriterium
-erfüllt ist.
+Viable Product (MVP), also der kleinsten sinnvoll nutzbaren Produktversion. Die
+Phasen bauen aufeinander auf. Eine Phase gilt erst als abgeschlossen, wenn ihr
+überprüfbares Abnahmekriterium erfüllt ist. Noch nicht priorisierte Ideen nach
+dem MVP stehen getrennt in `docs/product-backlog.md`.
 
 Der MVP umfasst die Phasen 0 bis 6. Nach Phase 5 ist die erste Version nutzbar;
 Phase 6 prüft mit realen Nutzern, ob sie das Produktversprechen tatsächlich
-erfüllt. Erweiterungen ab Phase 7 werden erst danach priorisiert.
+erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 
 ## Aktueller Stand
 
@@ -23,8 +23,6 @@ erfüllt. Erweiterungen ab Phase 7 werden erst danach priorisiert.
 | 4 | Tagesplaner nutzbar | ausstehend |
 | 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
 | 6 | MVP mit Zielnutzern validiert | ausstehend |
-| 7 | Abwechslungsreiche Wochenplanung | später |
-| 8 | Personalisierung und erweiterter Einkauf | später |
 
 ## Phase 0: Produkt ausrichten
 
@@ -106,6 +104,10 @@ aus dem sich realistische Tagespläne bilden lassen.
 - generische und markenspezifische Lebensmittel unterscheiden
 - Anforderungen an Datenqualität, Einheiten, Herkunft und Freigabe festlegen
 - externe Datenquellen fachlich und rechtlich bewerten
+- externe Zutatenbezeichnungen und Mengen reproduzierbar normalisieren
+- Lebensmittel aus externen Quellen eindeutig internen Datensätzen zuordnen
+- ausgewählte Lebensmittel- und Rezeptquellen über einen nachvollziehbaren
+  Importprozess anbinden
 - einen kleinen Katalog aus einfachen Mahlzeiten, Snacks und Hauptgerichten
   bereitstellen
 - passende Katalogkategorien, Grundportionen und erlaubte Portionsfaktoren
@@ -186,49 +188,9 @@ sind behoben.
 
 **Status:** ausstehend
 
-## Phase 7: Wochenplanung abwechslungsreicher machen
-
-**Ziel:** Nutzer erhalten mehr Abwechslung und Kontrolle, ohne dass die Planung
-kompliziert oder weniger verlässlich wird.
-
-**Möglicher Umfang:**
-
-- mehrere unterschiedliche Tagespläne innerhalb einer Woche
-- steuerbare Wiederholung und Abwechslung
-- einzelne Mahlzeiten austauschen, ohne Tagesziele aus dem Blick zu verlieren
-- flexible Mahlzeiten- oder Snack-Slots
-- Nutzungshistorie und weitere Vorschläge
-- Einkaufsliste für gemischte Wochenpläne aktualisieren
-
-**Abnahme:** Wird nach der MVP-Validierung anhand des bestätigten Nutzerbedarfs
-konkretisiert.
-
-**Status:** später
-
-## Phase 8: Personalisierung und Einkauf erweitern
-
-**Ziel:** Nur nachgewiesene persönliche und organisatorische Anforderungen
-werden ergänzt, ohne PrepPilot zu einem allgemeinen Haushaltsmanager zu machen.
-
-**Möglicher Umfang:**
-
-- Ernährungsformen, Ausschlüsse und Favoriten
-- zusätzliche Nährwerte wie Zucker, Ballaststoffe und Salz
-- Allergendaten und darauf aufbauende Filter
-- eigene Mahlzeiten, Vorlagen und gespeicherte Pläne
-- Benutzerkonten und geräteübergreifende Nutzung
-- Vorräte, Packungsgrößen, Preise und Budget
-- Produkt- und Mahlzeitenbilder
-- Rezeptimport und automatische Nährwertberechnung
-- optionale KI-Unterstützung
-
-**Abnahme:** Einzelne Themen erhalten erst nach der MVP-Validierung eigene
-Erfolgskriterien und eine priorisierte Reihenfolge.
-
-**Status:** später
-
 ## Nächster Meilenstein
 
-Das technische Grundgerüst aus Phase 2 ist reproduzierbar eingerichtet und
-vollständig geprüft. Als Nächstes startet Phase 3 mit dem Datenmodell und einem
-kleinen verlässlichen Lebensmittel- und Mahlzeitenkatalog.
+Das MVP-Datenmodell und der reproduzierbare Import aus TheMealDB und FoodData
+Central funktionieren für ein vollständiges Referenzrezept. Als Nächstes wird
+der kleine MVP-Katalog mit einfachen Mahlzeiten, Snacks und weiteren
+Hauptgerichten aufgebaut und gegen die Referenzprofile geprüft.
