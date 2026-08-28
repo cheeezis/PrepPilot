@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 test('creates and selects a valid day plan', async ({ page }) => {
   await page.goto('/')
 
+  await expect(page.getByText('System bereit')).toBeVisible()
   await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
 
   await expect(page.getByRole('heading', { name: '3 Tagespläne' })).toBeVisible()

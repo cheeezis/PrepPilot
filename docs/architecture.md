@@ -79,6 +79,12 @@ mit klar getrennten Fachbereichen, nicht als Sammlung von Microservices.
 PostgreSQL speichert die internen Lebensmittel, Mahlzeiten und später erzeugte
 Pläne. Ausschließlich das Backend greift direkt auf die Datenbank zu.
 
+Die versionierte JSON-Datei ist ausschließlich die nachvollziehbare Seed-Quelle.
+Nach Migration und Seed liest der laufende Planer Lebensmittel, Mahlzeiten,
+Zutaten, Rollen und Portionsfaktoren aus PostgreSQL. Eine nicht erreichbare,
+unvollständige oder leere Datenbank macht sowohl den Systemcheck als auch die
+Planerstellung bewusst nicht verfügbar.
+
 Der Datenbankzugriff erfolgt zunächst synchron. Das passt zur ebenso synchronen
 Planungslogik und vermeidet im MVP die zusätzliche Komplexität asynchroner
 Sessions. SQLAlchemy bildet die Python-seitige Datenzugriffsschicht, psycopg
@@ -139,16 +145,17 @@ Das Frontend verwendet Oxlint für statische Codeprüfungen, den
 TypeScript-Compiler für die Typprüfung und Vitest für schnelle automatisierte
 Tests. Vitest nutzt dieselbe Transformationsgrundlage wie Vite. Playwright
 prüft vollständige Nutzerflüsse im Browser und startet dafür Frontend und
-Backend selbst. Der Tagesplaner-End-to-End-Test benötigt keine laufende
-Datenbank. Er wird im Frontend mit `npm run test:e2e` ausgeführt.
+Backend selbst. Der Tagesplaner-End-to-End-Test verwendet den laufenden,
+befüllten PostgreSQL-Katalog und wird im Frontend mit `npm run test:e2e`
+ausgeführt.
 
 Das Backend verwendet Ruff für Linting und Formatierung, mypy für die statische
 Typprüfung und pytest für automatisierte Tests.
 
-Die normalen Testläufe benötigen keine gestarteten Server oder externe
-Infrastruktur. Abhängigkeiten wie PostgreSQL werden in diesen Tests gezielt
-ersetzt. Separate Integrationstests dürfen später die echte Infrastruktur
-prüfen und werden als solche kenntlich gemacht.
+Die schnellen Unit- und API-Tests benötigen keine gestarteten Server oder
+externe Infrastruktur. PostgreSQL wird darin gezielt ersetzt. Der
+End-to-End-Test ist zugleich der Integrationstest für den vollständigen Weg vom
+Browser über das Backend bis zum Datenbankkatalog.
 
 ## Noch zu entscheiden
 
