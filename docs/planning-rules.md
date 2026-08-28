@@ -1,6 +1,6 @@
 # Planungsregeln
 
-Stand: 25. August 2026
+Stand: 28. August 2026
 
 Dieses Dokument sammelt die fachlichen Regeln, anhand derer PrepPilot später
 Tagespläne erzeugt und bewertet. Die Regeln werden zunächst mit konkreten
@@ -57,7 +57,19 @@ die Rollen- und Portionslogik unabhängig von anderen Zielwerten prüfen.
 | A | 5 | Basisstruktur plus zwei Protein-Snacks |
 | D | 6 | Fünf-Mahlzeiten-Struktur plus kleiner später Snack |
 
-Profile mit abweichenden Nährwertzielen werden anschließend getrennt ergänzt.
+## Weitere technische Testprofile
+
+Die Profile E und F prüfen, ob Katalog und Planungslogik auch deutlich andere
+Zielgrößen reproduzierbar abdecken. Die Werte sind technische Testfälle und
+keine Ernährungsempfehlungen.
+
+| Profil | Kalorien | Protein mindestens | Fett höchstens | Kohlenhydrate | Mahlzeiten |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| E | 2.000 kcal | 160 g | 65 g | 200 g | 4 |
+| F | 3.000 kcal | 240 g | 90 g | 320 g | 6 |
+
+Der freigegebene MVP-Katalog muss für beide Profile jeweils drei gültige,
+inhaltlich unterschiedliche Tagespläne liefern.
 
 ## Mahlzeitenstruktur von Testprofil A
 
