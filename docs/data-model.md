@@ -1,6 +1,6 @@
 # Datenmodell
 
-Stand: 27. August 2026
+Stand: 28. August 2026
 
 ## Ziel und Systemgrenze
 
@@ -14,7 +14,7 @@ Eine Mahlzeit kann ein gekochtes Gericht, eine Brotmahlzeit, ein Shake oder ein
 einfacher Snack sein. Ihre Nährwerte werden immer aus den hinterlegten
 Lebensmitteln und Mengen berechnet und nicht zusätzlich gespeichert.
 
-## Tabellen
+## Katalogstruktur
 
 - `foods`: Lebensmittel mit stabiler Katalogkennung, optionaler Marke,
   Basiseinheit `g` oder `ml`, den vier MVP-Nährwerten pro 100 Basiseinheiten
@@ -77,14 +77,15 @@ Produktseite referenziert. Open Food Facts wird aktuell nicht als Datenquelle
 kopiert, weil der kleine Katalog damit keinen zusätzlichen Nutzen gewinnt und
 eine spätere Übernahme die ODbL-Bedingungen gesondert berücksichtigen müsste.
 
-Der Katalog wird versioniert im Repository gepflegt und reproduzierbar in die
-Datenbank geladen. Jeder freigegebene Eintrag besitzt die vier benötigten
-Nährwerte, eine Basiseinheit und eine nachvollziehbare Quelle. Die Planung
-benötigt keine Live-Verbindung zu einer externen Datenquelle.
+Der Katalog wird als validierte JSON-Datei versioniert im Repository gepflegt
+und vom Backend direkt geladen. Jeder freigegebene Eintrag besitzt die vier
+benötigten Nährwerte, eine Basiseinheit und eine nachvollziehbare Quelle. Die
+Planung benötigt weder eine Datenbank noch eine Live-Verbindung zu einer
+externen Datenquelle.
 
-Stabile Katalogkennungen verbinden die versionierten Definitionen mit den
-Datenbankeinträgen und ermöglichen eine reproduzierbare technische Sortierung.
-Sie sind keine nutzerseitigen Bezeichnungen.
+Stabile Katalogkennungen verbinden Lebensmittel, Mahlzeiten und Zutaten
+innerhalb des Katalogs und ermöglichen eine reproduzierbare technische
+Sortierung. Sie sind keine nutzerseitigen Bezeichnungen.
 
 Nährwerte und Standardmengen sind Durchschnittswerte beziehungsweise bewusste
 Näherungen. Das MVP optimiert auf konsistente und plausible Berechnungen, nicht
