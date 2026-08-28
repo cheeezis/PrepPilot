@@ -20,7 +20,7 @@ erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 | 1 | Regeln für einen guten Tagesplan festgelegt | abgeschlossen |
 | 2 | Technisches Grundgerüst lauffähig | abgeschlossen |
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
-| 4 | Tagesplaner nutzbar | in Bearbeitung |
+| 4 | Tagesplaner nutzbar | abgeschlossen |
 | 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
 | 6 | MVP mit Zielnutzern validiert | ausstehend |
 
@@ -148,7 +148,7 @@ nachvollziehbare Tagespläne und kann einen davon auswählen.
 erklärbare Ergebnisse. Ein Nutzer kann ohne zusätzliche Berechnung einen
 Tagesplan auswählen und jede relevante Zielabweichung erkennen.
 
-**Status:** in Bearbeitung
+**Status:** abgeschlossen
 
 ## Phase 5: Wochenplan und Einkaufsliste umsetzen
 
@@ -201,7 +201,7 @@ Definition ohne Ballaststoffe. Nach der erneuten Auswertung ermöglichen die
 freigegebenen Portionsfaktoren für jede Referenzstruktur von drei bis sechs
 Mahlzeiten mindestens zwei gültige Kombinationen.
 
-Phase 4 ist in Bearbeitung. Die erste Planungslogik erzeugt aus Tageszielen und
+Phase 4 ist abgeschlossen. Die Planungslogik erzeugt aus Tageszielen und
 Mahlzeitenanzahl reproduzierbar bis zu drei gültige Tagespläne oder transparent
 bewertete Annäherungen. Unbrauchbare Kandidaten und inhaltlich doppelte Pläne
 werden ausgeschlossen. Der erste API-Endpunkt und eine einfache Oberfläche für
@@ -209,6 +209,8 @@ Eingabe, Nährwertübersicht und Mahlzeitendetails sind umgesetzt. Ein Vorschlag
 kann ausgewählt und für den nächsten Schritt im Frontend vorgemerkt werden.
 Die Bewertung zeigt für jeden Nährwert Ist-Wert, Zielbereich und eine konkrete
 Unter- oder Überschreitung. Harte und weiche Abweichungen bleiben unterscheidbar.
+Zusätzliche niedrige und hohe Zielprofile sowie der vollständige Ablauf von der
+Eingabe bis zur Auswahl sind automatisiert geprüft.
 
-Als Nächstes werden weitere Zielprofile und der vollständige Nutzerfluss
-geprüft, bevor Phase 4 abgeschlossen wird.
+Als Nächstes beginnt Phase 5 mit der Darstellung des ausgewählten Tagesplans
+für sieben Tage und der daraus berechneten Einkaufsliste.
