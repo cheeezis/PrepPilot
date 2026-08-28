@@ -37,6 +37,47 @@ def test_reference_profile_returns_ranked_plans(
     )
 
 
+@pytest.mark.parametrize(
+    "targets",
+    (
+        pytest.param(
+            PlanTargets(
+                calories=Decimal(2000),
+                protein_minimum=Decimal(160),
+                fat_maximum=Decimal(65),
+                carbs=Decimal(200),
+                meal_count=4,
+            ),
+            id="lower-targets",
+        ),
+        pytest.param(
+            PlanTargets(
+                calories=Decimal(3000),
+                protein_minimum=Decimal(240),
+                fat_maximum=Decimal(90),
+                carbs=Decimal(320),
+                meal_count=6,
+            ),
+            id="higher-targets",
+        ),
+    ),
+)
+def test_varied_target_profiles_return_three_valid_plans(
+    targets: PlanTargets,
+) -> None:
+    plans = generate_day_plans(targets, load_catalog())
+
+    assert len(plans) == 3
+    assert all(plan.status == "valid" for plan in plans)
+    assert all(len(plan.meals) == targets.meal_count for plan in plans)
+    assert all(
+        evaluation.satisfied
+        for plan in plans
+        for evaluation in plan.evaluations
+        if evaluation.kind == "hard"
+    )
+
+
 def test_plan_generation_is_reproducible() -> None:
     targets = PlanTargets(
         calories=Decimal(2500),

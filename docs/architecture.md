@@ -124,9 +124,10 @@ während nur die zustandsbehaftete Infrastruktur isoliert betrieben wird.
 
 Das Frontend verwendet Oxlint für statische Codeprüfungen, den
 TypeScript-Compiler für die Typprüfung und Vitest für schnelle automatisierte
-Tests. Vitest nutzt dieselbe Transformationsgrundlage wie Vite. Playwright ist
-für spätere Tests vollständiger Nutzerflüsse vorgesehen, nicht für einzelne
-Funktionen.
+Tests. Vitest nutzt dieselbe Transformationsgrundlage wie Vite. Playwright
+prüft vollständige Nutzerflüsse im Browser und startet dafür Frontend und
+Backend selbst. Der Tagesplaner-End-to-End-Test benötigt keine laufende
+Datenbank. Er wird im Frontend mit `npm run test:e2e` ausgeführt.
 
 Das Backend verwendet Ruff für Linting und Formatierung, mypy für die statische
 Typprüfung und pytest für automatisierte Tests.
