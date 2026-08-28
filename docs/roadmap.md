@@ -1,6 +1,6 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 27. August 2026
+Stand: 28. August 2026
 
 Diese Roadmap führt PrepPilot von der Produktidee zu einem validierten Minimum
 Viable Product (MVP), also der kleinsten sinnvoll nutzbaren Produktversion. Die
@@ -205,8 +205,9 @@ Phase 4 ist in Bearbeitung. Die erste Planungslogik erzeugt aus Tageszielen und
 Mahlzeitenanzahl reproduzierbar bis zu drei gültige Tagespläne oder transparent
 bewertete Annäherungen. Unbrauchbare Kandidaten und inhaltlich doppelte Pläne
 werden ausgeschlossen. Der erste API-Endpunkt und eine einfache Oberfläche für
-Eingabe, Nährwertübersicht und Mahlzeitendetails sind umgesetzt.
+Eingabe, Nährwertübersicht und Mahlzeitendetails sind umgesetzt. Ein Vorschlag
+kann ausgewählt und für den nächsten Schritt im Frontend vorgemerkt werden.
 
-Als Nächstes wird die Auswahl eines Vorschlags ergänzt. Danach werden weitere
-Zielprofile und der vollständige Nutzerfluss geprüft, bevor Phase 4
+Als Nächstes werden Zielabweichungen noch konkreter dargestellt. Danach werden
+weitere Zielprofile und der vollständige Nutzerfluss geprüft, bevor Phase 4
 abgeschlossen wird.

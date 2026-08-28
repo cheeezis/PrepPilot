@@ -213,11 +213,52 @@ button:disabled {
   gap: 20px;
 }
 
+.selection-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 1px solid #b9d8cd;
+  border-radius: 12px;
+  color: #174f3e;
+  background: #edf7f3;
+}
+
+.selection-check {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #176b52;
+  font-weight: 800;
+}
+
+.selection-summary strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.selection-summary p {
+  margin-bottom: 0;
+  color: #527066;
+  font-size: 14px;
+}
+
 .plan-card {
   padding: 24px;
   border: 1px solid #dce2df;
   border-radius: 16px;
   background: #fff;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.plan-card--selected {
+  border-color: #4d9b80;
+  box-shadow: 0 0 0 3px rgb(23 107 82 / 11%);
 }
 
 .plan-title-row {
@@ -301,6 +342,24 @@ button:disabled {
 .rule--missed {
   color: #8d2d25;
   background: #fff0ef;
+}
+
+.select-plan-button {
+  margin: 0 0 22px;
+  border: 1px solid #176b52;
+  color: #176b52;
+  background: #fff;
+}
+
+.select-plan-button:hover {
+  color: #fff;
+  background: #176b52;
+}
+
+.select-plan-button--selected,
+.select-plan-button--selected:hover {
+  color: #fff;
+  background: #176b52;
 }
 
 .meal-list {

@@ -30,6 +30,7 @@ function App() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking')
   const [requestStatus, setRequestStatus] = useState<RequestStatus>('idle')
   const [result, setResult] = useState<DayPlansResponse | null>(null)
+  const [selectedPlanIndex, setSelectedPlanIndex] = useState<number | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -47,6 +48,7 @@ function App() {
     const form = new FormData(event.currentTarget)
     setRequestStatus('loading')
     setResult(null)
+    setSelectedPlanIndex(null)
 
     try {
       const nextResult = await createDayPlans({
@@ -115,7 +117,13 @@ function App() {
         </p>
       )}
 
-      {result && <PlanResults result={result} />}
+      {result && (
+        <PlanResults
+          result={result}
+          selectedPlanIndex={selectedPlanIndex}
+          onSelect={setSelectedPlanIndex}
+        />
+      )}
     </main>
   )
 }
@@ -149,7 +157,15 @@ function NumberField({
   )
 }
 
-function PlanResults({ result }: { result: DayPlansResponse }) {
+function PlanResults({
+  result,
+  selectedPlanIndex,
+  onSelect,
+}: {
+  result: DayPlansResponse
+  selectedPlanIndex: number | null
+  onSelect: (index: number) => void
+}) {
   if (result.outcome === 'no_usable_plan') {
     return (
       <section className="results">
@@ -174,18 +190,43 @@ function PlanResults({ result }: { result: DayPlansResponse }) {
           </p>
         )}
       </div>
+      {selectedPlanIndex !== null && result.plans[selectedPlanIndex] && (
+        <div className="selection-summary" role="status">
+          <span className="selection-check" aria-hidden="true">✓</span>
+          <div>
+            <strong>Vorschlag {selectedPlanIndex + 1} ausgewählt</strong>
+            <p>Dieser Tagesplan ist für den nächsten Schritt vorgemerkt.</p>
+          </div>
+        </div>
+      )}
       <div className="plan-list">
         {result.plans.map((plan, index) => (
-          <PlanCard key={`${index}-${plan.score}`} plan={plan} index={index} />
+          <PlanCard
+            key={`${index}-${plan.score}`}
+            plan={plan}
+            index={index}
+            selected={selectedPlanIndex === index}
+            onSelect={() => onSelect(index)}
+          />
         ))}
       </div>
     </section>
   )
 }
 
-function PlanCard({ plan, index }: { plan: DayPlan; index: number }) {
+function PlanCard({
+  plan,
+  index,
+  selected,
+  onSelect,
+}: {
+  plan: DayPlan
+  index: number
+  selected: boolean
+  onSelect: () => void
+}) {
   return (
-    <article className="plan-card">
+    <article className={`plan-card${selected ? ' plan-card--selected' : ''}`}>
       <div className="plan-title-row">
         <div>
           <p className="plan-number">Vorschlag {index + 1}</p>
@@ -216,6 +257,15 @@ function PlanCard({ plan, index }: { plan: DayPlan; index: number }) {
           </span>
         ))}
       </div>
+
+      <button
+        type="button"
+        className={`select-plan-button${selected ? ' select-plan-button--selected' : ''}`}
+        aria-pressed={selected}
+        onClick={onSelect}
+      >
+        {selected ? 'Ausgewählt' : 'Diesen Plan auswählen'}
+      </button>
 
       <div className="meal-list">
         {plan.meals.map((meal) => (
