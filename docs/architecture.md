@@ -1,6 +1,6 @@
 # Architektur
 
-Stand: 27. August 2026
+Stand: 28. August 2026
 
 Dieses Dokument hält bestätigte technische Entscheidungen fest. Details werden
 schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
@@ -68,8 +68,8 @@ das Frontend.
 ### Backend
 
 Das Backend ist die fachliche und technische Systemgrenze. Es validiert
-Eingaben, berechnet und bewertet Tagespläne, berechnet Nährwerte und
-Einkaufsmengen und koordiniert den Datenzugriff.
+Eingaben, berechnet und bewertet Tagespläne, berechnet Nährwerte und koordiniert
+den Datenzugriff.
 
 Das Backend wird als modularer Monolith entwickelt: eine deploybare Anwendung
 mit klar getrennten Fachbereichen, nicht als Sammlung von Microservices.
@@ -85,6 +85,19 @@ Sessions. SQLAlchemy bildet die Python-seitige Datenzugriffsschicht, psycopg
 stellt die Verbindung zu PostgreSQL her und Alembic versioniert spätere
 Schemaänderungen. Die Alembic-Umgebung wird erst mit dem ersten Datenmodell in
 Phase 3 angelegt.
+
+## Wochenplan und Einkaufsliste
+
+Im MVP wird ein ausgewählter Tagesplan unverändert für alle sieben Wochentage
+verwendet. Die Auswahl bleibt im Frontend-Zustand und wird noch nicht dauerhaft
+gespeichert.
+
+Die Einkaufsliste ist eine reine Darstellungssumme: Das Frontend multipliziert
+die bereits vom Backend gelieferten, normalisierten Zutatenmengen mit sieben
+und fasst gleiche Lebensmittel mit gleicher Einheit zusammen. Dabei finden
+weder Nährwertberechnungen noch Einheitenumrechnungen statt. Für diesen festen
+Wochenplan wäre ein zusätzlicher Backend-Endpunkt oder ein eigenes Datenmodell
+unnötige MVP-Komplexität.
 
 ## Katalog- und Importgrenze
 

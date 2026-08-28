@@ -14,6 +14,10 @@ test('creates and selects a valid day plan', async ({ page }) => {
   await secondPlan.getByRole('button', { name: 'Diesen Plan auswählen' }).click()
 
   await expect(page.getByRole('status')).toContainText('Vorschlag 2 ausgewählt')
+  await expect(page.getByRole('heading', { name: 'Deine Woche' })).toBeVisible()
+  await expect(page.getByTestId('week-day')).toHaveCount(7)
+  await expect(page.getByRole('heading', { name: 'Einkaufsliste' })).toBeVisible()
+  await expect(page.getByText('Gesamtmengen für sieben Tage.')).toBeVisible()
   await expect(
     secondPlan.getByRole('button', { name: 'Ausgewählt' }),
   ).toHaveAttribute('aria-pressed', 'true')
