@@ -21,7 +21,7 @@ erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 | 2 | Technisches Grundgerüst lauffähig | abgeschlossen |
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
 | 4 | Tagesplaner nutzbar | abgeschlossen |
-| 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
+| 5 | Wochenplan und Einkaufsliste nutzbar | in Bearbeitung |
 | 6 | MVP mit Zielnutzern validiert | ausstehend |
 
 ## Phase 0: Produkt ausrichten
@@ -70,8 +70,8 @@ getestet.
 
 ## Phase 2: Technisches Grundgerüst aufbauen
 
-**Ziel:** Frontend und Backend bilden ein reproduzierbares, testbares Fundament,
-ohne bereits Produktfunktionen vorwegzunehmen.
+**Ziel:** Frontend, Backend und Datenbank bilden ein reproduzierbares, testbares
+Fundament, ohne bereits Produktfunktionen vorwegzunehmen.
 
 **Umfang:**
 
@@ -79,13 +79,14 @@ ohne bereits Produktfunktionen vorwegzunehmen.
 - minimale Monorepo-Struktur für Frontend und Backend festlegen
 - React-/TypeScript-Frontend lokal starten
 - FastAPI-Backend lokal starten
-- einen einfachen Systemcheck zwischen Frontend und Backend einrichten
+- PostgreSQL lokal bereitstellen und mit dem Backend verbinden
+- einen einfachen Systemcheck zwischen Frontend, Backend und Datenbank einrichten
 - grundlegende Formatierung, Typprüfung und Tests ausführbar machen
 - lokale Einrichtung nachvollziehbar dokumentieren
 
-**Abnahme:** Nach einer frischen Einrichtung lassen sich Frontend und Backend
-starten. Das Frontend erreicht den Backend-Systemcheck und alle grundlegenden
-Qualitätsprüfungen bestehen. Externe Infrastruktur ist für das MVP nicht nötig.
+**Abnahme:** Nach einer frischen Einrichtung lassen sich alle drei
+Anwendungsteile starten. Das Frontend erreicht den Backend-Systemcheck, das
+Backend erreicht PostgreSQL und alle grundlegenden Qualitätsprüfungen bestehen.
 
 **Status:** abgeschlossen
 
@@ -100,7 +101,7 @@ aus dem sich realistische Tagespläne bilden lassen.
 
 - Lebensmittel, Nährwerte, Mahlzeiten und normalisierte Zutatenmengen
   modellieren
-- eine kleine, validierte Katalogstruktur festlegen
+- Datenbanktabellen und nachvollziehbare Migrationen anlegen
 - generische und markenspezifische Lebensmittel unterscheiden
 - Anforderungen an Datenqualität, Einheiten, Herkunft und Freigabe festlegen
 - externe Datenquellen fachlich und rechtlich bewerten
@@ -108,7 +109,7 @@ aus dem sich realistische Tagespläne bilden lassen.
   Open Food Facts oder Herstellerangaben auswählen
 - sämtliche Zutatenmengen des freigegebenen Katalogs direkt in Gramm oder
   Millilitern kuratieren
-- den versionierten Katalog direkt und reproduzierbar im Backend laden
+- den versionierten Katalog reproduzierbar in die Datenbank laden
 - einen kleinen Katalog aus einfachen Mahlzeiten, Snacks und Hauptgerichten
   bereitstellen
 - passende Katalogkategorien, Grundportionen und erlaubte Portionsfaktoren
@@ -117,11 +118,11 @@ aus dem sich realistische Tagespläne bilden lassen.
   bereitstellen
 - Katalogdaten gegen mehrere repräsentative Zielprofile prüfen
 
-**Abnahme:** Der versionierte Katalog kann reproduzierbar geladen und validiert
-werden. Er enthält vollständige, nachvollziehbare Daten und ermöglicht für jedes
-unterstützte Testprofil manuell mindestens zwei praktikable Tagespläne. Die
-Planung benötigt weder eine Datenbank noch eine Live-Verbindung zu einer
-externen Lebensmittel-API oder die Verarbeitung externer Rezeptmaße.
+**Abnahme:** Die Datenbank kann reproduzierbar neu aufgebaut werden. Der
+freigegebene Katalog enthält vollständige, nachvollziehbare Daten und ermöglicht
+für jedes unterstützte Testprofil manuell mindestens zwei praktikable
+Tagespläne. Die Planung benötigt keine Live-Verbindung zu einer externen
+Lebensmittel-API und keine Verarbeitung externer Rezeptmaße.
 
 **Status:** abgeschlossen
 
@@ -166,7 +167,7 @@ Plan samt Einkauf für sieben Tage.
 und kann dessen Einkaufsliste ohne externen Rechner verwenden. Nährwerte und
 Einkaufsmengen stimmen rechnerisch mit dem gewählten Plan überein.
 
-**Status:** abgeschlossen
+**Status:** in Bearbeitung
 
 ## Phase 6: MVP mit Zielnutzern validieren
 
@@ -211,14 +212,9 @@ Unter- oder Überschreitung. Harte und weiche Abweichungen bleiben unterscheidba
 Zusätzliche niedrige und hohe Zielprofile sowie der vollständige Ablauf von der
 Eingabe bis zur Auswahl sind automatisiert geprüft.
 
-Phase 5 ist abgeschlossen. Der ausgewählte Tagesplan wird für alle sieben
+Phase 5 ist technisch umgesetzt. Der ausgewählte Tagesplan wird für alle sieben
 Wochentage dargestellt und aus seinen normalisierten Zutaten entsteht eine
 aggregierte Einkaufsliste. Die Summenberechnung ist mit Unit-Tests abgesichert;
 der vollständige Ablauf ist als Browser-Test abgedeckt und die Oberfläche wurde
-auf Desktop- und Mobilgröße geprüft. Der Nutzerfluss wurde manuell abgenommen.
-
-Die Architektur wurde anschließend auf den tatsächlichen MVP-Bedarf reduziert:
-Der versionierte JSON-Katalog ist die einzige Laufzeit-Datenquelle. Eine
-Datenbank wird erst mit einer Funktion eingeführt, die veränderliche oder
-nutzerspezifische Daten dauerhaft speichern muss. Vor Phase 6 wird die dadurch
-ungenutzte Datenbankintegration aus Code und Entwicklungsumgebung entfernt.
+auf Desktop- und Mobilgröße geprüft. Für den Abschluss fehlt noch die manuelle
+Abnahme des Ablaufs durch einen Testnutzer.

@@ -18,7 +18,9 @@ schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
 - Frontend-Laufzeit und Paketverwaltung: Node.js 24 LTS mit npm
 - Backend: Python 3.14 mit FastAPI
 - Python-Umgebung und Paketverwaltung: `venv` aus der Standardbibliothek und pip
-- MVP-Datenquelle: versionierter und beim Laden validierter JSON-Katalog
+- Datenbank: PostgreSQL
+- Datenbankzugriff: synchrones SQLAlchemy 2 mit psycopg 3
+- Datenbankmigrationen: Alembic
 
 Frontend-Abhängigkeiten werden über die npm-Lockdatei reproduzierbar
 festgehalten. Direkte Backend-Abhängigkeiten stehen mit fester Version in
@@ -53,13 +55,13 @@ React-/TypeScript-Frontend
   ↓ HTTP/JSON
 FastAPI-Backend
   ↓
-versionierter Katalog
+PostgreSQL
 ```
 
 ### Frontend
 
 Das Frontend stellt Daten dar, nimmt Nutzereingaben entgegen und kommuniziert
-mit dem Backend. Es greift weder direkt auf den Katalog noch auf externe
+mit dem Backend. Es greift weder direkt auf PostgreSQL noch auf externe
 Lebensmittelquellen zu. Fachliche Planungs- und Nährwertlogik gehört nicht in
 das Frontend.
 
@@ -72,16 +74,17 @@ den Datenzugriff.
 Das Backend wird als modularer Monolith entwickelt: eine deploybare Anwendung
 mit klar getrennten Fachbereichen, nicht als Sammlung von Microservices.
 
-### Katalogspeicher
+### Datenbank
 
-Der kleine, kuratierte MVP-Katalog liegt als versionierte JSON-Datei im
-Repository. Das Backend lädt und validiert ihn vollständig, bevor der Planer
-ihn verwendet. Damit gibt es genau eine produktive Katalogquelle.
+PostgreSQL speichert die internen Lebensmittel, Mahlzeiten und später erzeugte
+Pläne. Ausschließlich das Backend greift direkt auf die Datenbank zu.
 
-PostgreSQL, SQLAlchemy und Alembic gehören nicht zur Laufzeitarchitektur des
-MVP. Eine Datenbank wird erst wieder eingeführt, wenn eine beschlossene Funktion
-veränderliche oder nutzerspezifische Daten dauerhaft speichern muss, etwa
-importierte Rezepte, eigene Mahlzeiten, Konten oder gespeicherte Pläne.
+Der Datenbankzugriff erfolgt zunächst synchron. Das passt zur ebenso synchronen
+Planungslogik und vermeidet im MVP die zusätzliche Komplexität asynchroner
+Sessions. SQLAlchemy bildet die Python-seitige Datenzugriffsschicht, psycopg
+stellt die Verbindung zu PostgreSQL her und Alembic versioniert spätere
+Schemaänderungen. Die Alembic-Umgebung wird erst mit dem ersten Datenmodell in
+Phase 3 angelegt.
 
 ## Wochenplan und Einkaufsliste
 
@@ -104,9 +107,10 @@ bereits normalisierte Mengen in Gramm oder Millilitern. Der Planer kennt weder
 externe Rezeptformate noch Haushaltsmaße, Portionstabellen oder unsichere
 Zuordnungen.
 
-Der MVP-Katalog wird klein gehalten und im Repository versioniert. FoodData
-Central, Open Food Facts und Herstellerangaben dienen nur als Quellen für
-ausgewählte Katalogwerte; der laufende Planer ruft sie nicht auf.
+Der MVP-Katalog wird klein gehalten, im Repository versioniert und
+reproduzierbar in PostgreSQL geladen. FoodData Central, Open Food Facts und
+Herstellerangaben dienen nur als Quellen für ausgewählte Katalogwerte; der
+laufende Planer ruft sie nicht auf.
 
 Ein späterer Rezeptimport bildet einen getrennten Eingangsbereich. Erst ein
 vollständig normalisiertes Rezept darf in den produktiven Katalog übernommen
@@ -116,9 +120,18 @@ nicht vorsorglich im MVP implementiert.
 
 ## Lokale Entwicklungsumgebung
 
-Frontend und Backend laufen während der lokalen Entwicklung direkt auf dem
-Host. Für den MVP ist kein zusätzlicher Infrastrukturdienst und damit auch kein
-Docker-Container notwendig.
+PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die
+notwendige Entwicklungskonfiguration werden dadurch im Repository festgehalten
+und lassen sich auf einem neuen Rechner reproduzieren.
+
+Die Entwicklungsumgebung verwendet das offizielle
+`postgres:18.6-bookworm`-Image. Daten liegen in einem benannten Docker-Volume
+und bleiben beim Stoppen oder Ersetzen des Containers erhalten.
+
+Frontend und Backend laufen während der lokalen Entwicklung zunächst direkt
+auf dem Host. Sie werden im MVP nicht allein aus Gründen der Einheitlichkeit
+containerisiert. Damit bleibt schnelles Neuladen und Debugging unkompliziert,
+während nur die zustandsbehaftete Infrastruktur isoliert betrieben wird.
 
 ## Qualitäts- und Testwerkzeuge
 
@@ -126,19 +139,19 @@ Das Frontend verwendet Oxlint für statische Codeprüfungen, den
 TypeScript-Compiler für die Typprüfung und Vitest für schnelle automatisierte
 Tests. Vitest nutzt dieselbe Transformationsgrundlage wie Vite. Playwright
 prüft vollständige Nutzerflüsse im Browser und startet dafür Frontend und
-Backend selbst. Der Tagesplaner-End-to-End-Test benötigt keine zusätzliche
-Infrastruktur. Er wird im Frontend mit `npm run test:e2e` ausgeführt.
+Backend selbst. Der Tagesplaner-End-to-End-Test benötigt keine laufende
+Datenbank. Er wird im Frontend mit `npm run test:e2e` ausgeführt.
 
 Das Backend verwendet Ruff für Linting und Formatierung, mypy für die statische
 Typprüfung und pytest für automatisierte Tests.
 
 Die normalen Testläufe benötigen keine gestarteten Server oder externe
-Infrastruktur. Separate Integrationstests dürfen später eine tatsächlich
-benötigte Infrastruktur prüfen und werden als solche kenntlich gemacht.
+Infrastruktur. Abhängigkeiten wie PostgreSQL werden in diesen Tests gezielt
+ersetzt. Separate Integrationstests dürfen später die echte Infrastruktur
+prüfen und werden als solche kenntlich gemacht.
 
 ## Noch zu entscheiden
 
 - genaue API-Gestaltung
 - interne Backend-Module und Abhängigkeitsrichtung
-- Persistenztechnik, sobald eine konkrete Funktion dauerhafte Daten benötigt
 - CI/CD und Deployment-Ziel
