@@ -207,7 +207,8 @@ bewertete Annäherungen. Unbrauchbare Kandidaten und inhaltlich doppelte Pläne
 werden ausgeschlossen. Der erste API-Endpunkt und eine einfache Oberfläche für
 Eingabe, Nährwertübersicht und Mahlzeitendetails sind umgesetzt. Ein Vorschlag
 kann ausgewählt und für den nächsten Schritt im Frontend vorgemerkt werden.
+Die Bewertung zeigt für jeden Nährwert Ist-Wert, Zielbereich und eine konkrete
+Unter- oder Überschreitung. Harte und weiche Abweichungen bleiben unterscheidbar.
 
-Als Nächstes werden Zielabweichungen noch konkreter dargestellt. Danach werden
-weitere Zielprofile und der vollständige Nutzerfluss geprüft, bevor Phase 4
-abgeschlossen wird.
+Als Nächstes werden weitere Zielprofile und der vollständige Nutzerfluss
+geprüft, bevor Phase 4 abgeschlossen wird.
