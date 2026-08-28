@@ -20,7 +20,7 @@ erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 | 1 | Regeln für einen guten Tagesplan festgelegt | abgeschlossen |
 | 2 | Technisches Grundgerüst lauffähig | abgeschlossen |
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
-| 4 | Tagesplaner nutzbar | ausstehend |
+| 4 | Tagesplaner nutzbar | in Bearbeitung |
 | 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
 | 6 | MVP mit Zielnutzern validiert | ausstehend |
 
@@ -148,7 +148,7 @@ nachvollziehbare Tagespläne und kann einen davon auswählen.
 erklärbare Ergebnisse. Ein Nutzer kann ohne zusätzliche Berechnung einen
 Tagesplan auswählen und jede relevante Zielabweichung erkennen.
 
-**Status:** ausstehend
+**Status:** in Bearbeitung
 
 ## Phase 5: Wochenplan und Einkaufsliste umsetzen
 
@@ -201,6 +201,12 @@ Definition ohne Ballaststoffe. Nach der erneuten Auswertung ermöglichen die
 freigegebenen Portionsfaktoren für jede Referenzstruktur von drei bis sechs
 Mahlzeiten mindestens zwei gültige Kombinationen.
 
-Als Nächstes beginnt Phase 4 mit der Planungslogik: Aus Tageszielen und
-Mahlzeitenanzahl werden reproduzierbar zwei bis drei gültige Tagespläne oder
-transparent bewertete Annäherungen erzeugt.
+Phase 4 ist in Bearbeitung. Die erste Planungslogik erzeugt aus Tageszielen und
+Mahlzeitenanzahl reproduzierbar bis zu drei gültige Tagespläne oder transparent
+bewertete Annäherungen. Unbrauchbare Kandidaten und inhaltlich doppelte Pläne
+werden ausgeschlossen. Der erste API-Endpunkt und eine einfache Oberfläche für
+Eingabe, Nährwertübersicht und Mahlzeitendetails sind umgesetzt.
+
+Als Nächstes wird die Auswahl eines Vorschlags ergänzt. Danach werden weitere
+Zielprofile und der vollständige Nutzerfluss geprüft, bevor Phase 4
+abgeschlossen wird.
