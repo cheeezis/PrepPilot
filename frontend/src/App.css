@@ -301,18 +301,46 @@ button:disabled {
 
 .nutrient {
   padding: 14px;
+  border: 1px solid transparent;
   border-radius: 10px;
   background: #f3f6f4;
 }
 
-.nutrient span {
-  display: block;
-  margin-bottom: 5px;
+.nutrient--missed {
+  border-color: #e7b6b2;
+  background: #fff5f4;
+}
+
+.nutrient-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.nutrient-heading > span {
   color: #68736e;
   font-size: 12px;
 }
 
+.goal-status {
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  border-radius: 999px;
+  color: #376555;
+  background: #e4f2ec;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.goal-status--missed {
+  color: #8d2d25;
+  background: #fbe3e1;
+}
+
 .nutrient strong {
+  display: block;
   font-size: 19px;
 }
 
@@ -321,27 +349,20 @@ button:disabled {
   font-weight: 600;
 }
 
-.rule-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-bottom: 22px;
+.nutrient-target,
+.nutrient-deviation {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.35;
 }
 
-.rule {
-  padding: 5px 8px;
-  border-radius: 6px;
-  font-size: 12px;
+.nutrient-target {
+  color: #68736e;
 }
 
-.rule--met {
-  color: #376555;
-  background: #edf6f2;
-}
-
-.rule--missed {
+.nutrient-deviation {
   color: #8d2d25;
-  background: #fff0ef;
+  font-weight: 700;
 }
 
 .select-plan-button {
@@ -437,6 +458,10 @@ button:disabled {
   .target-form {
     grid-template-columns: 1fr;
     padding: 16px;
+  }
+
+  .nutrient-grid {
+    grid-template-columns: 1fr;
   }
 
   .results-heading {
