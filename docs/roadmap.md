@@ -22,7 +22,7 @@ erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
 | 4 | Tagesplaner nutzbar | abgeschlossen |
 | 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
-| 6 | MVP mit Zielnutzern validiert | ausstehend |
+| 6 | MVP mit Zielnutzern validiert | in Bearbeitung |
 
 ## Phase 0: Produkt ausrichten
 
@@ -188,7 +188,7 @@ ohne Hilfe ab. Mindestens ein erzeugter Plan wird als praktisch genug für einen
 realen Wochenversuch bewertet. Rechenfehler und blockierende Bedienprobleme
 sind behoben.
 
-**Status:** ausstehend
+**Status:** in Bearbeitung
 
 ## Nächster Meilenstein
 
@@ -221,5 +221,8 @@ Der Planer lädt seinen freigegebenen Katalog nun tatsächlich aus PostgreSQL;
 ohne erreichbare und befüllte Datenbank werden Systemcheck und Planung als nicht
 verfügbar gemeldet.
 
-Als Nächstes beginnt Phase 6 mit der Festlegung des Testablaufs und einer kleinen
-Gruppe geeigneter Testpersonen.
+Phase 6 ist vorbereitet. `docs/mvp-validation.md` legt drei geeignete
+Testpersonen, eine einheitliche Aufgabe, Beobachtungskriterien, Nachfragen und
+messbare Abnahmebedingungen vor dem ersten Test fest. Als Nächstes werden die
+drei Tests durchgeführt und ohne nachträgliche Änderung der Kriterien
+ausgewertet.
