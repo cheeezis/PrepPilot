@@ -6,6 +6,7 @@ import {
   type RuleEvaluation,
 } from './api/dayPlans'
 import { getHealth } from './api/health'
+import { buildShoppingList, weekDays } from './weeklyPlan'
 import './App.css'
 
 type SystemStatus = 'checking' | 'ready' | 'unavailable'
@@ -184,6 +185,13 @@ function PlanResults({
     )
   }
 
+  const selectedPlan = selectedPlanIndex === null
+    ? null
+    : result.plans[selectedPlanIndex] ?? null
+  const selectedPlanNumber = selectedPlanIndex === null
+    ? null
+    : selectedPlanIndex + 1
+
   return (
     <section className="results">
       <div className="results-heading">
@@ -197,14 +205,17 @@ function PlanResults({
           </p>
         )}
       </div>
-      {selectedPlanIndex !== null && result.plans[selectedPlanIndex] && (
-        <div className="selection-summary" role="status">
-          <span className="selection-check" aria-hidden="true">✓</span>
-          <div>
-            <strong>Vorschlag {selectedPlanIndex + 1} ausgewählt</strong>
-            <p>Dieser Tagesplan ist für den nächsten Schritt vorgemerkt.</p>
+      {selectedPlan && selectedPlanNumber !== null && (
+        <>
+          <div className="selection-summary" role="status">
+            <span className="selection-check" aria-hidden="true">✓</span>
+            <div>
+              <strong>Vorschlag {selectedPlanNumber} ausgewählt</strong>
+              <p>Dieser Tagesplan wird für alle sieben Tage verwendet.</p>
+            </div>
           </div>
-        </div>
+          <WeeklyPlan plan={selectedPlan} />
+        </>
       )}
       <div className="plan-list">
         {result.plans.map((plan, index) => (
@@ -216,6 +227,71 @@ function PlanResults({
             onSelect={() => onSelect(index)}
           />
         ))}
+      </div>
+    </section>
+  )
+}
+
+function WeeklyPlan({ plan }: { plan: DayPlan }) {
+  const shoppingList = buildShoppingList(plan.meals)
+
+  return (
+    <section className="weekly-plan" aria-labelledby="weekly-plan-heading">
+      <div className="weekly-heading">
+        <div>
+          <p className="eyebrow">Wochenplan</p>
+          <h2 id="weekly-plan-heading">Deine Woche</h2>
+        </div>
+        <p>
+          Derselbe Tagesplan gilt von Montag bis Sonntag. So bleibt die Planung
+          für den ersten MVP bewusst einfach.
+        </p>
+      </div>
+
+      <div className="weekly-layout">
+        <div className="week-days">
+          {weekDays.map((day, index) => (
+            <details
+              key={day}
+              className="week-day"
+              data-testid="week-day"
+              open={index === 0}
+            >
+              <summary>
+                <span>
+                  <strong>{day}</strong>
+                  <small>{plan.meals.length} Mahlzeiten</small>
+                </span>
+                <span>{formatNumber(plan.nutrients.calories)} kcal</span>
+              </summary>
+              <ul>
+                {plan.meals.map((meal) => (
+                  <li key={`${day}-${meal.role}-${meal.key}`}>
+                    <span>
+                      <small>{roleNames[meal.role] ?? meal.role}</small>
+                      <strong>{meal.name}</strong>
+                    </span>
+                    <span>{formatNumber(meal.nutrients.calories)} kcal</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </div>
+
+        <aside className="shopping-list" aria-labelledby="shopping-list-heading">
+          <p className="eyebrow">Einkauf</p>
+          <h3 id="shopping-list-heading">Einkaufsliste</h3>
+          <p className="shopping-list-copy">Gesamtmengen für sieben Tage.</p>
+          <ul>
+            {shoppingList.map((item) => (
+              <li key={`${item.foodKey}-${item.unit}`}>
+                <span>{item.name}</span>
+                <strong>{formatNumber(item.amount)} {item.unit}</strong>
+              </li>
+            ))}
+          </ul>
+        </aside>
       </div>
     </section>
   )

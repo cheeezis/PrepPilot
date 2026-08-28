@@ -1,12 +1,17 @@
 from decimal import Decimal
-from typing import Literal, Mapping
+from typing import Annotated, Literal, Mapping
 
-from fastapi import FastAPI, Response, status
-from pydantic import BaseModel, Field
+from fastapi import Depends, FastAPI, HTTPException, Response, status
+from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
-from preppilot_api.catalog_data import FoodDefinition, load_catalog
-from preppilot_api.database import check_database_connection
+from preppilot_api.catalog_data import FoodDefinition
+from preppilot_api.catalog_repository import (
+    CatalogUnavailableError,
+    load_catalog_from_database,
+)
+from preppilot_api.database import get_session
 from preppilot_api.nutrition import Nutrients
 from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
 
@@ -14,6 +19,7 @@ from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
 class HealthResponse(BaseModel):
     status: Literal["ok", "error"]
     database: Literal["ok", "unavailable"]
+    catalog: Literal["ok", "unavailable"]
 
 
 class DayPlanRequest(BaseModel):
@@ -71,17 +77,29 @@ class DayPlansResponse(BaseModel):
 
 
 app = FastAPI(title="PrepPilot API", version="0.1.0")
+DatabaseSession = Annotated[Session, Depends(get_session)]
 
 
 @app.get("/api/health", tags=["system"], response_model=HealthResponse)
-def health(response: Response) -> HealthResponse:
+def health(response: Response, session: DatabaseSession) -> HealthResponse:
     try:
-        check_database_connection()
+        load_catalog_from_database(session)
     except SQLAlchemyError:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-        return HealthResponse(status="error", database="unavailable")
+        return HealthResponse(
+            status="error",
+            database="unavailable",
+            catalog="unavailable",
+        )
+    except CatalogUnavailableError, ValidationError:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return HealthResponse(
+            status="error",
+            database="ok",
+            catalog="unavailable",
+        )
 
-    return HealthResponse(status="ok", database="ok")
+    return HealthResponse(status="ok", database="ok", catalog="ok")
 
 
 @app.post(
@@ -89,8 +107,17 @@ def health(response: Response) -> HealthResponse:
     tags=["planning"],
     response_model=DayPlansResponse,
 )
-def create_day_plans(request: DayPlanRequest) -> DayPlansResponse:
-    catalog = load_catalog()
+def create_day_plans(
+    request: DayPlanRequest,
+    session: DatabaseSession,
+) -> DayPlansResponse:
+    try:
+        catalog = load_catalog_from_database(session)
+    except (SQLAlchemyError, CatalogUnavailableError, ValidationError) as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Mahlzeitenkatalog nicht verfügbar",
+        ) from error
     targets = PlanTargets(
         calories=request.calories,
         protein_minimum=request.protein_minimum,
@@ -108,10 +135,7 @@ def create_day_plans(request: DayPlanRequest) -> DayPlansResponse:
             if any(plan.status == "valid" for plan in plans)
             else "approximations_only"
         ),
-        plans=[
-            _serialize_day_plan(plan, foods)
-            for plan in plans
-        ]
+        plans=[_serialize_day_plan(plan, foods) for plan in plans],
     )
 
 
@@ -145,9 +169,7 @@ def _serialize_day_plan(
                     IngredientResponse(
                         food_key=ingredient.food_key,
                         name=foods[ingredient.food_key].name,
-                        amount=float(
-                            ingredient.amount * planned_meal.portion_factor
-                        ),
+                        amount=float(ingredient.amount * planned_meal.portion_factor),
                         unit=foods[ingredient.food_key].unit.value,
                     )
                     for ingredient in planned_meal.meal.ingredients

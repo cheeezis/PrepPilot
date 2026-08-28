@@ -1,4 +1,7 @@
-from sqlalchemy import create_engine, text
+from collections.abc import Iterator
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 from preppilot_api.config import get_settings
 
@@ -9,6 +12,6 @@ engine = create_engine(
 )
 
 
-def check_database_connection() -> None:
-    with engine.connect() as connection:
-        connection.execute(text("SELECT 1"))
+def get_session() -> Iterator[Session]:
+    with Session(engine) as session:
+        yield session

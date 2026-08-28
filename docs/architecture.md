@@ -1,6 +1,6 @@
 # Architektur
 
-Stand: 27. August 2026
+Stand: 28. August 2026
 
 Dieses Dokument hält bestätigte technische Entscheidungen fest. Details werden
 schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
@@ -68,8 +68,8 @@ das Frontend.
 ### Backend
 
 Das Backend ist die fachliche und technische Systemgrenze. Es validiert
-Eingaben, berechnet und bewertet Tagespläne, berechnet Nährwerte und
-Einkaufsmengen und koordiniert den Datenzugriff.
+Eingaben, berechnet und bewertet Tagespläne, berechnet Nährwerte und koordiniert
+den Datenzugriff.
 
 Das Backend wird als modularer Monolith entwickelt: eine deploybare Anwendung
 mit klar getrennten Fachbereichen, nicht als Sammlung von Microservices.
@@ -79,12 +79,31 @@ mit klar getrennten Fachbereichen, nicht als Sammlung von Microservices.
 PostgreSQL speichert die internen Lebensmittel, Mahlzeiten und später erzeugte
 Pläne. Ausschließlich das Backend greift direkt auf die Datenbank zu.
 
+Die versionierte JSON-Datei ist ausschließlich die nachvollziehbare Seed-Quelle.
+Nach Migration und Seed liest der laufende Planer Lebensmittel, Mahlzeiten,
+Zutaten, Rollen und Portionsfaktoren aus PostgreSQL. Eine nicht erreichbare,
+unvollständige oder leere Datenbank macht sowohl den Systemcheck als auch die
+Planerstellung bewusst nicht verfügbar.
+
 Der Datenbankzugriff erfolgt zunächst synchron. Das passt zur ebenso synchronen
 Planungslogik und vermeidet im MVP die zusätzliche Komplexität asynchroner
 Sessions. SQLAlchemy bildet die Python-seitige Datenzugriffsschicht, psycopg
 stellt die Verbindung zu PostgreSQL her und Alembic versioniert spätere
 Schemaänderungen. Die Alembic-Umgebung wird erst mit dem ersten Datenmodell in
 Phase 3 angelegt.
+
+## Wochenplan und Einkaufsliste
+
+Im MVP wird ein ausgewählter Tagesplan unverändert für alle sieben Wochentage
+verwendet. Die Auswahl bleibt im Frontend-Zustand und wird noch nicht dauerhaft
+gespeichert.
+
+Die Einkaufsliste ist eine reine Darstellungssumme: Das Frontend multipliziert
+die bereits vom Backend gelieferten, normalisierten Zutatenmengen mit sieben
+und fasst gleiche Lebensmittel mit gleicher Einheit zusammen. Dabei finden
+weder Nährwertberechnungen noch Einheitenumrechnungen statt. Für diesen festen
+Wochenplan wäre ein zusätzlicher Backend-Endpunkt oder ein eigenes Datenmodell
+unnötige MVP-Komplexität.
 
 ## Katalog- und Importgrenze
 
@@ -126,16 +145,17 @@ Das Frontend verwendet Oxlint für statische Codeprüfungen, den
 TypeScript-Compiler für die Typprüfung und Vitest für schnelle automatisierte
 Tests. Vitest nutzt dieselbe Transformationsgrundlage wie Vite. Playwright
 prüft vollständige Nutzerflüsse im Browser und startet dafür Frontend und
-Backend selbst. Der Tagesplaner-End-to-End-Test benötigt keine laufende
-Datenbank. Er wird im Frontend mit `npm run test:e2e` ausgeführt.
+Backend selbst. Der Tagesplaner-End-to-End-Test verwendet den laufenden,
+befüllten PostgreSQL-Katalog und wird im Frontend mit `npm run test:e2e`
+ausgeführt.
 
 Das Backend verwendet Ruff für Linting und Formatierung, mypy für die statische
 Typprüfung und pytest für automatisierte Tests.
 
-Die normalen Testläufe benötigen keine gestarteten Server oder externe
-Infrastruktur. Abhängigkeiten wie PostgreSQL werden in diesen Tests gezielt
-ersetzt. Separate Integrationstests dürfen später die echte Infrastruktur
-prüfen und werden als solche kenntlich gemacht.
+Die schnellen Unit- und API-Tests benötigen keine gestarteten Server oder
+externe Infrastruktur. PostgreSQL wird darin gezielt ersetzt. Der
+End-to-End-Test ist zugleich der Integrationstest für den vollständigen Weg vom
+Browser über das Backend bis zum Datenbankkatalog.
 
 ## Noch zu entscheiden
 

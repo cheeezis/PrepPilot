@@ -21,7 +21,7 @@ erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 | 2 | Technisches Grundgerüst lauffähig | abgeschlossen |
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
 | 4 | Tagesplaner nutzbar | abgeschlossen |
-| 5 | Wochenplan und Einkaufsliste nutzbar | ausstehend |
+| 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
 | 6 | MVP mit Zielnutzern validiert | ausstehend |
 
 ## Phase 0: Produkt ausrichten
@@ -167,7 +167,7 @@ Plan samt Einkauf für sieben Tage.
 und kann dessen Einkaufsliste ohne externen Rechner verwenden. Nährwerte und
 Einkaufsmengen stimmen rechnerisch mit dem gewählten Plan überein.
 
-**Status:** ausstehend
+**Status:** abgeschlossen
 
 ## Phase 6: MVP mit Zielnutzern validieren
 
@@ -212,5 +212,14 @@ Unter- oder Überschreitung. Harte und weiche Abweichungen bleiben unterscheidba
 Zusätzliche niedrige und hohe Zielprofile sowie der vollständige Ablauf von der
 Eingabe bis zur Auswahl sind automatisiert geprüft.
 
-Als Nächstes beginnt Phase 5 mit der Darstellung des ausgewählten Tagesplans
-für sieben Tage und der daraus berechneten Einkaufsliste.
+Phase 5 ist abgeschlossen. Der ausgewählte Tagesplan wird für alle sieben
+Wochentage dargestellt und aus seinen normalisierten Zutaten entsteht eine
+aggregierte Einkaufsliste. Die Summenberechnung ist mit Unit-Tests abgesichert;
+der vollständige Ablauf ist als Browser-Test abgedeckt und die Oberfläche wurde
+auf Desktop- und Mobilgröße geprüft. Der Nutzerfluss wurde manuell abgenommen.
+Der Planer lädt seinen freigegebenen Katalog nun tatsächlich aus PostgreSQL;
+ohne erreichbare und befüllte Datenbank werden Systemcheck und Planung als nicht
+verfügbar gemeldet.
+
+Als Nächstes beginnt Phase 6 mit der Festlegung des Testablaufs und einer kleinen
+Gruppe geeigneter Testpersonen.
