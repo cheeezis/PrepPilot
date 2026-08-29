@@ -1,6 +1,6 @@
 # Produktdefinition
 
-Stand: 27. August 2026
+Stand: 29. August 2026
 
 ## Vision
 
@@ -89,20 +89,23 @@ Planungsphasen praktisch überprüft.
 - Zutatenmengen für die Woche korrekt aggregieren
 - Einkaufsliste auf mobilen und größeren Bildschirmen nutzbar darstellen
 
-## Erfolgskriterien
+## Technische Erfolgskriterien
 
-Das MVP gilt als erfolgreich, wenn:
+Der technische MVP gilt als vollständig, wenn:
 
-- ein neuer Nutzer ohne Erklärung in höchstens drei Minuten einen Plan samt
-  Einkaufsliste erstellen kann,
+- der primäre Nutzerfluss von der Zieleingabe bis zur Einkaufsliste vollständig
+  durchführbar ist,
 - für die ausdrücklich unterstützten Zielbereiche mindestens zwei gültige
   Tagespläne erzeugt werden,
 - Kalorien und Fett innerhalb der festgelegten Toleranzen liegen,
 - das Protein-Mindestziel erreicht oder eine Abweichung deutlich erklärt wird,
 - Mengen realistisch und ohne zusätzliche Berechnung verwendbar sind,
-- Nährwerte und Wocheneinkaufsliste rechnerisch zum gewählten Plan passen,
-- Testnutzer den erzeugten Plan als praktisch genug für einen realen
-  Wochenversuch bewerten.
+- Nährwerte und Wocheneinkaufsliste rechnerisch zum gewählten Plan passen.
+
+Ob neue Nutzer den Ablauf ohne Erklärung verstehen und den erzeugten Plan
+tatsächlich für eine Woche verwenden würden, ist eine eigene Produktvalidierung.
+Sie wird durchgeführt, sobald geeignete Personen verfügbar sind, und nicht mit
+einer beliebig zusammengestellten Testgruppe simuliert.
 
 Während Katalog und Planungslogik entstehen, werden konkrete Testprofile für
 unterschiedliche Zielwerte und drei bis sechs Mahlzeiten ergänzt. Diese Profile
@@ -148,7 +151,8 @@ die automatische Normalisierung externer Rezeptmengen gehören nicht zum MVP.
 
 ## Spätere Produktentwicklung
 
-Nach erfolgreicher MVP-Validierung kann PrepPilot schrittweise erweitern:
+Nach Abschluss des technischen MVP kann PrepPilot schrittweise erweitert
+werden:
 
 - mehrere unterschiedliche Tagespläne und steuerbare Wiederholungen,
 - Ernährungsformen, Ausschlüsse und Favoriten,

@@ -1,16 +1,18 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 28. August 2026
+Stand: 29. August 2026
 
-Diese Roadmap führt PrepPilot von der Produktidee zu einem validierten Minimum
-Viable Product (MVP), also der kleinsten sinnvoll nutzbaren Produktversion. Die
+Diese Roadmap führt PrepPilot von der Produktidee zu einem technisch vollständigen
+Minimum Viable Product (MVP), also der kleinsten sinnvoll nutzbaren
+Produktversion. Die
 Phasen bauen aufeinander auf. Eine Phase gilt erst als abgeschlossen, wenn ihr
 überprüfbares Abnahmekriterium erfüllt ist. Noch nicht priorisierte Ideen nach
 dem MVP stehen getrennt in `docs/product-backlog.md`.
 
-Der MVP umfasst die Phasen 0 bis 6. Nach Phase 5 ist die erste Version nutzbar;
-Phase 6 prüft mit realen Nutzern, ob sie das Produktversprechen tatsächlich
-erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
+Der technische MVP umfasst die Phasen 0 bis 5. Externe Nutzertests bleiben eine
+sinnvolle spätere Validierung, sind aber keine künstliche Voraussetzung für den
+Abschluss dieser Roadmap. Weitere Produktentwicklung wird bewusst aus dem
+Backlog priorisiert.
 
 ## Aktueller Stand
 
@@ -22,7 +24,6 @@ erfüllt. Erst danach werden Erweiterungen aus dem Backlog priorisiert.
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
 | 4 | Tagesplaner nutzbar | abgeschlossen |
 | 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
-| 6 | MVP mit Zielnutzern validiert | ausstehend |
 
 ## Phase 0: Produkt ausrichten
 
@@ -163,32 +164,11 @@ Plan samt Einkauf für sieben Tage.
 - Einkaufsliste auf mobilen und größeren Bildschirmen nutzbar machen
 - vollständigen Nutzerfluss automatisiert testen
 
-**Abnahme:** Ein Testnutzer erstellt in höchstens drei Minuten einen Wochenplan
-und kann dessen Einkaufsliste ohne externen Rechner verwenden. Nährwerte und
-Einkaufsmengen stimmen rechnerisch mit dem gewählten Plan überein.
+**Abnahme:** Der vollständige Ablauf von der Zieleingabe bis zur Einkaufsliste
+ist ohne externe Berechnung durchführbar. Nährwerte und Einkaufsmengen stimmen
+rechnerisch mit dem gewählten Plan überein.
 
 **Status:** abgeschlossen
-
-## Phase 6: MVP mit Zielnutzern validieren
-
-**Ziel:** Reale Nutzung zeigt, ob PrepPilot verständlich ist und einen
-praktischen Wochenversuch ermöglicht.
-
-**Umfang:**
-
-- Zahl und Auswahl der Testpersonen sowie den Ablauf vor Beginn festlegen
-- mehrere Personen aus der Zielgruppe einen Wochenplan erstellen lassen
-- Verständlichkeit, Vertrauen und wahrgenommene Planqualität beobachten
-- Abbrüche, Rückfragen und manuelle Korrekturen erfassen
-- Erfolgskriterien aus der Produktdefinition auswerten
-- blockierende Probleme vor jeder Erweiterung beheben
-
-**Abnahme:** Die vorab festgelegte Testgruppe schließt den primären Nutzerfluss
-ohne Hilfe ab. Mindestens ein erzeugter Plan wird als praktisch genug für einen
-realen Wochenversuch bewertet. Rechenfehler und blockierende Bedienprobleme
-sind behoben.
-
-**Status:** ausstehend
 
 ## Nächster Meilenstein
 
@@ -221,5 +201,8 @@ Der Planer lädt seinen freigegebenen Katalog nun tatsächlich aus PostgreSQL;
 ohne erreichbare und befüllte Datenbank werden Systemcheck und Planung als nicht
 verfügbar gemeldet.
 
-Als Nächstes beginnt Phase 6 mit der Festlegung des Testablaufs und einer kleinen
-Gruppe geeigneter Testpersonen.
+Damit ist die technische MVP-Roadmap abgeschlossen. Als Nächstes wird keine
+Validierung mit beliebig ausgewählten Testpersonen erzwungen. Stattdessen wird
+gemeinsam ein konkreter Post-MVP-Schwerpunkt aus `docs/product-backlog.md`
+ausgewählt. Eine echte Nutzerprüfung bleibt dort für einen passenden Zeitpunkt
+festgehalten.
