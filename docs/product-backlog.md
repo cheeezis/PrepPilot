@@ -1,11 +1,22 @@
 # Produkt-Backlog
 
-Stand: 27. August 2026
+Stand: 29. August 2026
 
 Dieses Backlog sammelt interessante Produktideen, die noch nicht Teil der
 beschlossenen MVP-Roadmap sind. Ein Eintrag ist keine Umsetzungszusage. Bevor
 eine Idee in die Roadmap wandert, klären wir kurz das Nutzerproblem, den Nutzen,
 den kleinsten sinnvollen Umfang und den passenden Zeitpunkt.
+
+## Produktvalidierung
+
+### MVP mit geeigneten Zielnutzern testen
+
+Sobald tatsächlich geeignete Personen aus der Zielgruppe verfügbar sind, soll
+geprüft werden, ob sie ohne Erklärung einen Wochenplan samt Einkaufsliste
+erstellen und das Ergebnis als praktisch einschätzen. Zahl, Ablauf und
+Erfolgskriterien werden erst dann passend zur erreichbaren Testgruppe
+festgelegt. Für den technischen MVP werden keine beliebigen Personen als
+stellvertretende Testnutzer verpflichtet.
 
 ## Katalog und Datenimport
 
