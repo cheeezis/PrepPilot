@@ -1,11 +1,13 @@
 # Produkt-Backlog
 
-Stand: 29. August 2026
+Stand: 31. August 2026
 
-Dieses Backlog sammelt interessante Produktideen, die noch nicht Teil der
-beschlossenen MVP-Roadmap sind. Ein Eintrag ist keine Umsetzungszusage. Bevor
+Dieses Backlog sammelt interessante Produktideen, die noch nicht Teil einer
+beschlossenen Roadmap-Phase sind. Ein Eintrag ist keine Umsetzungszusage. Bevor
 eine Idee in die Roadmap wandert, klären wir kurz das Nutzerproblem, den Nutzen,
-den kleinsten sinnvollen Umfang und den passenden Zeitpunkt.
+den kleinsten sinnvollen Umfang und den passenden Zeitpunkt. Bereits
+priorisierte Ausschnitte werden hier nur noch zur Abgrenzung ihrer späteren
+Folgeschritte erwähnt.
 
 ## Produktvalidierung
 
@@ -20,31 +22,41 @@ stellvertretende Testnutzer verpflichtet.
 
 ## Katalog und Datenimport
 
-### Externe Rezepte automatisch importieren
+### Import-Inbox und Zutaten-Normalisierung
 
-Eine spätere Importpipeline könnte Zutatenbezeichnungen und Mengen externer
-Rezepte automatisch auf den internen Lebensmittelkatalog sowie Gramm oder
-Milliliter abbilden. Direkte metrische Angaben werden übernommen. Für Teelöffel
-und Esslöffel gelten einfache globale PrepPilot-Regeln; nichtmetrische
-Stückangaben verwenden bevorzugt einen aus FoodData Central übernommenen oder
-intern festgelegten Lebensmittelstandard.
+**Status:** als Phase 6A in `docs/roadmap.md` abgeschlossen
 
-Nur vollständig normalisierte Rezepte dürfen in den produktiven Katalog
-gelangen. Der Planer bleibt dadurch unabhängig von Rezeptquellen,
-Haushaltsmaßen und Importfehlern.
+Der abgeschlossene erste Abschnitt nimmt Rezepte in einem getrennten
+PostgreSQL-Bereich auf, normalisiert Zutaten deterministisch und stellt
+unvollständige Ergebnisse mit konkreten Gründen zur internen Prüfung bereit.
+Er enthält weder eine Live-Anbindung an einen Rezeptanbieter noch die
+Veröffentlichung im produktiven Katalog.
 
-### Unvollständige Importe manuell prüfen
+### Normalisierte Rezepte in den produktiven Katalog übernehmen
 
-Kann eine relevante Zutat oder Menge nicht sicher normalisiert werden, wird das
-gesamte Rezept in einer Prüfwarteschlange zurückgestellt. Die Prüfung soll den
-konkreten Grund zeigen, beispielsweise eine unbekannte Zutat, eine nicht
-erkannte Einheit oder ein fehlendes Stückgewicht.
+Ein eigener Folgeabschnitt soll vollständig normalisierte Kandidaten fachlich
+prüfen und anschließend kontrolliert als Mahlzeiten veröffentlichen. Vorher
+müssen insbesondere Mahlzeitenrolle, Grundportion, erlaubte Portionsfaktoren,
+Zubereitungszeit und Anleitung festgelegt werden.
 
-In der Prüfung kann eine Zutatenzuordnung korrigiert, ein wiederverwendbarer
-Lebensmittelstandard ergänzt, eine rezeptbezogene Menge festgelegt oder das
-Rezept verworfen werden. Nach einer wiederverwendbaren Ergänzung sollen alle
-betroffenen Importe erneut verarbeitet werden können. Einen generischen
-Gewichts-Fallback für relevante Zutaten gibt es nicht.
+Dabei muss auch die bisherige Seed-Strategie angepasst werden: Der
+reproduzierbare versionierte Arbeitskatalog darf veröffentlichte Importdaten
+nicht löschen oder unkontrolliert überschreiben. Der genaue Freigabe- und
+Aktualisierungsprozess wird erst vor diesem Abschnitt beschlossen.
+
+### Live-Rezeptquellen und weitere Adapter
+
+Nach der Import-Inbox kann ein konkreter Rezeptanbieter anhand von
+Datenqualität, strukturierten Zutatenmengen, Nutzungsrechten, Kosten,
+Rate-Limits und stabilen externen Kennungen ausgewählt werden. Quellenadapter
+übersetzen ausschließlich in das interne Rohimportformat; anbieterspezifische
+Felder gelangen nicht in den Planer.
+
+FoodData Central bleibt die bevorzugte Recherchequelle für generische
+Lebensmittel, Nährwerte und mögliche Portionsstandards. Open Food Facts kann
+später getrennt für konkrete Markenprodukte bewertet werden. Externe APIs
+bleiben Import- oder Recherchequellen und werden keine Laufzeitvoraussetzung
+der Planung.
 
 ### Rezepte durch Nutzer importieren
 

@@ -14,6 +14,7 @@ from preppilot_api.catalog_repository import (
 from preppilot_api.database import get_session
 from preppilot_api.nutrition import Nutrients
 from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
+from preppilot_api.recipe_imports_api import router as recipe_imports_router
 
 
 class HealthResponse(BaseModel):
@@ -77,6 +78,7 @@ class DayPlansResponse(BaseModel):
 
 
 app = FastAPI(title="PrepPilot API", version="0.1.0")
+app.include_router(recipe_imports_router)
 DatabaseSession = Annotated[Session, Depends(get_session)]
 
 

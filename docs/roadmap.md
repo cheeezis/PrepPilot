@@ -1,6 +1,6 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 29. August 2026
+Stand: 31. August 2026
 
 Diese Roadmap führt PrepPilot von der Produktidee zu einem technisch vollständigen
 Minimum Viable Product (MVP), also der kleinsten sinnvoll nutzbaren
@@ -11,8 +11,9 @@ dem MVP stehen getrennt in `docs/product-backlog.md`.
 
 Der technische MVP umfasst die Phasen 0 bis 5. Externe Nutzertests bleiben eine
 sinnvolle spätere Validierung, sind aber keine künstliche Voraussetzung für den
-Abschluss dieser Roadmap. Weitere Produktentwicklung wird bewusst aus dem
-Backlog priorisiert.
+Abschluss dieser Roadmap. Als erster Post-MVP-Schwerpunkt ist Phase 6A aus dem
+Backlog priorisiert. Weitere Produktentwicklung wird weiterhin bewusst erst vor
+Beginn des jeweiligen Abschnitts festgelegt.
 
 ## Aktueller Stand
 
@@ -24,6 +25,7 @@ Backlog priorisiert.
 | 3 | Lebensmittel- und Mahlzeitendaten verfügbar | abgeschlossen |
 | 4 | Tagesplaner nutzbar | abgeschlossen |
 | 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
+| 6A | Externe Rezepte sicher aufnehmen und normalisieren | abgeschlossen |
 
 ## Phase 0: Produkt ausrichten
 
@@ -170,6 +172,123 @@ rechnerisch mit dem gewählten Plan überein.
 
 **Status:** abgeschlossen
 
+## Phase 6A: Import-Inbox und Zutaten-Normalisierung
+
+**Ziel:** PrepPilot kann strukturierte externe Rezepte verlustfrei in einem
+getrennten Importbereich von PostgreSQL aufnehmen und reproduzierbar
+normalisieren. Ein Import endet entweder als vollständig normalisierter
+Kandidat oder mit konkreten, manuell bearbeitbaren Prüfgründen. Importdaten
+gelangen in dieser Phase noch nicht in den produktiven Mahlzeitenkatalog.
+
+**Fachliche Datenobjekte:**
+
+- `recipe_imports` bewahrt Quelle, externe Kennung, Abrufzeitpunkt,
+  unveränderte Rohdaten, Inhalts-Hash, deklarierte Portionenzahl und den
+  Rezeptstatus auf.
+- `recipe_import_ingredients` bewahrt jede originale Zutatenzeile sowie das
+  Parsing-Ergebnis, eine mögliche Lebensmittelzuordnung, die normalisierte
+  Menge und einen möglichen Prüfgrund auf.
+- `food_aliases` ordnet ausdrücklich bestätigte externe Bezeichnungen einem
+  internen Lebensmittel zu. Unscharfe Suchtreffer werden nicht selbstständig
+  als Alias gespeichert.
+- `food_measure_defaults` hält nachvollziehbare, wiederverwendbare
+  lebensmittelspezifische Standardmengen für Stück, Ei, Zehe, Scheibe und
+  ähnliche Maße fest.
+- Prüfentscheidungen halten fest, ob eine Zuordnung korrigiert, ein Alias oder
+  Standard ergänzt, eine rezeptbezogene Menge verwendet, eine fachlich
+  irrelevante Zeile ausgenommen oder das Rezept verworfen wurde.
+
+Die genauen Tabellenspalten und technischen Namen werden bei der Umsetzung
+festgelegt. Verbindlich ist die Trennung von unveränderten Quelldaten,
+abgeleiteten Normalisierungsergebnissen und manuellen Entscheidungen.
+
+**Statusfluss:**
+
+1. Ein idempotent aufgenommener Import beginnt als `received`.
+2. Die deterministische Verarbeitung führt entweder zu
+   `ready_for_catalog_review` oder `needs_review`.
+3. Eine Zutatenzeile ist dabei `normalized`, `needs_review` oder nach einer
+   ausdrücklichen manuellen Entscheidung `excluded`.
+4. Nach einer Korrektur wird ein Import vollständig erneut verarbeitet und
+   endet wieder als `ready_for_catalog_review` oder `needs_review`.
+5. Ein Bearbeiter kann ein Rezept endgültig als `rejected` markieren.
+
+`ready_for_catalog_review` bedeutet ausschließlich, dass alle benötigten
+Lebensmittel und Mengen normalisiert sind. Es ist keine Freigabe für den
+Planer. Mahlzeitenrolle, Grundportion, Portionsfaktoren, Zubereitungszeit und
+Anleitung bleiben Gegenstand einer späteren Katalogprüfung.
+
+**Normalisierungsregeln:**
+
+- Originalbezeichnungen und Originalmengen bleiben immer erhalten.
+- Eine automatische Lebensmittelzuordnung benötigt einen eindeutigen internen
+  Namen oder einen bestätigten Alias. Fuzzy Matching darf nur Vorschläge für
+  die manuelle Prüfung liefern.
+- `g`, `kg`, `ml` und `l` werden direkt in die Basiseinheit des zugeordneten
+  Lebensmittels umgerechnet.
+- Teelöffel und Esslöffel verwenden zunächst die bestehenden globalen
+  PrepPilot-Regeln von `5 g` beziehungsweise `5 ml` und `15 g`
+  beziehungsweise `15 ml`, abhängig von der Basiseinheit des Lebensmittels.
+- Stückangaben benötigen einen passenden Eintrag in
+  `food_measure_defaults`. Einen generischen Gewichts-Fallback gibt es nicht.
+- Zwischen Masse und Volumen wird ohne ausdrücklich hinterlegte Regel nicht
+  umgerechnet.
+- Roh, gegart, trocken, zubereitet und abgetropft werden als fachlich
+  relevante Zustände behandelt und nicht durch Textbereinigung entfernt.
+- Die deklarierte Portionenzahl muss positiv und eindeutig sein. Erst danach
+  werden Gesamtmengen auf eine Grundportion bezogen.
+- Eine Zutatenzeile darf nur manuell als `excluded` markiert werden, wenn sie
+  für Nährwertberechnung und Einkauf fachlich nicht relevant ist. Die
+  Originalzeile bleibt weiterhin erhalten.
+
+Typische maschinenlesbare Prüfgründe sind `unknown_food`, `ambiguous_food`,
+`unsupported_unit`, `missing_measure_default`, `invalid_or_ranged_quantity`,
+`incompatible_measurement` und `missing_serving_count`.
+
+**Umfang:**
+
+- genau ein klar definiertes Eingangsformat hinter einer austauschbaren
+  Quellenschnittstelle
+- mehrere versionierte Beispiel-Payloads mit erfolgreichen und bewusst
+  unvollständigen Importfällen
+- Rohdaten, Herkunft und Normalisierungsergebnisse in PostgreSQL speichern
+- deterministische, unabhängig von einer Live-API testbare Verarbeitung
+- eine kleine interne Backend-Schnittstelle zum Lesen der Prüfwarteschlange,
+  Speichern der festgelegten Prüfentscheidungen und erneuten Verarbeiten
+- FoodData Central zunächst nur als optionale Recherchequelle für manuell
+  bestätigte Lebensmittel- oder Portionsstandards behandeln
+
+**Bewusste Nicht-Ziele:**
+
+- Live-Anbindung an einen konkreten Rezeptanbieter
+- mehrere Quellenadapter
+- automatische Anlage neuer Lebensmittel
+- Veröffentlichung normalisierter Kandidaten in `meals`
+- Nutzung importierter Rezepte durch den Planer
+- öffentliche Importfunktion oder ausgearbeitete Admin-Oberfläche
+- automatische Ableitung von Mahlzeitenrollen oder Portionsfaktoren
+- LLM-basierte Entscheidungen oder automatische Freigaben
+
+**Abnahme:**
+
+- Derselbe externe Datensatz kann mehrfach verarbeitet werden, ohne doppelte
+  Importdatensätze zu erzeugen.
+- Rohdaten, Quelle und sämtliche manuellen Entscheidungen bleiben
+  nachvollziehbar.
+- Mindestens zwei kontrollierte Beispielrezepte erreichen vollständig
+  `ready_for_catalog_review`.
+- Weitere Beispiele landen mit unterschiedlichen konkreten Gründen in
+  `needs_review`.
+- Ein bestätigter Alias, ein Stückstandard und eine rezeptbezogene Korrektur
+  können jeweils gespeichert werden und führen nach erneuter Verarbeitung zum
+  erwarteten Ergebnis.
+- Kein unvollständiger oder nur normalisierter Import erscheint in `foods`,
+  `meals` oder in der Planungslogik.
+- Sämtliche automatisierten Prüfungen funktionieren ohne erreichbare externe
+  API.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der versionierte Arbeitskatalog enthält 21
@@ -201,8 +320,10 @@ Der Planer lädt seinen freigegebenen Katalog nun tatsächlich aus PostgreSQL;
 ohne erreichbare und befüllte Datenbank werden Systemcheck und Planung als nicht
 verfügbar gemeldet.
 
-Damit ist die technische MVP-Roadmap abgeschlossen. Als Nächstes wird keine
-Validierung mit beliebig ausgewählten Testpersonen erzwungen. Stattdessen wird
-gemeinsam ein konkreter Post-MVP-Schwerpunkt aus `docs/product-backlog.md`
-ausgewählt. Eine echte Nutzerprüfung bleibt dort für einen passenden Zeitpunkt
-festgehalten.
+Damit ist die technische MVP-Roadmap abgeschlossen. Phase 6A ist ebenfalls
+abgeschlossen: Die getrennte Import-Inbox, deterministische Normalisierung,
+Prüfentscheidungen und Wiederverarbeitung sind umgesetzt und gegen PostgreSQL
+geprüft. Der stabile produktive Katalog und die Planungslogik bleiben weiterhin
+von Importdaten getrennt. Die Veröffentlichung normalisierter Kandidaten wird
+erst als eigener Folgeabschnitt gemeinsam abgegrenzt. Eine echte Nutzerprüfung
+bleibt im Backlog für einen passenden Zeitpunkt festgehalten.

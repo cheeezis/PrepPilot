@@ -1,4 +1,4 @@
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from preppilot_api.catalog_data import Catalog, load_catalog
@@ -17,24 +17,29 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
     session.execute(delete(MealPortionFactor))
     session.execute(delete(MealIngredient))
     session.execute(delete(Meal))
-    session.execute(delete(Food))
 
+    existing_foods = {
+        food.catalog_key: food for food in session.scalars(select(Food))
+    }
     foods: dict[str, Food] = {}
     for food_definition in catalog.foods:
-        food = Food(
-            catalog_key=food_definition.key,
-            name=food_definition.name,
-            brand=food_definition.brand,
-            unit=food_definition.unit,
-            calories_per_100=food_definition.calories_per_100,
-            protein_per_100=food_definition.protein_per_100,
-            carbs_per_100=food_definition.carbs_per_100,
-            fat_per_100=food_definition.fat_per_100,
-            source_name=food_definition.source_name,
-            source_reference=food_definition.source_reference,
-        )
-        session.add(food)
+        food = existing_foods.pop(food_definition.key, None)
+        if food is None:
+            food = Food(catalog_key=food_definition.key)
+            session.add(food)
+        food.name = food_definition.name
+        food.brand = food_definition.brand
+        food.unit = food_definition.unit
+        food.calories_per_100 = food_definition.calories_per_100
+        food.protein_per_100 = food_definition.protein_per_100
+        food.carbs_per_100 = food_definition.carbs_per_100
+        food.fat_per_100 = food_definition.fat_per_100
+        food.source_name = food_definition.source_name
+        food.source_reference = food_definition.source_reference
         foods[food_definition.key] = food
+
+    for stale_food in existing_foods.values():
+        session.delete(stale_food)
 
     session.flush()
 
