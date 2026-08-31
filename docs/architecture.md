@@ -177,9 +177,10 @@ Die Food-Inbox schreibt nicht direkt in `foods`. Erst ein vollständiger und
 ausdrücklich freigegebener Kandidat erzeugt ein gramm-basiertes Lebensmittel.
 `Food.origin` und der eindeutige Verweis zum Food-Import schützen vor doppelter
 Freigabe. Der Seed verwaltet ausschließlich `curated_seed`-Lebensmittel und
-erhält importierte Lebensmittel. Der FDC-Schlüssel wird nur über eine
-`PREPPILOT_`-Umgebungsvariable konfiguriert und nicht im Repository gespeichert;
-für lokale Erkundung ist der dokumentierte `DEMO_KEY` voreingestellt.
+erhält importierte Lebensmittel. Der FDC-Schlüssel wird nur über
+`PREPPILOT_FOOD_DATA_CENTRAL_API_KEY` konfiguriert und nicht im Repository
+gespeichert; für lokale Erkundung ist der dokumentierte `DEMO_KEY`
+voreingestellt.
 
 ## Lokale Entwicklungsumgebung
 

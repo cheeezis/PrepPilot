@@ -162,7 +162,7 @@ def fetch_json(url: str, timeout: float) -> dict[str, object]:
 def get_fooddata_central_source() -> FoodDataCentralSource:
     settings = get_settings()
     return FoodDataCentralSource(
-        api_key=settings.fooddata_central_api_key,
+        api_key=settings.food_data_central_api_key,
         base_url=settings.fooddata_central_base_url,
         timeout_seconds=settings.external_request_timeout_seconds,
         fetch_json=fetch_json,
