@@ -11,6 +11,7 @@ def test_schema_contains_catalog_and_import_inbox_tables() -> None:
         "recipe_imports",
         "recipe_import_ingredients",
         "food_aliases",
+        "food_imports",
         "food_measure_defaults",
         "import_review_decisions",
     }
@@ -35,6 +36,16 @@ def test_catalog_entries_have_stable_unique_keys() -> None:
 
     assert foods.columns["catalog_key"].unique
     assert meals.columns["catalog_key"].unique
+
+
+def test_imported_foods_keep_a_unique_food_import_source() -> None:
+    foods = Base.metadata.tables["foods"]
+
+    assert "origin" in foods.columns
+    assert any(
+        constraint.name == "uq_foods_source_food_import"
+        for constraint in foods.constraints
+    )
 
 
 def test_imported_meals_keep_a_unique_recipe_source() -> None:

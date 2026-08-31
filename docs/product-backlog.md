@@ -22,6 +22,17 @@ stellvertretende Testnutzer verpflichtet.
 
 ## Katalog und Datenimport
 
+### Lebensmittel aus FoodData Central importieren
+
+**Status:** kontrollierter Detailimport per FDC-ID als Phase 6E abgeschlossen;
+Suche, Massenergänzung und Open Food Facts bleiben im Backlog
+
+Der erste Adapter hält FoodData-Central-Rohdaten und abgeleitete Kandidaten in
+einer getrennten Inbox. Nur vollständige, ausdrücklich bestätigte Kandidaten
+gelangen in `foods`; importierte Einträge bleiben bei einem Katalog-Seed
+erhalten. Als Folgeschritt kann die freie Suche Vorschläge liefern, darf aber
+keinen Treffer automatisch auswählen oder freigeben.
+
 ### Import-Inbox und Zutaten-Normalisierung
 
 **Status:** als Phase 6A in `docs/roadmap.md` abgeschlossen

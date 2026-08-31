@@ -156,6 +156,19 @@ und Quellenreferenz. Katalogverwaltete und später manuell ergänzte Datensätze
 bleiben beim Seed unterscheidbar, sodass der Seed nur seine eigenen veralteten
 Regeln entfernt.
 
+Phase 6E ergänzt `food_imports` für FoodData-Central-Rohdaten und abgeleitete
+Kandidatenwerte. Ein Datensatz enthält Quelle, externe ID, Abrufzeitpunkt,
+Inhalts-Hash, Status, Namen, vier Nährwerte pro 100 Gramm und maschinenlesbare
+Prüfgründe. `ready_for_catalog_review` bedeutet, dass Name, Energie, Protein,
+Fett sowie aus Gesamt-Kohlenhydraten und Ballaststoffen berechnete europäische
+Kohlenhydrate vollständig vorliegen. `needs_review` bleibt von `foods` getrennt.
+
+`foods` trägt nun zusätzlich die Herkunft `curated_seed` oder `food_import`.
+Ein importiertes Lebensmittel verweist eindeutig auf seinen freigegebenen
+Food-Import; ein Seed-Lebensmittel besitzt keinen solchen Verweis. Dadurch kann
+der Seed versionierte Lebensmittel weiterhin ersetzen, ohne über die Food-Inbox
+ergänzte Katalogeinträge zu löschen.
+
 ## Bewusste Grenzen des MVP
 
 Nicht zum MVP-Datenmodell gehören:

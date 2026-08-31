@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     )
     themealdb_api_key: str = "1"
     themealdb_base_url: str = "https://www.themealdb.com/api/json/v1"
+    fooddata_central_api_key: str = "DEMO_KEY"
+    fooddata_central_base_url: str = "https://api.nal.usda.gov/fdc/v1"
     external_request_timeout_seconds: float = 10.0
 
 

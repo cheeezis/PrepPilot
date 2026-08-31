@@ -42,6 +42,12 @@ class RecipeImportStatus(StrEnum):
     REJECTED = "rejected"
 
 
+class FoodImportStatus(StrEnum):
+    READY_FOR_CATALOG_REVIEW = "ready_for_catalog_review"
+    NEEDS_REVIEW = "needs_review"
+    REJECTED = "rejected"
+
+
 class ImportedIngredientStatus(StrEnum):
     NORMALIZED = "normalized"
     NEEDS_REVIEW = "needs_review"
@@ -73,6 +79,55 @@ class MealOrigin(StrEnum):
     RECIPE_IMPORT = "recipe_import"
 
 
+class FoodOrigin(StrEnum):
+    CURATED_SEED = "curated_seed"
+    FOOD_IMPORT = "food_import"
+
+
+class FoodImport(Base):
+    __tablename__ = "food_imports"
+    __table_args__ = (
+        CheckConstraint(
+            "length(trim(source_name)) > 0",
+            name="ck_food_imports_source_name_not_blank",
+        ),
+        CheckConstraint(
+            "length(trim(external_id)) > 0",
+            name="ck_food_imports_external_id_not_blank",
+        ),
+        CheckConstraint(
+            "length(content_hash) = 64",
+            name="ck_food_imports_content_hash_sha256",
+        ),
+        UniqueConstraint(
+            "source_name",
+            "external_id",
+            "content_hash",
+            name="uq_food_imports_source_external_content",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_name: Mapped[str] = mapped_column(String(100))
+    external_id: Mapped[str] = mapped_column(String(200))
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    raw_payload: Mapped[dict[str, object]] = mapped_column(JSON)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    status: Mapped[FoodImportStatus] = mapped_column(
+        SqlEnum(
+            FoodImportStatus,
+            name="food_import_status",
+            values_callable=lambda enum_class: [member.value for member in enum_class],
+        )
+    )
+    candidate_name: Mapped[str | None] = mapped_column(String(300))
+    calories_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    protein_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    carbs_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    fat_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    review_reasons: Mapped[list[str]] = mapped_column(JSON)
+
+
 class Food(Base):
     __tablename__ = "foods"
     __table_args__ = (
@@ -88,6 +143,12 @@ class Food(Base):
         CheckConstraint("protein_per_100 >= 0", name="ck_foods_protein_nonnegative"),
         CheckConstraint("carbs_per_100 >= 0", name="ck_foods_carbs_nonnegative"),
         CheckConstraint("fat_per_100 >= 0", name="ck_foods_fat_nonnegative"),
+        CheckConstraint(
+            "(origin = 'curated_seed' AND source_food_import_id IS NULL) OR "
+            "(origin = 'food_import' AND source_food_import_id IS NOT NULL)",
+            name="ck_foods_origin_source",
+        ),
+        UniqueConstraint("source_food_import_id", name="uq_foods_source_food_import"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -107,6 +168,16 @@ class Food(Base):
     fat_per_100: Mapped[Decimal] = mapped_column(Numeric(10, 4))
     source_name: Mapped[str] = mapped_column(String(200))
     source_reference: Mapped[str | None] = mapped_column(Text)
+    origin: Mapped[FoodOrigin] = mapped_column(
+        SqlEnum(
+            FoodOrigin,
+            name="food_origin",
+            values_callable=lambda enum_class: [member.value for member in enum_class],
+        )
+    )
+    source_food_import_id: Mapped[int | None] = mapped_column(
+        ForeignKey("food_imports.id", ondelete="RESTRICT")
+    )
 
 
 class Meal(Base):
@@ -312,9 +383,7 @@ class FoodAlias(Base):
             "length(trim(normalized_alias)) > 0",
             name="ck_food_aliases_normalized_alias_not_blank",
         ),
-        UniqueConstraint(
-            "normalized_alias", name="uq_food_aliases_normalized_alias"
-        ),
+        UniqueConstraint("normalized_alias", name="uq_food_aliases_normalized_alias"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)

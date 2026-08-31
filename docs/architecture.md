@@ -166,6 +166,21 @@ Portionen und zehn Minuten Zubereitungszeit. Relevante Zutaten werden vollständ
 abgebildet; nur Backpulver und Vanille werden nach ausdrücklicher Entscheidung
 aus der Nährwert- und Einkaufsberechnung ausgeschlossen.
 
+Phase 6E führt für Lebensmittel dieselbe Sicherheitsgrenze ein. Der
+FoodData-Central-Adapter ruft genau eine bekannte FDC-ID ab und speichert die
+unveränderte Antwort zunächst in `food_imports`. Nur Foundation- und SR-Legacy-
+Datensätze werden als generische Kandidaten ausgewertet. Nährstoffkennungen
+werden explizit zugeordnet; europäische Kohlenhydrate entstehen als Differenz
+aus Gesamt-Kohlenhydraten und Ballaststoffen.
+
+Die Food-Inbox schreibt nicht direkt in `foods`. Erst ein vollständiger und
+ausdrücklich freigegebener Kandidat erzeugt ein gramm-basiertes Lebensmittel.
+`Food.origin` und der eindeutige Verweis zum Food-Import schützen vor doppelter
+Freigabe. Der Seed verwaltet ausschließlich `curated_seed`-Lebensmittel und
+erhält importierte Lebensmittel. Der FDC-Schlüssel wird nur über eine
+`PREPPILOT_`-Umgebungsvariable konfiguriert und nicht im Repository gespeichert;
+für lokale Erkundung ist der dokumentierte `DEMO_KEY` voreingestellt.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die

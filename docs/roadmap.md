@@ -433,6 +433,54 @@ geeigneter realer Kandidat durchläuft den vollständigen Weg bis zum Planer.
 
 **Status:** abgeschlossen
 
+## Phase 6E: FoodData-Central-Import für Lebensmittel
+
+**Ziel:** Generische Lebensmittel können anhand einer stabilen FoodData-Central-
+ID in einen getrennten Prüfbereich importiert und erst nach ausdrücklicher
+Bestätigung in den produktiven Lebensmittelkatalog übernommen werden.
+
+**Umfang:**
+
+- eigene Tabelle `food_imports` für Quelle, externe ID, Abrufzeitpunkt,
+  unveränderte Rohdaten, Inhalts-Hash, Kandidatenwerte und Prüfgründe
+- genau ein FoodData-Central-Detailadapter für numerische FDC-IDs; keine
+  automatische Suche oder Trefferauswahl
+- zunächst ausschließlich `Foundation`- und `SR Legacy`-Datensätze als
+  generische Lebensmittel akzeptieren
+- Energie, Protein, Fett, Gesamt-Kohlenhydrate und Ballaststoffe anhand stabiler
+  FDC-Nährstoffkennungen auslesen
+- europäische Kohlenhydrate reproduzierbar als Gesamt-Kohlenhydrate minus
+  Ballaststoffe berechnen; fehlende oder widersprüchliche Werte zurückstellen
+- vollständige Kandidaten ausdrücklich mit Katalogschlüssel und Anzeigename
+  als gramm-basiertes Lebensmittel freigeben
+- importierte und Seed-Lebensmittel dauerhaft unterscheiden; erneuter Seed darf
+  importierte Lebensmittel nicht löschen
+- interne Endpunkte zum Abruf der Food-Inbox, FDC-Import und Freigabe
+
+**Bewusste Nicht-Ziele:**
+
+- automatische Auswahl eines Suchtreffers anhand eines freien Zutatentexts
+- Open Food Facts, Markenprodukte oder Barcode-Import
+- Volumenlebensmittel ohne bestätigte Dichte
+- automatisches Erzeugen von Aliasen oder Portionsstandards
+- ungeprüftes Schreiben externer Daten direkt in `foods`
+- Massenimport oder regelmäßige Synchronisierung
+
+**Abnahme:**
+
+- Ein FDC-Datensatz wird mit unveränderten Rohdaten idempotent in der Food-Inbox
+  gespeichert.
+- Fehlende Ballaststoffe oder andere Pflichtwerte führen zu `needs_review` und
+  verhindern die Katalogfreigabe.
+- Ein vollständiger Kandidat erzeugt bei Freigabe genau ein Lebensmittel mit
+  nachvollziehbarer FDC-Referenz und europäischer Kohlenhydratdefinition.
+- Wiederholter Import und wiederholte Freigabe erzeugen keine Duplikate.
+- Das importierte Lebensmittel bleibt nach einem Seed erhalten und wird vom
+  produktiven Datenbankkatalog geliefert.
+- FDC `169230` wurde als `garlic` gegen die lokale PostgreSQL-Datenbank geprüft.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
@@ -476,6 +524,9 @@ externer ID live abgerufen werden, ohne dass Quelle oder unsichere Importdaten
 die Planungslogik erreichen. Phase 6D ist ebenfalls abgeschlossen: Acht reale
 Rezepte wurden ausgewertet, sichere Normalisierungsmetadaten versioniert und ein
 fachlich geprüfter Kandidat bis in den produktiven Planerkatalog übernommen.
-Als Nächstes folgt eine getrennte Import- und Prüfpipeline für generische
-Lebensmittel aus FoodData Central. Eine echte Nutzerprüfung bleibt im Backlog
-für einen passenden Zeitpunkt festgehalten.
+Phase 6E ist ebenfalls abgeschlossen: Der erste reale FoodData-Central-Datensatz
+wurde kontrolliert importiert, freigegeben und bleibt beim Seed erhalten. Als
+Nächstes können gezielt weitere häufige
+Kataloglücken über bekannte FDC-IDs geschlossen werden; automatische Suche und
+Open Food Facts bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt
+im Backlog für einen passenden Zeitpunkt festgehalten.

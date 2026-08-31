@@ -7,6 +7,7 @@ from preppilot_api.models import (
     Food,
     FoodAlias,
     FoodMeasureDefault,
+    FoodOrigin,
     Meal,
     MealIngredient,
     MealOrigin,
@@ -44,8 +45,16 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
     foods: dict[str, Food] = {}
     for food_definition in catalog.foods:
         food = existing_foods.pop(food_definition.key, None)
+        if food is not None and food.origin != FoodOrigin.CURATED_SEED:
+            raise ValueError(
+                f"Seed food key conflicts with imported food: {food.catalog_key}"
+            )
         if food is None:
-            food = Food(catalog_key=food_definition.key)
+            food = Food(
+                catalog_key=food_definition.key,
+                origin=FoodOrigin.CURATED_SEED,
+                source_food_import_id=None,
+            )
             session.add(food)
         food.name = food_definition.name
         food.brand = food_definition.brand
@@ -59,7 +68,8 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
         foods[food_definition.key] = food
 
     for stale_food in existing_foods.values():
-        session.delete(stale_food)
+        if stale_food.origin == FoodOrigin.CURATED_SEED:
+            session.delete(stale_food)
 
     session.flush()
 
