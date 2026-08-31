@@ -24,8 +24,9 @@ stellvertretende Testnutzer verpflichtet.
 
 ### Lebensmittel aus FoodData Central importieren
 
-**Status:** kontrollierter Detailimport per FDC-ID als Phase 6E abgeschlossen;
-Suche, Massenergänzung und Open Food Facts bleiben im Backlog
+**Status:** kontrollierter Detailimport per FDC-ID als Phase 6E und erster
+kuratierter 29er-Datenbatch als Phase 6F abgeschlossen; Suche, automatische
+Massenergänzung und Open Food Facts bleiben im Backlog
 
 Der erste Adapter hält FoodData-Central-Rohdaten und abgeleitete Kandidaten in
 einer getrennten Inbox. Nur vollständige, ausdrücklich bestätigte Kandidaten
@@ -59,9 +60,9 @@ Aktualisierungsprozess wird erst vor diesem Abschnitt beschlossen.
 
 ### Live-Rezeptquellen und weitere Adapter
 
-**Status:** erster TheMealDB-Adapter als Phase 6C und praktische Härtung mit
-acht realen Rezepten als Phase 6D abgeschlossen; weitere Adapter und
-automatisierte Abrufe bleiben im Backlog
+**Status:** erster TheMealDB-Adapter als Phase 6C, praktische Härtung mit acht
+realen Rezepten als Phase 6D und Ausbau der Inbox auf 20 Rezepte als Phase 6F
+abgeschlossen; weitere Adapter und automatisierte Abrufe bleiben im Backlog
 
 Nach der Import-Inbox kann ein konkreter Rezeptanbieter anhand von
 Datenqualität, strukturierten Zutatenmengen, Nutzungsrechten, Kosten,

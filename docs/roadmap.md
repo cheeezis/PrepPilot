@@ -481,6 +481,40 @@ Bestätigung in den produktiven Lebensmittelkatalog übernommen werden.
 
 **Status:** abgeschlossen
 
+## Phase 6F: Kontrollierter Ausbau des Datenbestands
+
+**Ziel:** Die in Phase 6E geschaffene Food-Inbox wird mit einem ersten
+größeren, weiterhin einzeln nachvollziehbaren Datenbatch praktisch genutzt.
+Gleichzeitig wächst die Rezept-Inbox auf einen Bestand, an dem sich die
+nächsten Normalisierungslücken belastbar priorisieren lassen.
+
+**Umfang und Ergebnis:**
+
+- 29 vorab geprüfte Foundation- oder SR-Legacy-Datensätze wurden anhand fester
+  FDC-IDs importiert und ausdrücklich als generische Lebensmittel freigegeben.
+- Der produktive Lebensmittelkatalog enthält damit 54 Einträge: 24 kuratierte
+  Seed-Lebensmittel und 30 kontrollierte Food-Imports einschließlich des in
+  Phase 6E übernommenen Knoblauchs.
+- 31 fachlich eindeutige Aliase sowie der durch FDC 169230 belegte Standard
+  `1 clove = 3 g` wurden ergänzt. Die unbekannten Zutaten in den ursprünglichen
+  acht Rezepten sanken nach Wiederverarbeitung von 66 auf 21.
+- Ein unvollständiger Coconut-Milk-Kandidat wurde wegen fehlender Ballaststoffe
+  nicht übernommen; stattdessen wurde ein vollständiger generischer Datensatz
+  ausgewählt.
+- Zwölf weitere feste TheMealDB-IDs wurden in die getrennte Rezept-Inbox
+  importiert. Diese enthält nun 20 reale Rezepte; der Batch erzeugte beim
+  zweiten Abruf keine Duplikate.
+- Ein erneuter Seed erhielt alle 30 importierten Lebensmittel und die bereits
+  veröffentlichte importierte Mahlzeit.
+- Die vollständige Auswahl einschließlich IDs, Katalogschlüsseln, Aliasen und
+  verworfenem Kandidaten ist in `docs/import-batches/phase-6f.json` versioniert.
+
+**Bewusste Grenze:** Die zwölf neuen Rezepte bleiben in der Prüfwarteschlange.
+Fehlende Portionszahlen, Maße und echte Kataloglücken werden nicht automatisch
+geschätzt; keines der Rezepte wird ungeprüft in den Planerkatalog übernommen.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
@@ -526,7 +560,9 @@ Rezepte wurden ausgewertet, sichere Normalisierungsmetadaten versioniert und ein
 fachlich geprüfter Kandidat bis in den produktiven Planerkatalog übernommen.
 Phase 6E ist ebenfalls abgeschlossen: Der erste reale FoodData-Central-Datensatz
 wurde kontrolliert importiert, freigegeben und bleibt beim Seed erhalten. Als
-Nächstes können gezielt weitere häufige
-Kataloglücken über bekannte FDC-IDs geschlossen werden; automatische Suche und
-Open Food Facts bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt
-im Backlog für einen passenden Zeitpunkt festgehalten.
+Phase 6F wurden 29 weitere Lebensmittel und zwölf weitere Rezepte kontrolliert
+aufgenommen. Als Nächstes kann die Prüfwarteschlange priorisiert abgearbeitet
+werden: zuerst sichere Alias- und Portionsentscheidungen für einfache Rezepte,
+danach weitere echte Kataloglücken. Automatische Suche und Open Food Facts
+bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt im Backlog für
+einen passenden Zeitpunkt festgehalten.
