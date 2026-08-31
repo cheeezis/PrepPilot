@@ -48,8 +48,9 @@ Aktualisierungsprozess wird erst vor diesem Abschnitt beschlossen.
 
 ### Live-Rezeptquellen und weitere Adapter
 
-**Status:** erster TheMealDB-Adapter als Phase 6C abgeschlossen; weitere
-Adapter und automatisierte Abrufe bleiben im Backlog
+**Status:** erster TheMealDB-Adapter als Phase 6C und praktische Härtung mit
+acht realen Rezepten als Phase 6D abgeschlossen; weitere Adapter und
+automatisierte Abrufe bleiben im Backlog
 
 Nach der Import-Inbox kann ein konkreter Rezeptanbieter anhand von
 Datenqualität, strukturierten Zutatenmengen, Nutzungsrechten, Kosten,

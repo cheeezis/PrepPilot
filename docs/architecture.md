@@ -152,6 +152,20 @@ standardmäßig den von TheMealDB dokumentierten Testschlüssel `1`; Schlüssel,
 Basis-URL und Timeout bleiben über `PREPPILOT_`-Umgebungsvariablen
 konfigurierbar.
 
+Phase 6D macht bestätigte Normalisierungsmetadaten reproduzierbar. Der
+versionierte Katalog kann je Lebensmittel eindeutige externe Aliase und
+belegte Standardmengen für konkrete Maße enthalten. Der Seed übernimmt diese
+Einträge idempotent in `food_aliases` und `food_measure_defaults`, ohne später
+manuell geprüfte Ergänzungen zu löschen. Alias-Kollisionen zwischen
+Lebensmitteln brechen bereits die Katalogvalidierung ab.
+
+Eine Stichprobe aus acht realen Rezepten dient als bewusster Qualitätscheck und
+nicht als Katalog-Massenimport. Nur der vollständig geprüfte
+Banana-Pancakes-Kandidat wird veröffentlicht. Die Originalquelle bestätigt zwei
+Portionen und zehn Minuten Zubereitungszeit. Relevante Zutaten werden vollständig
+abgebildet; nur Backpulver und Vanille werden nach ausdrücklicher Entscheidung
+aus der Nährwert- und Einkaufsberechnung ausgeschlossen.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die

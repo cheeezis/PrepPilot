@@ -22,7 +22,8 @@
       "carbs_per_100": 0,
       "fat_per_100": 2.62,
       "source_name": "USDA FoodData Central",
-      "source_reference": "SR Legacy 2018, FDC ID 171077"
+      "source_reference": "SR Legacy 2018, FDC ID 171077",
+      "aliases": ["Chicken breasts"]
     },
     {
       "key": "light_cream_cheese",
@@ -46,7 +47,8 @@
       "carbs_per_100": 2.69,
       "fat_per_100": 0.2,
       "source_name": "USDA FoodData Central",
-      "source_reference": "SR Legacy 2018, FDC ID 170457; EU carbs = 3.89 g total carbohydrate - 1.2 g fibre"
+      "source_reference": "SR Legacy 2018, FDC ID 170457; EU carbs = 3.89 g total carbohydrate - 1.2 g fibre",
+      "aliases": ["Tomatoes"]
     },
     {
       "key": "oats",
@@ -82,7 +84,16 @@
       "carbs_per_100": 20.24,
       "fat_per_100": 0.33,
       "source_name": "USDA FoodData Central",
-      "source_reference": "SR Legacy 2018, FDC ID 173944; EU carbs = 22.84 g total carbohydrate - 2.6 g fibre"
+      "source_reference": "SR Legacy 2018, FDC ID 173944; EU carbs = 22.84 g total carbohydrate - 2.6 g fibre",
+      "aliases": ["Bananas"],
+      "measure_defaults": [
+        {
+          "key": "large",
+          "amount": 136,
+          "source_name": "USDA FoodData Central",
+          "source_reference": "SR Legacy 2018, FDC ID 173944; one large banana (8 to 8-7/8 inches) without refuse"
+        }
+      ]
     },
     {
       "key": "egg",
@@ -94,7 +105,16 @@
       "carbs_per_100": 0.72,
       "fat_per_100": 9.51,
       "source_name": "USDA FoodData Central",
-      "source_reference": "SR Legacy 2018, FDC ID 171287"
+      "source_reference": "SR Legacy 2018, FDC ID 171287",
+      "aliases": ["Egg", "Eggs"],
+      "measure_defaults": [
+        {
+          "key": "medium",
+          "amount": 44,
+          "source_name": "USDA FoodData Central",
+          "source_reference": "SR Legacy 2018, FDC ID 171287; one medium egg without shell"
+        }
+      ]
     },
     {
       "key": "milk_1_5",
@@ -178,7 +198,8 @@
       "carbs_per_100": 0,
       "fat_per_100": 91,
       "source_name": "manufacturer_label",
-      "source_reference": "Bertolli Originale extra virgin olive oil, https://www.bertolli.it/prodotto/originale/, retrieved 2026-08-27"
+      "source_reference": "Bertolli Originale extra virgin olive oil, https://www.bertolli.it/prodotto/originale/, retrieved 2026-08-27",
+      "aliases": ["Extra Virgin Olive Oil"]
     },
     {
       "key": "broccoli",
@@ -251,6 +272,45 @@
       "fat_per_100": 1.2,
       "source_name": "manufacturer_label",
       "source_reference": "Herta Finesse turkey breast with honey, https://www.herta.de/produkte/finesse-putenbrust-honig/, retrieved 2026-08-27"
+    },
+    {
+      "key": "vegetable_oil",
+      "name": "Vegetable oil",
+      "brand": null,
+      "unit": "ml",
+      "calories_per_100": 884,
+      "protein_per_100": 0,
+      "carbs_per_100": 0,
+      "fat_per_100": 100,
+      "source_name": "USDA FoodData Central",
+      "source_reference": "SR Legacy 2018, NDB 04044, soybean oil for salad or cooking",
+      "aliases": ["Oil"]
+    },
+    {
+      "key": "pecans",
+      "name": "Pecans, raw",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 691,
+      "protein_per_100": 9.17,
+      "carbs_per_100": 4.26,
+      "fat_per_100": 71.97,
+      "source_name": "USDA FoodData Central",
+      "source_reference": "SR Legacy 2018, NDB 12142; EU carbs = 13.86 g total carbohydrate - 9.6 g fibre",
+      "aliases": ["Pecan Nuts"]
+    },
+    {
+      "key": "raspberries",
+      "name": "Raspberries, raw",
+      "brand": null,
+      "unit": "g",
+      "calories_per_100": 52,
+      "protein_per_100": 1.2,
+      "carbs_per_100": 5.44,
+      "fat_per_100": 0.65,
+      "source_name": "USDA FoodData Central",
+      "source_reference": "SR Legacy 2018, NDB 09052; EU carbs = 11.94 g total carbohydrate - 6.5 g fibre",
+      "aliases": ["Raspberries"]
     }
   ],
   "meals": [

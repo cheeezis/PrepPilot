@@ -384,10 +384,60 @@ von Katalog und Planer getrennt.
 
 **Status:** abgeschlossen
 
+## Phase 6D: Reale Imports und Normalisierung härten
+
+**Ziel:** Die Importpipeline wird anhand einer kleinen, gemischten Stichprobe
+echter TheMealDB-Rezepte praktisch geprüft. Wiederkehrende sichere Zuordnungen
+werden reproduzierbar, fachlich relevante Lücken bleiben sichtbar, und ein
+geeigneter realer Kandidat durchläuft den vollständigen Weg bis zum Planer.
+
+**Umfang:**
+
+- insgesamt acht reale TheMealDB-Rezepte mit 81 Zutatenzeilen kontrolliert in
+  die lokale PostgreSQL-Inbox aufnehmen
+- Prüfgründe je Rezept auswerten, ohne unbekannte Zutaten automatisch anzulegen
+  oder unsichere Begriffe zu erraten
+- bestätigte Aliase und belegte lebensmittelspezifische Maße im versionierten
+  Katalog hinterlegen und beim Seed idempotent in PostgreSQL übernehmen
+- manuell angelegte Aliase und Maße bei einem Seed weiterhin erhalten
+- Pflanzenöl, Pekannüsse und Himbeeren mit nachvollziehbaren Nährwertquellen zum
+  kleinen Lebensmittelkatalog ergänzen
+- Banana Pancakes aus TheMealDB anhand der Originalquelle auf zwei Portionen
+  festlegen; nur Backpulver und Vanille als ernährungsseitig unerhebliche
+  Zutaten ausdrücklich ausschließen
+- den vollständig normalisierten Kandidaten als Frühstück veröffentlichen und
+  anschließend Seed, Datenbankkatalog und Nährwertberechnung prüfen
+
+**Bewusste Nicht-Ziele:**
+
+- alle Zutaten der Stichprobe in den Lebensmittelkatalog aufnehmen
+- generische Begriffe wie `Chicken`, `Bread` oder konkrete Reisarten auf einen
+  nur ungefähr passenden vorhandenen Katalogeintrag abbilden
+- relevante Saucen, Nüsse, Früchte oder Öle aus der Nährwertberechnung
+  ausschließen, nur um ein Rezept freigeben zu können
+- automatische Freigabe weiterer Stichprobenrezepte
+- Massenimport, Zeitplan oder weitere Quellenadapter
+
+**Abnahme:**
+
+- Alle acht Rezepte bleiben mit Rohdaten, externer ID und konkreten
+  Prüfgründen nachvollziehbar.
+- Der erneute Seed erzeugt bestätigte Katalog-Aliase und Maße reproduzierbar,
+  löscht aber keine manuell geprüften Ergänzungen.
+- Der Banana-Pancakes-Import normalisiert pro Portion Banane, Ei, Pflanzenöl,
+  Pekannüsse und Himbeeren auf Gramm beziehungsweise Milliliter.
+- Das veröffentlichte Rezept bleibt nach einem erneuten Seed erhalten und wird
+  mit den übrigen Mahlzeiten aus dem produktiven Datenbankkatalog geladen.
+- Der vollständige reale Ablauf ist zusätzlich als netzwerkunabhängiger Test
+  mit einem versionierten TheMealDB-Payload abgesichert.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
-Phase 3 ist abgeschlossen. Der versionierte Arbeitskatalog enthält 21
-Lebensmittel und je zwei Mahlzeiten für alle fünf Rollen. Sämtliche Nährwerte
+Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
+Lebensmittel und je zwei Mahlzeiten für alle fünf Rollen; Phase 6D ergänzt drei
+weitere Lebensmittel für den ersten realen Importkandidaten. Sämtliche Nährwerte
 sind gegen FoodData Central oder ein konkretes europäisches
 Herstelleretikett geprüft und ihre Herkunft ist direkt am Katalogeintrag
 festgehalten. Die Kohlenhydratwerte verwenden einheitlich die europäische
@@ -423,6 +473,9 @@ Kandidaten können kontrolliert veröffentlicht werden, bleiben bei einem Seed
 erhalten und werden über den produktiven Katalog an die Planungslogik geliefert.
 Phase 6C ist ebenfalls abgeschlossen: Ein einzelnes TheMealDB-Rezept kann per
 externer ID live abgerufen werden, ohne dass Quelle oder unsichere Importdaten
-die Planungslogik erreichen. Als Nächstes folgt die praktische Härtung anhand
-weiterer realer Imports und ihrer Prüfentscheidungen. Eine echte Nutzerprüfung
-bleibt im Backlog für einen passenden Zeitpunkt festgehalten.
+die Planungslogik erreichen. Phase 6D ist ebenfalls abgeschlossen: Acht reale
+Rezepte wurden ausgewertet, sichere Normalisierungsmetadaten versioniert und ein
+fachlich geprüfter Kandidat bis in den produktiven Planerkatalog übernommen.
+Als Nächstes folgt eine getrennte Import- und Prüfpipeline für generische
+Lebensmittel aus FoodData Central. Eine echte Nutzerprüfung bleibt im Backlog
+für einen passenden Zeitpunkt festgehalten.

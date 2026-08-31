@@ -148,6 +148,14 @@ ergänzt, eine rezeptbezogene Menge festgelegt oder das Rezept verworfen werden.
 Eine spätere LLM-Unterstützung darf Vorschläge für diese Prüfung liefern, aber
 keine unvollständigen Rezepte am Katalog vorbei freigeben.
 
+Phase 6D ergänzt die versionierte Katalogdefinition um optionale `aliases` und
+`measure_defaults` je Lebensmittel. Diese erzeugen keine neuen automatischen
+Entscheidungen: Jeder Eintrag ist eine bereits geprüfte, wiederverwendbare Regel
+mit eindeutiger Lebensmittelzuordnung. Maßstandards tragen Menge, Quellenname
+und Quellenreferenz. Katalogverwaltete und später manuell ergänzte Datensätze
+bleiben beim Seed unterscheidbar, sodass der Seed nur seine eigenen veralteten
+Regeln entfernt.
+
 ## Bewusste Grenzen des MVP
 
 Nicht zum MVP-Datenmodell gehören:

@@ -111,14 +111,29 @@ def test_reusable_alias_reprocesses_unknown_food(session: Session) -> None:
     )
 
     assert recipe_import.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
-    assert session.scalar(select(func.count()).select_from(FoodAlias)) == 1
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodAlias)
+            .where(FoodAlias.source_name == "fixture-recipes")
+        )
+        == 1
+    )
+
     assert session.scalar(select(func.count()).select_from(ImportReviewDecision)) == 1
 
     replace_catalog(session, load_catalog())
     session.flush()
 
     assert recipe_import.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
-    assert session.scalar(select(func.count()).select_from(FoodAlias)) == 1
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodAlias)
+            .where(FoodAlias.source_name == "fixture-recipes")
+        )
+        == 1
+    )
 
 
 def test_measure_default_reprocesses_piece_quantity(session: Session) -> None:
@@ -140,7 +155,26 @@ def test_measure_default_reprocesses_piece_quantity(session: Session) -> None:
     normalized = ingredients_for_import(session, recipe_import.id)[0]
     assert recipe_import.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
     assert normalized.normalized_amount == 100
-    assert session.scalar(select(func.count()).select_from(FoodMeasureDefault)) == 1
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodMeasureDefault)
+            .where(FoodMeasureDefault.source_name == "FoodData Central test reference")
+        )
+        == 1
+    )
+
+    replace_catalog(session, load_catalog())
+    session.flush()
+
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodMeasureDefault)
+            .where(FoodMeasureDefault.source_name == "FoodData Central test reference")
+        )
+        == 1
+    )
 
 
 def test_internal_api_exposes_queue_and_applies_override() -> None:
