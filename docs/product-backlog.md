@@ -24,15 +24,17 @@ stellvertretende Testnutzer verpflichtet.
 
 ### Lebensmittel aus FoodData Central importieren
 
-**Status:** kontrollierter Detailimport per FDC-ID als Phase 6E und erster
-kuratierter 29er-Datenbatch als Phase 6F abgeschlossen; Suche, automatische
+**Status:** kontrollierter Detailimport per FDC-ID als Phase 6E, erster
+kuratierter 29er-Datenbatch als Phase 6F und konservative Suchvorschläge für
+unbekannte Rezeptzutaten als Phase 6H umgesetzt; automatische Food-Freigabe,
 Massenergänzung und Open Food Facts bleiben im Backlog
 
 Der erste Adapter hält FoodData-Central-Rohdaten und abgeleitete Kandidaten in
 einer getrennten Inbox. Nur vollständige, ausdrücklich bestätigte Kandidaten
 gelangen in `foods`; importierte Einträge bleiben bei einem Katalog-Seed
-erhalten. Als Folgeschritt kann die freie Suche Vorschläge liefern, darf aber
-keinen Treffer automatisch auswählen oder freigeben.
+erhalten. Phase 6H gruppiert unbekannte Rezeptzutaten und legt nur einen
+eindeutigen Suchtreffer automatisch in der Food-Inbox ab; sie veröffentlicht
+ihn nicht im produktiven Katalog.
 
 ### Import-Inbox und Zutaten-Normalisierung
 

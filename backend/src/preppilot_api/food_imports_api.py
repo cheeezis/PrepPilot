@@ -1,8 +1,9 @@
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -23,7 +24,27 @@ from preppilot_api.food_sources import (
     FoodSourceUnavailableError,
     get_fooddata_central_source,
 )
-from preppilot_api.models import FoodImport
+from preppilot_api.food_suggestions import (
+    LocalFoodCandidate,
+    suggest_food,
+    suggest_local_food,
+)
+from preppilot_api.models import (
+    Food,
+    FoodImport,
+    ImportedIngredientStatus,
+    ImportReviewReason,
+    RecipeImport,
+    RecipeImportIngredient,
+    RecipeImportStatus,
+    ReviewDecisionAction,
+)
+from preppilot_api.recipe_imports import (
+    ReviewDecisionCommand,
+    apply_review_decision,
+    normalize_text,
+    process_recipe_import,
+)
 
 router = APIRouter(prefix="/api/internal/food-imports", tags=["food-imports"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
@@ -58,6 +79,38 @@ class PromotedFoodResponse(BaseModel):
     food_id: int
     catalog_key: str
     source_food_import_id: int
+
+
+class FoodSuggestionCandidateResponse(BaseModel):
+    fdc_id: str
+    name: str
+    data_type: str
+    score: int
+
+
+class FoodSuggestionResponse(BaseModel):
+    ingredient_name: str
+    normalized_name: str
+    occurrence_count: int
+    status: str
+    local_food_key: str | None
+    selected_fdc_id: str | None
+    food_import_id: int | None
+    food_import_created: bool
+    candidates: list[FoodSuggestionCandidateResponse]
+
+
+class FoodSuggestionBatchResponse(BaseModel):
+    unique_unknown_ingredients: int
+    processed: int
+    local_aliases_added: int
+    selected: int
+    imported: int
+    created: int
+    ambiguous: int
+    no_match: int
+    failed: int
+    suggestions: list[FoodSuggestionResponse]
 
 
 @router.get("", response_model=list[FoodImportResponse])
@@ -101,6 +154,176 @@ def import_fooddata_central_food(
     response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
     return CreatedFoodImportResponse(
         created=created, food_import=_serialize(food_import)
+    )
+
+
+@router.post(
+    "/suggestions/from-recipe-inbox",
+    response_model=FoodSuggestionBatchResponse,
+)
+def suggest_foods_for_recipe_inbox(
+    session: DatabaseSession,
+    source: FoodDataCentralDependency,
+    limit: Annotated[int, Query(ge=1, le=25)] = 10,
+) -> FoodSuggestionBatchResponse:
+    ingredients = tuple(
+        session.scalars(
+            select(RecipeImportIngredient)
+            .where(
+                RecipeImportIngredient.status
+                == ImportedIngredientStatus.NEEDS_REVIEW,
+                RecipeImportIngredient.review_reason
+                == ImportReviewReason.UNKNOWN_FOOD,
+            )
+            .order_by(RecipeImportIngredient.id)
+        )
+    )
+    grouped: dict[str, tuple[str, int, RecipeImportIngredient]] = {}
+    for ingredient in ingredients:
+        normalized_name = normalize_text(ingredient.raw_name)
+        display_name, count, representative = grouped.get(
+            normalized_name, (ingredient.raw_name.strip(), 0, ingredient)
+        )
+        grouped[normalized_name] = (display_name, count + 1, representative)
+    ordered = sorted(
+        grouped.items(),
+        key=lambda item: (-item[1][1], item[0]),
+    )
+    local_candidates = tuple(
+        LocalFoodCandidate(
+            food_id=food.id,
+            catalog_key=food.catalog_key,
+            name=food.name,
+        )
+        for food in session.scalars(select(Food).order_by(Food.id))
+    )
+
+    suggestions: list[FoodSuggestionResponse] = []
+    try:
+        for _, (ingredient_name, occurrence_count, representative) in ordered[:limit]:
+            try:
+                local_suggestion = suggest_local_food(
+                    ingredient_name, local_candidates
+                )
+                if local_suggestion is not None:
+                    apply_review_decision(
+                        session,
+                        representative.recipe_import_id,
+                        ReviewDecisionCommand(
+                            action=ReviewDecisionAction.ADD_ALIAS,
+                            ingredient_id=representative.id,
+                            food_key=local_suggestion.catalog_key,
+                            alias=ingredient_name,
+                        ),
+                    )
+                    suggestions.append(
+                        FoodSuggestionResponse(
+                            ingredient_name=ingredient_name,
+                            normalized_name=normalize_text(ingredient_name),
+                            occurrence_count=occurrence_count,
+                            status="local_alias_added",
+                            local_food_key=local_suggestion.catalog_key,
+                            selected_fdc_id=None,
+                            food_import_id=None,
+                            food_import_created=False,
+                            candidates=[],
+                        )
+                    )
+                    continue
+                suggestion = suggest_food(
+                    ingredient_name,
+                    source.search(ingredient_name, limit=5),
+                )
+                food_import_id: int | None = None
+                food_import_created = False
+                item_status = suggestion.status.value
+                if suggestion.selected_external_id is not None:
+                    food_import, food_import_created = create_food_import(
+                        session,
+                        source.fetch(suggestion.selected_external_id),
+                    )
+                    food_import_id = food_import.id
+                suggestions.append(
+                    FoodSuggestionResponse(
+                        ingredient_name=ingredient_name,
+                        normalized_name=suggestion.normalized_name,
+                        occurrence_count=occurrence_count,
+                        status=item_status,
+                        local_food_key=None,
+                        selected_fdc_id=suggestion.selected_external_id,
+                        food_import_id=food_import_id,
+                        food_import_created=food_import_created,
+                        candidates=[
+                            FoodSuggestionCandidateResponse(
+                                fdc_id=candidate.external_id,
+                                name=candidate.name,
+                                data_type=candidate.data_type,
+                                score=candidate.score,
+                            )
+                            for candidate in suggestion.candidates
+                        ],
+                    )
+                )
+            except FoodSourceNotFoundError:
+                suggestions.append(
+                    _failed_suggestion(
+                        ingredient_name, occurrence_count, "not_found"
+                    )
+                )
+            except FoodSourcePayloadError:
+                suggestions.append(
+                    _failed_suggestion(
+                        ingredient_name, occurrence_count, "invalid_payload"
+                    )
+                )
+            except FoodSourceUnavailableError:
+                suggestions.append(
+                    _failed_suggestion(
+                        ingredient_name, occurrence_count, "source_unavailable"
+                    )
+                )
+        local_aliases_added = sum(
+            item.status == "local_alias_added" for item in suggestions
+        )
+        if local_aliases_added:
+            recipe_imports = tuple(
+                session.scalars(
+                    select(RecipeImport).where(
+                        RecipeImport.status != RecipeImportStatus.REJECTED
+                    )
+                )
+            )
+            for recipe_import in recipe_imports:
+                recipe_import.status = RecipeImportStatus.RECEIVED
+                process_recipe_import(session, recipe_import.id)
+        session.commit()
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Importdatenbank nicht verfügbar",
+        ) from error
+
+    selected = sum(item.selected_fdc_id is not None for item in suggestions)
+    imported = sum(item.food_import_id is not None for item in suggestions)
+    created = sum(item.food_import_created for item in suggestions)
+    ambiguous = sum(item.status == "ambiguous" for item in suggestions)
+    no_match = sum(item.status == "no_match" for item in suggestions)
+    failed = sum(
+        item.status in {"not_found", "invalid_payload", "source_unavailable"}
+        for item in suggestions
+    )
+    return FoodSuggestionBatchResponse(
+        unique_unknown_ingredients=len(grouped),
+        processed=len(suggestions),
+        local_aliases_added=local_aliases_added,
+        selected=selected,
+        imported=imported,
+        created=created,
+        ambiguous=ambiguous,
+        no_match=no_match,
+        failed=failed,
+        suggestions=suggestions,
     )
 
 
@@ -162,4 +385,20 @@ def _serialize(food_import: FoodImport) -> FoodImportResponse:
         fat_per_100=food_import.fat_per_100,
         review_reasons=food_import.review_reasons,
         raw_payload=food_import.raw_payload,
+    )
+
+
+def _failed_suggestion(
+    ingredient_name: str, occurrence_count: int, status_value: str
+) -> FoodSuggestionResponse:
+    return FoodSuggestionResponse(
+        ingredient_name=ingredient_name,
+        normalized_name=normalize_text(ingredient_name),
+        occurrence_count=occurrence_count,
+        status=status_value,
+        local_food_key=None,
+        selected_fdc_id=None,
+        food_import_id=None,
+        food_import_created=False,
+        candidates=[],
     )

@@ -42,11 +42,73 @@ class JsonFetcher(Protocol):
 
 
 @dataclass(frozen=True)
+class FoodSearchCandidate:
+    external_id: str
+    name: str
+    data_type: str
+
+
+@dataclass(frozen=True)
 class FoodDataCentralSource:
     api_key: str
     base_url: str
     timeout_seconds: float
     fetch_json: JsonFetcher
+
+    def search(
+        self, ingredient_name: str, *, limit: int = 5
+    ) -> tuple[FoodSearchCandidate, ...]:
+        query_text = ingredient_name.strip()
+        if not query_text:
+            raise FoodSourcePayloadError("FoodData Central query must not be blank")
+        if not 1 <= limit <= 10:
+            raise FoodSourcePayloadError(
+                "FoodData Central search limit must be between 1 and 10"
+            )
+        query = urlencode(
+            {
+                "api_key": self.api_key,
+                "query": query_text,
+                "dataType": "Foundation,SR Legacy",
+                "pageSize": limit,
+            }
+        )
+        url = f"{self.base_url.rstrip('/')}/foods/search?{query}"
+        envelope = self.fetch_json(url, self.timeout_seconds)
+        foods = envelope.get("foods")
+        if not isinstance(foods, list):
+            raise FoodSourcePayloadError("unexpected FoodData Central search response")
+
+        candidates: list[FoodSearchCandidate] = []
+        seen_ids: set[str] = set()
+        for food_value in foods:
+            if not isinstance(food_value, dict):
+                raise FoodSourcePayloadError(
+                    "unexpected FoodData Central search candidate"
+                )
+            food = cast(dict[str, object], food_value)
+            external_id = str(food.get("fdcId", "")).strip()
+            name = _text(food.get("description"))
+            data_type = _text(food.get("dataType"))
+            if (
+                not external_id.isdecimal()
+                or name is None
+                or data_type not in _SUPPORTED_DATA_TYPES
+            ):
+                raise FoodSourcePayloadError(
+                    "invalid FoodData Central search candidate"
+                )
+            if external_id in seen_ids:
+                continue
+            seen_ids.add(external_id)
+            candidates.append(
+                FoodSearchCandidate(
+                    external_id=external_id,
+                    name=name,
+                    data_type=data_type,
+                )
+            )
+        return tuple(candidates)
 
     def fetch(self, external_id: str) -> CreateFoodImportCommand:
         fdc_id = external_id.strip()

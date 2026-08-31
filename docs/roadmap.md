@@ -563,6 +563,57 @@ sortiert.
 
 **Status:** abgeschlossen
 
+## Phase 6H: Automatische FDC-Vorschläge für unbekannte Zutaten
+
+**Ziel:** Unbekannte Zutaten aus größeren Rezeptbatches müssen nicht einzeln in
+FoodData Central gesucht werden. Die Pipeline gruppiert sie, recherchiert
+generische Kandidaten und legt ausschließlich eindeutige Treffer automatisch in
+der bestehenden Food-Inbox ab.
+
+**Umfang:**
+
+- unbekannte Zutaten aus allen offenen Rezeptimports normalisieren, zählen und
+  nach Häufigkeit abarbeiten
+- vor der externen Suche sichere lokale Varianten als auditierte Aliase
+  übernehmen und anschließend alle offenen Rezepte neu verarbeiten
+- pro Batch höchstens 25 eindeutige Begriffe und je Begriff höchstens fünf
+  Foundation-/SR-Legacy-Kandidaten abrufen
+- Kandidaten anhand normalisierter Bezeichnungen reproduzierbar bewerten
+- nur einen Treffer ab 90 Punkten und mit mindestens zehn Punkten Vorsprung
+  automatisch auswählen
+- ausgewählten Detaildatensatz über den bestehenden FDC-Adapter validieren und
+  idempotent in `food_imports` speichern
+- mehrdeutige, fehlende, ungültige und nicht erreichbare Treffer getrennt im
+  Batchresultat ausweisen
+- interner Endpunkt
+  `POST /api/internal/food-imports/suggestions/from-recipe-inbox`
+
+**Bewusste Grenze:** Ein Vorschlag erzeugt kein produktives Lebensmittel und
+keinen Alias. Begriffe wie `pepper`, `chicken` oder `cream` dürfen nicht allein
+aufgrund eines ersten Suchtreffers automatisch freigegeben werden. Nach einer
+kontrollierten Food-Freigabe kann Phase 6G alle betroffenen Rezepte gesammelt
+neu verarbeiten.
+
+**Abnahme:**
+
+- Gleiche unbekannte Zutaten werden innerhalb eines Laufs nur einmal gesucht.
+- Ein eindeutiger generischer Treffer wird mit vollständigem Rohdatensatz in
+  der Food-Inbox gespeichert.
+- Der zweite identische Lauf erzeugt keinen doppelten Food-Import.
+- Ein breiter Begriff mit nicht eindeutigem Treffer bleibt `ambiguous`.
+- Der produktive Lebensmittelkatalog bleibt durch den Vorschlagslauf
+  unverändert.
+
+**Praktische Abnahme:** Der Lauf über die 25 häufigsten unbekannten Zutaten
+erkannte drei sichere lokale Varianten (`Basil Leaves`, `Chickpeas` und
+`Parmesan cheese`). Die übrigen generischen Begriffe blieben mehrdeutig; kein
+FDC-Treffer wurde ungeprüft als produktives Food veröffentlicht. Zwei während
+der Entwicklung zu großzügig bewertete Treffer (`Tomato Puree` und
+`Plum Tomatoes`) wurden vor Abschluss vollständig aus Alias- beziehungsweise
+Food-Inbox entfernt und als Negativfälle abgesichert.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
@@ -610,9 +661,8 @@ Phase 6E ist ebenfalls abgeschlossen: Der erste reale FoodData-Central-Datensatz
 wurde kontrolliert importiert, freigegeben und bleibt beim Seed erhalten. Als
 Phase 6F wurden 29 weitere Lebensmittel und zwölf weitere Rezepte kontrolliert
 aufgenommen. Phase 6G automatisiert nun Kategorie-Discovery, Batchimport,
-Qualitätsbewertung, Priorisierung und Wiederverarbeitung. Als Nächstes kann die
-praktische Live-Abnahme erfolgen; danach können FDC-Treffervorschläge für
-unbekannte Zutaten als eigener Abschnitt bewertet werden. Automatische
-Freigabe, Open Food Facts und regelmäßige Ausführung bleiben getrennte
-Folgeschritte. Eine echte Nutzerprüfung bleibt im Backlog für einen passenden
-Zeitpunkt festgehalten.
+Qualitätsbewertung, Priorisierung und Wiederverarbeitung. Phase 6H ergänzt
+konservative lokale Alias- und FDC-Treffervorschläge für gruppierte unbekannte
+Zutaten. Automatische Food-Freigabe, Open Food Facts und regelmäßige Ausführung
+bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt im Backlog für
+einen passenden Zeitpunkt festgehalten.

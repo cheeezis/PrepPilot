@@ -197,6 +197,24 @@ Imports an. Die Bewertung veröffentlicht und verwirft selbst keine Rezepte;
 Produktmetadaten und unsichere fachliche Entscheidungen bleiben hinter der
 bestehenden Freigabegrenze.
 
+Phase 6H verbindet offene Rezeptzutaten mit der Food-Inbox. Der Batch gruppiert
+gleiche unbekannte Zutaten über alle Rezeptimporte und durchsucht FoodData
+Central je normalisiertem Begriff nur einmal. Vor dem externen Abruf erkennt
+eine konservative lokale Prüfung sichere Varianten vorhandener Foods und legt
+den Alias als auditierte Review-Entscheidung an. Zusätze werden dabei nur für
+eine kleine Positivliste wie `leaves` und `cheese` ignoriert; `puree` oder
+ähnliche Verarbeitungsformen bleiben getrennt. Extern werden weiterhin nur
+Foundation- und SR-Legacy-Datensätze berücksichtigt.
+
+Nur ein Kandidat mit mindestens 90 Punkten und zehn Punkten Abstand zum zweiten
+Treffer wird automatisch per FDC-ID in `food_imports` abgelegt. Mehrdeutige
+Begriffe, fehlende Treffer und Quellenfehler bleiben im Batchresultat sichtbar.
+Der Vorgang legt niemals selbst ein produktives `Food` oder einen Alias an;
+damit bleiben Katalogschlüssel, fachlich unsichere Zuordnung und Freigabe unter
+Kontrolle. Wiederholte Vorschlagsläufe nutzen die bestehende Inhalts-
+Idempotenz der Food-Inbox. Ein zusätzlicher Negativtest verhindert insbesondere
+die Verwechslung von `Plum Tomatoes` mit `Plums`.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die
