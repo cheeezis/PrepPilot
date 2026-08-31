@@ -127,6 +127,12 @@ Ein Import ist `received`, `needs_review`, `ready_for_catalog_review` oder
 `rejected`. `ready_for_catalog_review` ist ausdrücklich noch keine Freigabe für
 den Planer oder den produktiven Mahlzeitenkatalog.
 
+Phase 6B ergänzt `meals` um die Herkunft `curated_seed` oder `recipe_import`.
+Eine importierte Mahlzeit verweist eindeutig auf genau einen vollständig
+normalisierten Rezeptimport. Seed-Mahlzeiten besitzen keinen solchen Verweis.
+Die bestehenden Tabellen für Zutaten, Rollen und Portionsfaktoren werden für
+beide Herkunftsarten gemeinsam verwendet.
+
 Fehlt eine Zutatenzuordnung oder eine benötigte Stückumrechnung, wird kein
 generischer Gewichts-Fallback verwendet. Das gesamte Rezept wird zur manuellen
 Prüfung zurückgestellt. Dort kann ein wiederverwendbarer Lebensmittelstandard

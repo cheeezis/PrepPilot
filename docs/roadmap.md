@@ -26,6 +26,7 @@ Beginn des jeweiligen Abschnitts festgelegt.
 | 4 | Tagesplaner nutzbar | abgeschlossen |
 | 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
 | 6A | Externe Rezepte sicher aufnehmen und normalisieren | abgeschlossen |
+| 6B | Normalisierte Rezepte kontrolliert veröffentlichen | abgeschlossen |
 
 ## Phase 0: Produkt ausrichten
 
@@ -289,6 +290,49 @@ Typische maschinenlesbare Prüfgründe sind `unknown_food`, `ambiguous_food`,
 
 **Status:** abgeschlossen
 
+## Phase 6B: Normalisierte Rezepte kontrolliert veröffentlichen
+
+**Ziel:** Ein vollständig normalisierter Rezeptimport kann nach ausdrücklicher
+fachlicher Bestätigung als produktive Mahlzeit veröffentlicht und anschließend
+vom Planer verwendet werden. Seed-Mahlzeiten und importierte Mahlzeiten bleiben
+dabei dauerhaft unterscheidbar.
+
+**Umfang:**
+
+- Mahlzeitenherkunft `curated_seed` oder `recipe_import` speichern
+- importierte Mahlzeiten eindeutig mit ihrem Rezeptimport verbinden
+- Name, stabile Katalogkennung, Zubereitungszeit, Anleitung, Rollen und erlaubte
+  Portionsfaktoren bei der Freigabe ausdrücklich bestätigen
+- ausschließlich Importe mit `ready_for_catalog_review` freigeben
+- normalisierte Zutaten einer Grundportion transaktional in den produktiven
+  Katalog übernehmen; mehrfach vorkommende Lebensmittel zusammenfassen
+- wiederholte Freigabe desselben Imports ohne Duplikat beantworten
+- Katalog-Seed so begrenzen, dass nur versionierte Seed-Mahlzeiten ersetzt und
+  importierte Mahlzeiten erhalten bleiben
+- freigegebene Mahlzeiten über den bestehenden Datenbankkatalog für die
+  Planungslogik verfügbar machen
+
+**Bewusste Nicht-Ziele:**
+
+- nachträgliches Bearbeiten oder Zurückziehen veröffentlichter Mahlzeiten
+- automatische Ableitung von Rollen oder Portionsfaktoren
+- automatische Freigabe durch eine externe API oder ein LLM
+- öffentliche oder ausgearbeitete Administrationsoberfläche
+- Live-Anbindung an einen Rezeptanbieter
+
+**Abnahme:**
+
+- Ein unvollständiger Import kann nicht veröffentlicht werden.
+- Ein vollständiger Import erzeugt genau eine Mahlzeit mit vollständigen
+  Zutaten, Rollen und Portionsfaktoren.
+- Eine wiederholte identische Freigabe erzeugt kein Duplikat.
+- Ein erneuter Seed erhält die importierte Mahlzeit und ihre Zuordnungen.
+- Der bestehende Datenbankkatalog liefert die importierte Mahlzeit an die
+  Planungslogik aus.
+- Migration, Freigabe und erneuter Seed sind gegen PostgreSQL geprüft.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der versionierte Arbeitskatalog enthält 21
@@ -323,7 +367,8 @@ verfügbar gemeldet.
 Damit ist die technische MVP-Roadmap abgeschlossen. Phase 6A ist ebenfalls
 abgeschlossen: Die getrennte Import-Inbox, deterministische Normalisierung,
 Prüfentscheidungen und Wiederverarbeitung sind umgesetzt und gegen PostgreSQL
-geprüft. Der stabile produktive Katalog und die Planungslogik bleiben weiterhin
-von Importdaten getrennt. Die Veröffentlichung normalisierter Kandidaten wird
-erst als eigener Folgeabschnitt gemeinsam abgegrenzt. Eine echte Nutzerprüfung
-bleibt im Backlog für einen passenden Zeitpunkt festgehalten.
+geprüft. Phase 6B ist ebenfalls abgeschlossen: Vollständig normalisierte
+Kandidaten können kontrolliert veröffentlicht werden, bleiben bei einem Seed
+erhalten und werden über den produktiven Katalog an die Planungslogik geliefert.
+Als Nächstes folgt ein einzelner Adapter für eine echte Rezeptquelle. Eine echte
+Nutzerprüfung bleibt im Backlog für einen passenden Zeitpunkt festgehalten.

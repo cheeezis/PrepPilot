@@ -37,6 +37,16 @@ def test_catalog_entries_have_stable_unique_keys() -> None:
     assert meals.columns["catalog_key"].unique
 
 
+def test_imported_meals_keep_a_unique_recipe_source() -> None:
+    meals = Base.metadata.tables["meals"]
+
+    assert "origin" in meals.columns
+    assert any(
+        constraint.name == "uq_meals_source_recipe_import"
+        for constraint in meals.constraints
+    )
+
+
 def test_catalog_enums_match_the_planning_rules() -> None:
     assert [unit.value for unit in MeasurementUnit] == ["g", "ml"]
     assert [role.value for role in MealRole] == [

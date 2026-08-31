@@ -188,6 +188,27 @@ def test_internal_api_exposes_queue_and_applies_override() -> None:
             assert resolved.status_code == 200
             assert resolved.json()["status"] == "ready_for_catalog_review"
             assert resolved.json()["ingredients"][0]["normalized_amount"] == 200
+
+            promotion = {
+                "catalog_key": "imported_chicken",
+                "name": "Imported chicken",
+                "preparation_minutes": 10,
+                "instructions": "Cook the chicken.",
+                "roles": ["main_meal"],
+                "portion_factors": [1, 1.5],
+            }
+            promoted = client.post(
+                f"/api/internal/recipe-imports/{recipe_import_id}/promote",
+                json=promotion,
+            )
+            assert promoted.status_code == 200
+            assert promoted.json()["created"]
+            repeated = client.post(
+                f"/api/internal/recipe-imports/{recipe_import_id}/promote",
+                json=promotion,
+            )
+            assert repeated.status_code == 200
+            assert not repeated.json()["created"]
     finally:
         app.dependency_overrides.clear()
 

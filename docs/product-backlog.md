@@ -34,6 +34,8 @@ Veröffentlichung im produktiven Katalog.
 
 ### Normalisierte Rezepte in den produktiven Katalog übernehmen
 
+**Status:** als Phase 6B in `docs/roadmap.md` abgeschlossen
+
 Ein eigener Folgeabschnitt soll vollständig normalisierte Kandidaten fachlich
 prüfen und anschließend kontrolliert als Mahlzeiten veröffentlichen. Vorher
 müssen insbesondere Mahlzeitenrolle, Grundportion, erlaubte Portionsfaktoren,

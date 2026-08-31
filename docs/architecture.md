@@ -131,6 +131,13 @@ bei `ready_for_catalog_review`; der Planer liest keine Importtabellen. Eine
 Live-Verbindung zu einer Rezept- oder Lebensmittel-API ist weiterhin keine
 Laufzeitvoraussetzung.
 
+Phase 6B veröffentlicht einen solchen Kandidaten transaktional als Mahlzeit.
+Die Mahlzeitenherkunft und der eindeutige Verweis zum Rezeptimport verhindern
+doppelte Freigaben. Der Seed aktualisiert und entfernt nur Mahlzeiten mit der
+Herkunft `curated_seed`; veröffentlichte Importmahlzeiten bleiben erhalten. Der
+Planer benötigt dadurch keine Importlogik und liest weiterhin ausschließlich
+den produktiven Datenbankkatalog.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die

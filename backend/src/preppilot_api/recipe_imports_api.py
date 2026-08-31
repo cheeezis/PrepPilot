@@ -8,6 +8,11 @@ from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
 from preppilot_api.models import Food, RecipeImport, RecipeImportStatus
+from preppilot_api.recipe_catalog_promotion import (
+    PromoteRecipeImportCommand,
+    RecipePromotionError,
+    promote_recipe_import,
+)
 from preppilot_api.recipe_imports import (
     CreateRecipeImportCommand,
     RecipeImportDecisionError,
@@ -53,6 +58,13 @@ class RecipeImportResponse(BaseModel):
 class CreatedRecipeImportResponse(BaseModel):
     created: bool
     recipe_import: RecipeImportResponse
+
+
+class PromotedMealResponse(BaseModel):
+    created: bool
+    meal_id: int
+    catalog_key: str
+    source_recipe_import_id: int
 
 
 @router.post("", response_model=CreatedRecipeImportResponse)
@@ -143,6 +155,37 @@ def reprocess_recipe_import(
         session.rollback()
         raise HTTPException(status_code=422, detail=str(error)) from error
     return _serialize_recipe_import(session, recipe_import)
+
+
+@router.post("/{recipe_import_id}/promote", response_model=PromotedMealResponse)
+def promote_reviewed_recipe_import(
+    recipe_import_id: int,
+    command: PromoteRecipeImportCommand,
+    session: DatabaseSession,
+) -> PromotedMealResponse:
+    try:
+        meal, created = promote_recipe_import(session, recipe_import_id, command)
+        session.commit()
+    except RecipeImportNotFoundError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=404, detail="Rezeptimport nicht gefunden"
+        ) from error
+    except RecipePromotionError as error:
+        session.rollback()
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Mahlzeitenkatalog nicht verfügbar",
+        ) from error
+    return PromotedMealResponse(
+        created=created,
+        meal_id=meal.id,
+        catalog_key=meal.catalog_key,
+        source_recipe_import_id=recipe_import_id,
+    )
 
 
 def _serialize_recipe_import(

@@ -68,6 +68,11 @@ class ReviewDecisionAction(StrEnum):
     REJECT = "reject"
 
 
+class MealOrigin(StrEnum):
+    CURATED_SEED = "curated_seed"
+    RECIPE_IMPORT = "recipe_import"
+
+
 class Food(Base):
     __tablename__ = "foods"
     __table_args__ = (
@@ -119,6 +124,14 @@ class Meal(Base):
             "length(trim(instructions)) > 0",
             name="ck_meals_instructions_not_blank",
         ),
+        CheckConstraint(
+            "(origin = 'curated_seed' AND source_recipe_import_id IS NULL) OR "
+            "(origin = 'recipe_import' AND source_recipe_import_id IS NOT NULL)",
+            name="ck_meals_origin_source",
+        ),
+        UniqueConstraint(
+            "source_recipe_import_id", name="uq_meals_source_recipe_import"
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -126,6 +139,16 @@ class Meal(Base):
     name: Mapped[str] = mapped_column(String(200))
     preparation_minutes: Mapped[int] = mapped_column(Integer)
     instructions: Mapped[str] = mapped_column(Text)
+    origin: Mapped[MealOrigin] = mapped_column(
+        SqlEnum(
+            MealOrigin,
+            name="meal_origin",
+            values_callable=lambda enum_class: [member.value for member in enum_class],
+        )
+    )
+    source_recipe_import_id: Mapped[int | None] = mapped_column(
+        ForeignKey("recipe_imports.id", ondelete="RESTRICT")
+    )
 
 
 class MealIngredient(Base):
