@@ -1,6 +1,6 @@
 # Architektur
 
-Stand: 28. August 2026
+Stand: 31. August 2026
 
 Dieses Dokument hält bestätigte technische Entscheidungen fest. Details werden
 schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
@@ -118,11 +118,18 @@ reproduzierbar in PostgreSQL geladen. FoodData Central, Open Food Facts und
 Herstellerangaben dienen nur als Quellen für ausgewählte Katalogwerte; der
 laufende Planer ruft sie nicht auf.
 
-Ein späterer Rezeptimport bildet einen getrennten Eingangsbereich. Erst ein
-vollständig normalisiertes Rezept darf in den produktiven Katalog übernommen
-werden. Fehlende Umrechnungen führen zu einer Prüfwarteschlange und nicht zu
-einem unsicheren generischen Gewichts-Fallback. Diese Import- und Prüflogik wird
-nicht vorsorglich im MVP implementiert.
+Phase 6A bildet einen getrennten Eingangsbereich in PostgreSQL. Strukturierte
+Rohrezepte werden idempotent aufgenommen, deterministisch normalisiert und über
+interne Backend-Endpunkte geprüft. Fehlende Umrechnungen führen zu einer
+Prüfwarteschlange und nicht zu einem unsicheren generischen Gewichts-Fallback.
+Bestätigte Aliase und Portionsstandards bleiben bei einem erneuten Katalog-Seed
+erhalten.
+
+Erst ein vollständig normalisiertes und anschließend fachlich freigegebenes
+Rezept darf in den produktiven Katalog übernommen werden. Phase 6A endet vorher
+bei `ready_for_catalog_review`; der Planer liest keine Importtabellen. Eine
+Live-Verbindung zu einer Rezept- oder Lebensmittel-API ist weiterhin keine
+Laufzeitvoraussetzung.
 
 ## Lokale Entwicklungsumgebung
 

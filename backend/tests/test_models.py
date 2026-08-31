@@ -1,13 +1,18 @@
 from preppilot_api.models import Base, MealRole, MeasurementUnit
 
 
-def test_catalog_schema_contains_only_the_mvp_tables() -> None:
+def test_schema_contains_catalog_and_import_inbox_tables() -> None:
     assert set(Base.metadata.tables) == {
         "foods",
         "meals",
         "meal_ingredients",
         "meal_portion_factors",
         "meal_roles",
+        "recipe_imports",
+        "recipe_import_ingredients",
+        "food_aliases",
+        "food_measure_defaults",
+        "import_review_decisions",
     }
 
 

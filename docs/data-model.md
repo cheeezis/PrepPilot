@@ -1,6 +1,6 @@
 # Datenmodell
 
-Stand: 27. August 2026
+Stand: 31. August 2026
 
 ## Ziel und Systemgrenze
 
@@ -45,7 +45,7 @@ zugeordneten Lebensmittels. Für das MVP werden diese Mengen direkt mit der
 Mahlzeit kuratiert. Rechenlogik für Haushaltsmaße, Dichten oder Stückgewichte
 wird dafür nicht benötigt.
 
-Für einen späteren automatischen Rezeptimport gelten folgende bewusst
+Für den automatischen Rezeptimport gelten folgende bewusst
 vereinfachte Normalisierungsregeln:
 
 - `1 tsp` beziehungsweise ein Teelöffel entspricht `5 g` bei festen und `5 ml`
@@ -59,8 +59,9 @@ vereinfachte Normalisierungsregeln:
 Solche Standardwerte sollen bevorzugt aus einer geeigneten Portion von
 FoodData Central übernommen werden. Sie sind nachvollziehbare
 PrepPilot-Näherungen und keine Zusage auf das tatsächliche Gewicht eines
-konkreten Lebensmittels. Eine spätere Importfunktion kann dafür ein kleines
-Modell wie `food_measure_defaults` ergänzen; es gehört nicht zum MVP-Schema.
+konkreten Lebensmittels. Phase 6A speichert diese Werte in
+`food_measure_defaults`; sie gehören weiterhin nicht zum abgeschlossenen
+MVP-Schema.
 
 ## Datenquellen und Qualität
 
@@ -104,12 +105,27 @@ europäisches Herstelleretikett als repräsentativer Näherungswert dienen. Der
 Katalog schreibt dadurch keine Marke für die spätere Einkaufsliste vor; die
 Produktbezeichnung steht ausschließlich in der Quellenreferenz.
 
-## Grenze zum späteren Rezeptimport
+## Import-Inbox nach dem MVP
 
-Ein späterer Importbereich bewahrt externe Rezeptdaten zunächst unverändert
-auf und normalisiert Zutaten und Mengen getrennt vom produktiven Katalog. Nur
-vollständig auf interne Lebensmittel sowie Gramm oder Milliliter abgebildete
-Rezepte dürfen als Mahlzeiten freigegeben werden.
+Der in Phase 6A ergänzte Importbereich bewahrt externe Rezeptdaten zunächst
+unverändert auf und normalisiert Zutaten und Mengen getrennt vom produktiven
+Katalog. Nur vollständig auf interne Lebensmittel sowie Gramm oder Milliliter
+abgebildete Rezepte dürfen später als Mahlzeiten freigegeben werden.
+
+Die Import-Inbox ergänzt folgende Tabellen:
+
+- `recipe_imports` für Quelle, externe Kennung, Rohdaten, Inhalts-Hash,
+  Portionen und Rezeptstatus
+- `recipe_import_ingredients` für originale Zutatenzeilen, Parsing-Ergebnisse,
+  Zuordnungen, normalisierte Mengen und Prüfgründe
+- `food_aliases` für bestätigte wiederverwendbare Bezeichnungen
+- `food_measure_defaults` für nachvollziehbare lebensmittelspezifische
+  Stück- und Portionsstandards
+- `import_review_decisions` für die Historie manueller Korrekturen
+
+Ein Import ist `received`, `needs_review`, `ready_for_catalog_review` oder
+`rejected`. `ready_for_catalog_review` ist ausdrücklich noch keine Freigabe für
+den Planer oder den produktiven Mahlzeitenkatalog.
 
 Fehlt eine Zutatenzuordnung oder eine benötigte Stückumrechnung, wird kein
 generischer Gewichts-Fallback verwendet. Das gesamte Rezept wird zur manuellen

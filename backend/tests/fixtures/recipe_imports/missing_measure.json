@@ -1,0 +1,13 @@
+{
+  "source_name": "fixture-recipes",
+  "external_id": "missing-egg-measure",
+  "fetched_at": "2026-08-29T10:15:00Z",
+  "payload": {
+    "title": "Boiled eggs",
+    "servings": "2",
+    "instructions": "Boil the eggs.",
+    "ingredients": [
+      {"line": "4 eggs", "name": "Whole egg", "amount": "4", "unit": "eggs"}
+    ]
+  }
+}
