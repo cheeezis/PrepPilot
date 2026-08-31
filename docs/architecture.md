@@ -182,6 +182,21 @@ erhält importierte Lebensmittel. Der FDC-Schlüssel wird nur über
 gespeichert; für lokale Erkundung ist der dokumentierte `DEMO_KEY`
 voreingestellt.
 
+Phase 6G automatisiert die Verarbeitung vor der manuellen Ausnahmeprüfung. Der
+TheMealDB-Adapter kann bis zu 25 Rezepte einer Kategorie entdecken und ruft für
+jeden Treffer weiterhin den vollständigen Detaildatensatz ab. Ein Batch ist
+idempotent; ein einzelner nicht verfügbarer oder ungültiger Treffer wird im
+Ergebnis ausgewiesen und stoppt die übrigen Imports nicht.
+
+Qualität und Review-Priorität werden nicht als veränderlicher Fremdwert
+gespeichert, sondern jederzeit deterministisch aus Rohdaten, Portionen,
+Zutatenstatus und Anleitung abgeleitet. Die Inbox sortiert vollständige und mit
+wenig Aufwand prüfbare Kandidaten vor aufwendige oder quellenbedingt schwache
+Rezepte. Eine Sammel-Wiederverarbeitung wendet neue Katalogdaten auf alle offenen
+Imports an. Die Bewertung veröffentlicht und verwirft selbst keine Rezepte;
+Produktmetadaten und unsichere fachliche Entscheidungen bleiben hinter der
+bestehenden Freigabegrenze.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die

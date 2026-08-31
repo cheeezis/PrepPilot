@@ -49,11 +49,60 @@ class FetchedRecipe:
 
 
 @dataclass(frozen=True)
+class RecipeReference:
+    external_id: str
+    name: str
+
+
+@dataclass(frozen=True)
 class TheMealDbSource:
     api_key: str
     base_url: str
     timeout_seconds: float
     fetch_json: JsonFetcher
+
+    def discover_category(
+        self, category: str, *, limit: int
+    ) -> tuple[RecipeReference, ...]:
+        normalized_category = category.strip()
+        if not normalized_category:
+            raise RecipeSourcePayloadError("TheMealDB category must not be blank")
+        if not 1 <= limit <= 25:
+            raise RecipeSourcePayloadError("TheMealDB batch limit must be between 1 and 25")
+        url = (
+            f"{self.base_url.rstrip('/')}/{quote(self.api_key, safe='')}"
+            f"/filter.php?c={quote(normalized_category, safe='')}"
+        )
+        envelope = self.fetch_json(url, self.timeout_seconds)
+        meals = envelope.get("meals")
+        if meals is None:
+            return ()
+        if not isinstance(meals, list):
+            raise RecipeSourcePayloadError("unexpected TheMealDB category response")
+
+        references: list[RecipeReference] = []
+        seen_ids: set[str] = set()
+        for meal_value in meals:
+            if not isinstance(meal_value, dict):
+                raise RecipeSourcePayloadError(
+                    "unexpected TheMealDB category meal payload"
+                )
+            meal = cast(dict[str, object], meal_value)
+            meal_id = _required_text(meal, "idMeal")
+            if not meal_id.isdecimal():
+                raise RecipeSourcePayloadError("invalid TheMealDB category meal ID")
+            if meal_id in seen_ids:
+                continue
+            seen_ids.add(meal_id)
+            references.append(
+                RecipeReference(
+                    external_id=meal_id,
+                    name=_required_text(meal, "strMeal"),
+                )
+            )
+            if len(references) == limit:
+                break
+        return tuple(references)
 
     def fetch(self, external_id: str) -> FetchedRecipe:
         meal_id = external_id.strip()

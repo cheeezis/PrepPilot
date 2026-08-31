@@ -68,6 +68,41 @@ def test_themealdb_adapter_reports_missing_recipe() -> None:
         source.fetch("999999")
 
 
+def test_themealdb_adapter_discovers_category_with_limit() -> None:
+    requested: list[tuple[str, float]] = []
+
+    def fetch_json(url: str, timeout: float) -> dict[str, object]:
+        requested.append((url, timeout))
+        return {
+            "meals": [
+                {"idMeal": "100", "strMeal": "First meal"},
+                {"idMeal": "100", "strMeal": "Duplicate"},
+                {"idMeal": "101", "strMeal": "Second meal"},
+                {"idMeal": "102", "strMeal": "Beyond limit"},
+            ]
+        }
+
+    source = TheMealDbSource(
+        api_key="1",
+        base_url="https://example.test/api/json/v1",
+        timeout_seconds=3,
+        fetch_json=fetch_json,
+    )
+
+    references = source.discover_category("Quick Lunch", limit=2)
+
+    assert requested == [
+        (
+            "https://example.test/api/json/v1/1/filter.php?c=Quick%20Lunch",
+            3,
+        )
+    ]
+    assert [(item.external_id, item.name) for item in references] == [
+        ("100", "First meal"),
+        ("101", "Second meal"),
+    ]
+
+
 def test_themealdb_adapter_rejects_non_numeric_id_before_request() -> None:
     source = TheMealDbSource(
         api_key="1",
@@ -130,6 +165,71 @@ def test_themealdb_api_imports_idempotently_without_live_network() -> None:
         )
         with Session(engine) as session:
             assert session.scalar(select(func.count()).select_from(RecipeImport)) == 1
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_themealdb_api_imports_and_reprocesses_category_batch() -> None:
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base = RecipeImport.metadata
+    Base.create_all(engine)
+    with Session(engine) as seed_session, seed_session.begin():
+        replace_catalog(seed_session, load_catalog())
+
+    def fetch_json(url: str, timeout: float) -> dict[str, object]:
+        if "filter.php" in url:
+            return {
+                "meals": [
+                    {"idMeal": "52771", "strMeal": "Spicy Arrabiata Penne"}
+                ]
+            }
+        return {"meals": [_source_payload()]}
+
+    source = TheMealDbSource(
+        api_key="1",
+        base_url="https://example.test",
+        timeout_seconds=3,
+        fetch_json=fetch_json,
+    )
+
+    def override_session() -> Iterator[Session]:
+        with Session(engine) as api_session:
+            yield api_session
+
+    app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_themealdb_source] = lambda: source
+    try:
+        with TestClient(app) as client:
+            first = client.post(
+                "/api/internal/recipe-imports/sources/themealdb/"
+                "batches/categories/Vegetarian",
+                params={"limit": 1},
+            )
+            second = client.post(
+                "/api/internal/recipe-imports/sources/themealdb/"
+                "batches/categories/Vegetarian",
+                params={"limit": 1},
+            )
+            queue = client.get("/api/internal/recipe-imports")
+            reprocessed = client.post("/api/internal/recipe-imports/reprocess")
+
+        assert first.status_code == 200
+        assert first.json()["discovered"] == 1
+        assert first.json()["created"] == 1
+        assert first.json()["results"][0]["recipe_import"]["quality_score"] < 100
+        assert second.status_code == 200
+        assert second.json()["created"] == 0
+        assert len(queue.json()) == 1
+        assert queue.json()[0]["review_priority"] in {
+            "medium_effort",
+            "high_effort",
+        }
+        assert reprocessed.status_code == 200
+        assert reprocessed.json()["reprocessed"] == 1
     finally:
         app.dependency_overrides.clear()
 

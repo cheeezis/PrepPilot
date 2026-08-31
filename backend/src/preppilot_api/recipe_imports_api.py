@@ -13,6 +13,10 @@ from preppilot_api.recipe_catalog_promotion import (
     RecipePromotionError,
     promote_recipe_import,
 )
+from preppilot_api.recipe_import_quality import (
+    assess_recipe_import,
+    assessment_sort_key,
+)
 from preppilot_api.recipe_imports import (
     CreateRecipeImportCommand,
     RecipeImportDecisionError,
@@ -59,6 +63,11 @@ class RecipeImportResponse(BaseModel):
     fetched_at: str
     content_hash: str
     status: str
+    quality_score: int
+    review_priority: str
+    quality_issues: list[str]
+    unknown_ingredient_count: int
+    review_item_count: int
     raw_payload: dict[str, object]
     ingredients: list[ImportedIngredientResponse]
 
@@ -73,6 +82,28 @@ class PromotedMealResponse(BaseModel):
     meal_id: int
     catalog_key: str
     source_recipe_import_id: int
+
+
+class BatchRecipeImportResult(BaseModel):
+    external_id: str
+    name: str
+    created: bool
+    error: str | None = None
+    recipe_import: RecipeImportResponse | None = None
+
+
+class BatchRecipeImportResponse(BaseModel):
+    category: str
+    discovered: int
+    imported: int
+    created: int
+    failed: int
+    results: list[BatchRecipeImportResult]
+
+
+class ReprocessedRecipeImportsResponse(BaseModel):
+    reprocessed: int
+    recipe_imports: list[RecipeImportResponse]
 
 
 @router.post("", response_model=CreatedRecipeImportResponse)
@@ -102,10 +133,14 @@ def read_recipe_imports(
     session: DatabaseSession,
     import_status: RecipeImportStatus | None = None,
 ) -> list[RecipeImportResponse]:
-    return [
-        _serialize_recipe_import(session, recipe_import)
-        for recipe_import in list_recipe_imports(session, import_status)
-    ]
+    recipe_imports = list(list_recipe_imports(session, import_status))
+    recipe_imports.sort(
+        key=lambda item: (
+            *assessment_sort_key(assess_recipe_import(session, item)),
+            item.id,
+        )
+    )
+    return [_serialize_recipe_import(session, item) for item in recipe_imports]
 
 
 @router.post(
@@ -150,6 +185,128 @@ def import_themealdb_recipe(
     return CreatedRecipeImportResponse(
         created=created,
         recipe_import=_serialize_recipe_import(session, recipe_import),
+    )
+
+
+@router.post(
+    "/sources/themealdb/batches/categories/{category}",
+    response_model=BatchRecipeImportResponse,
+)
+def import_themealdb_category(
+    category: str,
+    session: DatabaseSession,
+    source: TheMealDbDependency,
+    limit: int = 10,
+) -> BatchRecipeImportResponse:
+    try:
+        references = source.discover_category(category, limit=limit)
+        results: list[BatchRecipeImportResult] = []
+        for reference in references:
+            try:
+                fetched = source.fetch(reference.external_id)
+                recipe_import, created = create_recipe_import(
+                    session,
+                    fetched.command,
+                    source_payload=fetched.source_payload,
+                )
+                results.append(
+                    BatchRecipeImportResult(
+                        external_id=reference.external_id,
+                        name=reference.name,
+                        created=created,
+                        recipe_import=_serialize_recipe_import(
+                            session, recipe_import
+                        ),
+                    )
+                )
+            except RecipeSourceNotFoundError:
+                results.append(
+                    BatchRecipeImportResult(
+                        external_id=reference.external_id,
+                        name=reference.name,
+                        created=False,
+                        error="not_found",
+                    )
+                )
+            except RecipeSourcePayloadError:
+                results.append(
+                    BatchRecipeImportResult(
+                        external_id=reference.external_id,
+                        name=reference.name,
+                        created=False,
+                        error="invalid_payload",
+                    )
+                )
+            except RecipeSourceUnavailableError:
+                results.append(
+                    BatchRecipeImportResult(
+                        external_id=reference.external_id,
+                        name=reference.name,
+                        created=False,
+                        error="source_unavailable",
+                    )
+                )
+        session.commit()
+    except RecipeSourcePayloadError as error:
+        session.rollback()
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except RecipeSourceUnavailableError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="TheMealDB nicht erreichbar",
+        ) from error
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Importdatenbank nicht verfügbar",
+        ) from error
+
+    imported = sum(result.recipe_import is not None for result in results)
+    created_count = sum(result.created for result in results)
+    return BatchRecipeImportResponse(
+        category=category.strip(),
+        discovered=len(references),
+        imported=imported,
+        created=created_count,
+        failed=len(results) - imported,
+        results=results,
+    )
+
+
+@router.post("/reprocess", response_model=ReprocessedRecipeImportsResponse)
+def reprocess_open_recipe_imports(
+    session: DatabaseSession,
+) -> ReprocessedRecipeImportsResponse:
+    try:
+        recipe_imports = [
+            item
+            for item in list_recipe_imports(session)
+            if item.status != RecipeImportStatus.REJECTED
+        ]
+        for recipe_import in recipe_imports:
+            recipe_import.status = RecipeImportStatus.RECEIVED
+            process_recipe_import(session, recipe_import.id)
+        session.commit()
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Importdatenbank nicht verfügbar",
+        ) from error
+
+    recipe_imports.sort(
+        key=lambda item: (
+            *assessment_sort_key(assess_recipe_import(session, item)),
+            item.id,
+        )
+    )
+    return ReprocessedRecipeImportsResponse(
+        reprocessed=len(recipe_imports),
+        recipe_imports=[
+            _serialize_recipe_import(session, item) for item in recipe_imports
+        ],
     )
 
 
@@ -245,6 +402,7 @@ def _serialize_recipe_import(
     session: Session, recipe_import: RecipeImport
 ) -> RecipeImportResponse:
     ingredients = ingredients_for_import(session, recipe_import.id)
+    assessment = assess_recipe_import(session, recipe_import)
     food_ids = {ingredient.food_id for ingredient in ingredients if ingredient.food_id}
     foods = {
         food.id: food
@@ -257,6 +415,11 @@ def _serialize_recipe_import(
         fetched_at=recipe_import.fetched_at.isoformat(),
         content_hash=recipe_import.content_hash,
         status=recipe_import.status.value,
+        quality_score=assessment.score,
+        review_priority=assessment.priority.value,
+        quality_issues=list(assessment.issues),
+        unknown_ingredient_count=assessment.unknown_ingredient_count,
+        review_item_count=assessment.review_item_count,
         raw_payload=recipe_import.raw_payload,
         ingredients=[
             ImportedIngredientResponse(

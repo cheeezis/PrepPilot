@@ -515,6 +515,54 @@ geschätzt; keines der Rezepte wird ungeprüft in den Planerkatalog übernommen.
 
 **Status:** abgeschlossen
 
+## Phase 6G: Automatisierte Importverarbeitung
+
+**Ziel:** Neue Rezeptdaten werden nicht mehr über einzeln vorgegebene IDs
+eingesammelt. Ein begrenzter Batch kann Kandidaten aus einer TheMealDB-Kategorie
+entdecken, importieren, normalisieren und nach dem tatsächlichen verbleibenden
+Prüfaufwand priorisieren.
+
+**Umfang:**
+
+- Kategorie-Discovery im TheMealDB-Adapter mit einem expliziten Limit von
+  höchstens 25 Treffern
+- Detailabruf und idempotenter Inbox-Import jedes entdeckten Rezepts
+- isolierte Fehler je Treffer, damit ein ungültiges Rezept den Batch nicht
+  vollständig stoppt
+- deterministische Qualitätsbewertung aus Anleitung, Portionen und offenen
+  Zutatenentscheidungen
+- Review-Prioritäten `ready`, `low_effort`, `medium_effort`, `high_effort`,
+  `low_quality` und `rejected`
+- automatisch priorisierte Ausgabe der vorhandenen Import-Inbox
+- Sammel-Wiederverarbeitung aller nicht abgelehnten Rezepte nach Änderungen am
+  Lebensmittelkatalog oder an Normalisierungsmetadaten
+- interne Endpunkte für Kategorie-Batch und Sammel-Wiederverarbeitung
+
+**Bewusste Grenze:** Die Qualitätsbewertung schätzt keine Portionen oder Mengen,
+wählt keine FDC-Treffer aus und veröffentlicht keine Mahlzeit. Insbesondere
+TheMealDB-Rezepte mit fehlenden Portionen oder unzureichenden Anleitungen werden
+sichtbar zurückgestuft, statt durch erfundene Werte vervollständigt zu werden.
+
+**Abnahme:**
+
+- Derselbe Kategorie-Batch erzeugt beim zweiten Lauf keine Duplikate.
+- Die API weist Erstellungs-, Import- und Fehlerzahlen pro Batch aus.
+- Quellenarme Rezepte wie eine Anleitung unter 80 Zeichen landen am Ende der
+  Review-Priorität.
+- Ein Kandidat mit nur wenigen offenen Zutaten wird vor aufwendigen Imports
+  ausgegeben.
+- Die Sammel-Wiederverarbeitung aktualisiert sämtliche offenen Kandidaten in
+  einem Aufruf.
+
+**Praktische Abnahme:** Ein Live-Batch der Kategorie `Vegetarian` entdeckte am
+31. August 2026 drei Rezepte, importierte alle drei und erzeugte beim zweiten
+Lauf null neue Datensätze. Die Sammel-Wiederverarbeitung aktualisierte danach
+23 Imports. `Bread omelette` wurde wegen fehlender Portionen, unzureichender
+Anleitung und unbekanntem Lebensmittel als `low_quality` an das Ende der Queue
+sortiert.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
@@ -561,8 +609,10 @@ fachlich geprüfter Kandidat bis in den produktiven Planerkatalog übernommen.
 Phase 6E ist ebenfalls abgeschlossen: Der erste reale FoodData-Central-Datensatz
 wurde kontrolliert importiert, freigegeben und bleibt beim Seed erhalten. Als
 Phase 6F wurden 29 weitere Lebensmittel und zwölf weitere Rezepte kontrolliert
-aufgenommen. Als Nächstes kann die Prüfwarteschlange priorisiert abgearbeitet
-werden: zuerst sichere Alias- und Portionsentscheidungen für einfache Rezepte,
-danach weitere echte Kataloglücken. Automatische Suche und Open Food Facts
-bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt im Backlog für
-einen passenden Zeitpunkt festgehalten.
+aufgenommen. Phase 6G automatisiert nun Kategorie-Discovery, Batchimport,
+Qualitätsbewertung, Priorisierung und Wiederverarbeitung. Als Nächstes kann die
+praktische Live-Abnahme erfolgen; danach können FDC-Treffervorschläge für
+unbekannte Zutaten als eigener Abschnitt bewertet werden. Automatische
+Freigabe, Open Food Facts und regelmäßige Ausführung bleiben getrennte
+Folgeschritte. Eine echte Nutzerprüfung bleibt im Backlog für einen passenden
+Zeitpunkt festgehalten.
