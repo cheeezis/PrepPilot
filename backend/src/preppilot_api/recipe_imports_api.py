@@ -8,6 +8,11 @@ from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
 from preppilot_api.models import Food, RecipeImport, RecipeImportStatus
+from preppilot_api.recipe_catalog_promotion import (
+    PromoteRecipeImportCommand,
+    RecipePromotionError,
+    promote_recipe_import,
+)
 from preppilot_api.recipe_imports import (
     CreateRecipeImportCommand,
     RecipeImportDecisionError,
@@ -20,9 +25,17 @@ from preppilot_api.recipe_imports import (
     list_recipe_imports,
     process_recipe_import,
 )
+from preppilot_api.recipe_sources import (
+    RecipeSourceNotFoundError,
+    RecipeSourcePayloadError,
+    RecipeSourceUnavailableError,
+    TheMealDbSource,
+    get_themealdb_source,
+)
 
 router = APIRouter(prefix="/api/internal/recipe-imports", tags=["recipe-imports"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
+TheMealDbDependency = Annotated[TheMealDbSource, Depends(get_themealdb_source)]
 
 
 class ImportedIngredientResponse(BaseModel):
@@ -53,6 +66,13 @@ class RecipeImportResponse(BaseModel):
 class CreatedRecipeImportResponse(BaseModel):
     created: bool
     recipe_import: RecipeImportResponse
+
+
+class PromotedMealResponse(BaseModel):
+    created: bool
+    meal_id: int
+    catalog_key: str
+    source_recipe_import_id: int
 
 
 @router.post("", response_model=CreatedRecipeImportResponse)
@@ -86,6 +106,51 @@ def read_recipe_imports(
         _serialize_recipe_import(session, recipe_import)
         for recipe_import in list_recipe_imports(session, import_status)
     ]
+
+
+@router.post(
+    "/sources/themealdb/{external_id}",
+    response_model=CreatedRecipeImportResponse,
+)
+def import_themealdb_recipe(
+    external_id: str,
+    response: Response,
+    session: DatabaseSession,
+    source: TheMealDbDependency,
+) -> CreatedRecipeImportResponse:
+    try:
+        fetched = source.fetch(external_id)
+        recipe_import, created = create_recipe_import(
+            session,
+            fetched.command,
+            source_payload=fetched.source_payload,
+        )
+        session.commit()
+    except RecipeSourceNotFoundError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=404, detail="TheMealDB-Rezept nicht gefunden"
+        ) from error
+    except RecipeSourcePayloadError as error:
+        session.rollback()
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except RecipeSourceUnavailableError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="TheMealDB nicht erreichbar",
+        ) from error
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Importdatenbank nicht verfügbar",
+        ) from error
+    response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    return CreatedRecipeImportResponse(
+        created=created,
+        recipe_import=_serialize_recipe_import(session, recipe_import),
+    )
 
 
 @router.get("/{recipe_import_id}", response_model=RecipeImportResponse)
@@ -143,6 +208,37 @@ def reprocess_recipe_import(
         session.rollback()
         raise HTTPException(status_code=422, detail=str(error)) from error
     return _serialize_recipe_import(session, recipe_import)
+
+
+@router.post("/{recipe_import_id}/promote", response_model=PromotedMealResponse)
+def promote_reviewed_recipe_import(
+    recipe_import_id: int,
+    command: PromoteRecipeImportCommand,
+    session: DatabaseSession,
+) -> PromotedMealResponse:
+    try:
+        meal, created = promote_recipe_import(session, recipe_import_id, command)
+        session.commit()
+    except RecipeImportNotFoundError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=404, detail="Rezeptimport nicht gefunden"
+        ) from error
+    except RecipePromotionError as error:
+        session.rollback()
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Mahlzeitenkatalog nicht verfügbar",
+        ) from error
+    return PromotedMealResponse(
+        created=created,
+        meal_id=meal.id,
+        catalog_key=meal.catalog_key,
+        source_recipe_import_id=recipe_import_id,
+    )
 
 
 def _serialize_recipe_import(

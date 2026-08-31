@@ -111,14 +111,29 @@ def test_reusable_alias_reprocesses_unknown_food(session: Session) -> None:
     )
 
     assert recipe_import.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
-    assert session.scalar(select(func.count()).select_from(FoodAlias)) == 1
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodAlias)
+            .where(FoodAlias.source_name == "fixture-recipes")
+        )
+        == 1
+    )
+
     assert session.scalar(select(func.count()).select_from(ImportReviewDecision)) == 1
 
     replace_catalog(session, load_catalog())
     session.flush()
 
     assert recipe_import.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
-    assert session.scalar(select(func.count()).select_from(FoodAlias)) == 1
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodAlias)
+            .where(FoodAlias.source_name == "fixture-recipes")
+        )
+        == 1
+    )
 
 
 def test_measure_default_reprocesses_piece_quantity(session: Session) -> None:
@@ -140,7 +155,26 @@ def test_measure_default_reprocesses_piece_quantity(session: Session) -> None:
     normalized = ingredients_for_import(session, recipe_import.id)[0]
     assert recipe_import.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
     assert normalized.normalized_amount == 100
-    assert session.scalar(select(func.count()).select_from(FoodMeasureDefault)) == 1
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodMeasureDefault)
+            .where(FoodMeasureDefault.source_name == "FoodData Central test reference")
+        )
+        == 1
+    )
+
+    replace_catalog(session, load_catalog())
+    session.flush()
+
+    assert (
+        session.scalar(
+            select(func.count())
+            .select_from(FoodMeasureDefault)
+            .where(FoodMeasureDefault.source_name == "FoodData Central test reference")
+        )
+        == 1
+    )
 
 
 def test_internal_api_exposes_queue_and_applies_override() -> None:
@@ -188,6 +222,27 @@ def test_internal_api_exposes_queue_and_applies_override() -> None:
             assert resolved.status_code == 200
             assert resolved.json()["status"] == "ready_for_catalog_review"
             assert resolved.json()["ingredients"][0]["normalized_amount"] == 200
+
+            promotion = {
+                "catalog_key": "imported_chicken",
+                "name": "Imported chicken",
+                "preparation_minutes": 10,
+                "instructions": "Cook the chicken.",
+                "roles": ["main_meal"],
+                "portion_factors": [1, 1.5],
+            }
+            promoted = client.post(
+                f"/api/internal/recipe-imports/{recipe_import_id}/promote",
+                json=promotion,
+            )
+            assert promoted.status_code == 200
+            assert promoted.json()["created"]
+            repeated = client.post(
+                f"/api/internal/recipe-imports/{recipe_import_id}/promote",
+                json=promotion,
+            )
+            assert repeated.status_code == 200
+            assert not repeated.json()["created"]
     finally:
         app.dependency_overrides.clear()
 

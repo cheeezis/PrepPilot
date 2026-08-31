@@ -127,12 +127,47 @@ Ein Import ist `received`, `needs_review`, `ready_for_catalog_review` oder
 `rejected`. `ready_for_catalog_review` ist ausdrücklich noch keine Freigabe für
 den Planer oder den produktiven Mahlzeitenkatalog.
 
+Beim manuellen quellenneutralen Eingang enthält `raw_payload` das interne
+Eingangsformat. Beim TheMealDB-Adapter enthält es stattdessen das unveränderte
+empfangene Rezeptobjekt; die daraus abgeleiteten Zutatenzeilen werden wie zuvor
+separat in `recipe_import_ingredients` gespeichert. Der Inhalts-Hash wird über
+diese Rohdaten gebildet. Dadurch erzeugt ein unveränderter erneuter Abruf kein
+Duplikat, während eine tatsächlich geänderte Quellenversion als neuer,
+nachvollziehbarer Import erhalten bleiben kann.
+
+Phase 6B ergänzt `meals` um die Herkunft `curated_seed` oder `recipe_import`.
+Eine importierte Mahlzeit verweist eindeutig auf genau einen vollständig
+normalisierten Rezeptimport. Seed-Mahlzeiten besitzen keinen solchen Verweis.
+Die bestehenden Tabellen für Zutaten, Rollen und Portionsfaktoren werden für
+beide Herkunftsarten gemeinsam verwendet.
+
 Fehlt eine Zutatenzuordnung oder eine benötigte Stückumrechnung, wird kein
 generischer Gewichts-Fallback verwendet. Das gesamte Rezept wird zur manuellen
 Prüfung zurückgestellt. Dort kann ein wiederverwendbarer Lebensmittelstandard
 ergänzt, eine rezeptbezogene Menge festgelegt oder das Rezept verworfen werden.
 Eine spätere LLM-Unterstützung darf Vorschläge für diese Prüfung liefern, aber
 keine unvollständigen Rezepte am Katalog vorbei freigeben.
+
+Phase 6D ergänzt die versionierte Katalogdefinition um optionale `aliases` und
+`measure_defaults` je Lebensmittel. Diese erzeugen keine neuen automatischen
+Entscheidungen: Jeder Eintrag ist eine bereits geprüfte, wiederverwendbare Regel
+mit eindeutiger Lebensmittelzuordnung. Maßstandards tragen Menge, Quellenname
+und Quellenreferenz. Katalogverwaltete und später manuell ergänzte Datensätze
+bleiben beim Seed unterscheidbar, sodass der Seed nur seine eigenen veralteten
+Regeln entfernt.
+
+Phase 6E ergänzt `food_imports` für FoodData-Central-Rohdaten und abgeleitete
+Kandidatenwerte. Ein Datensatz enthält Quelle, externe ID, Abrufzeitpunkt,
+Inhalts-Hash, Status, Namen, vier Nährwerte pro 100 Gramm und maschinenlesbare
+Prüfgründe. `ready_for_catalog_review` bedeutet, dass Name, Energie, Protein,
+Fett sowie aus Gesamt-Kohlenhydraten und Ballaststoffen berechnete europäische
+Kohlenhydrate vollständig vorliegen. `needs_review` bleibt von `foods` getrennt.
+
+`foods` trägt nun zusätzlich die Herkunft `curated_seed` oder `food_import`.
+Ein importiertes Lebensmittel verweist eindeutig auf seinen freigegebenen
+Food-Import; ein Seed-Lebensmittel besitzt keinen solchen Verweis. Dadurch kann
+der Seed versionierte Lebensmittel weiterhin ersetzen, ohne über die Food-Inbox
+ergänzte Katalogeinträge zu löschen.
 
 ## Bewusste Grenzen des MVP
 

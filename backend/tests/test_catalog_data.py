@@ -13,9 +13,19 @@ from preppilot_api.nutrition import Nutrients, calculate_meal_nutrients
 def test_loads_complete_versioned_catalog() -> None:
     catalog = load_catalog()
 
-    assert len(catalog.foods) == 21
+    assert len(catalog.foods) == 24
     assert len(catalog.meals) == 10
     assert {food.unit.value for food in catalog.foods} == {"g", "ml"}
+
+
+def test_catalog_contains_reviewed_import_normalization_metadata() -> None:
+    catalog = load_catalog()
+    foods = {food.key: food for food in catalog.foods}
+
+    assert foods["egg"].aliases == ("Egg", "Eggs")
+    assert foods["egg"].measure_defaults[0].key == "medium"
+    assert foods["banana"].measure_defaults[0].amount == 136
+    assert foods["vegetable_oil"].aliases == ("Oil",)
 
 
 def test_every_food_has_a_reviewed_traceable_source() -> None:

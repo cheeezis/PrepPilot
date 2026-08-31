@@ -11,6 +11,8 @@ from preppilot_api.catalog_seed import replace_catalog
 from preppilot_api.models import (
     Base,
     Food,
+    FoodAlias,
+    FoodMeasureDefault,
     Meal,
     MealIngredient,
     MealPortionFactor,
@@ -44,6 +46,12 @@ def test_replaces_database_catalog_reproducibly() -> None:
         assert session.scalar(
             select(func.count()).select_from(MealPortionFactor)
         ) == sum(len(meal.portion_factors) for meal in catalog.meals)
+        assert session.scalar(select(func.count()).select_from(FoodAlias)) == sum(
+            len(food.aliases) for food in catalog.foods
+        )
+        assert session.scalar(
+            select(func.count()).select_from(FoodMeasureDefault)
+        ) == sum(len(food.measure_defaults) for food in catalog.foods)
 
 
 def test_seed_keeps_normalized_ingredient_amounts() -> None:

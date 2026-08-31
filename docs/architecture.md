@@ -131,6 +131,57 @@ bei `ready_for_catalog_review`; der Planer liest keine Importtabellen. Eine
 Live-Verbindung zu einer Rezept- oder Lebensmittel-API ist weiterhin keine
 Laufzeitvoraussetzung.
 
+Phase 6B veröffentlicht einen solchen Kandidaten transaktional als Mahlzeit.
+Die Mahlzeitenherkunft und der eindeutige Verweis zum Rezeptimport verhindern
+doppelte Freigaben. Der Seed aktualisiert und entfernt nur Mahlzeiten mit der
+Herkunft `curated_seed`; veröffentlichte Importmahlzeiten bleiben erhalten. Der
+Planer benötigt dadurch keine Importlogik und liest weiterhin ausschließlich
+den produktiven Datenbankkatalog.
+
+Phase 6C ergänzt davor genau einen TheMealDB-Adapter. Der interne Endpunkt ruft
+ein Rezept nur auf ausdrückliche Anforderung anhand seiner externen ID ab. Der
+Adapter bewahrt das empfangene Rezeptobjekt als Rohdaten und übersetzt dessen
+Zutaten-/Maßpaare in das bestehende, quellenneutrale Inbox-Format. Einfache
+Brüche werden deterministisch in Dezimalmengen überführt; unsichere Texte werden
+nicht geschätzt. Weil TheMealDB keine verlässliche Portionenzahl liefert, muss
+diese vor einer möglichen Freigabe geprüft und ergänzt werden.
+
+Netzwerk- und Anbieterdetails enden am Adapter. Weder Normalisierung noch
+Katalogfreigabe oder Planung rufen TheMealDB auf. Der Entwicklungszugang nutzt
+standardmäßig den von TheMealDB dokumentierten Testschlüssel `1`; Schlüssel,
+Basis-URL und Timeout bleiben über `PREPPILOT_`-Umgebungsvariablen
+konfigurierbar.
+
+Phase 6D macht bestätigte Normalisierungsmetadaten reproduzierbar. Der
+versionierte Katalog kann je Lebensmittel eindeutige externe Aliase und
+belegte Standardmengen für konkrete Maße enthalten. Der Seed übernimmt diese
+Einträge idempotent in `food_aliases` und `food_measure_defaults`, ohne später
+manuell geprüfte Ergänzungen zu löschen. Alias-Kollisionen zwischen
+Lebensmitteln brechen bereits die Katalogvalidierung ab.
+
+Eine Stichprobe aus acht realen Rezepten dient als bewusster Qualitätscheck und
+nicht als Katalog-Massenimport. Nur der vollständig geprüfte
+Banana-Pancakes-Kandidat wird veröffentlicht. Die Originalquelle bestätigt zwei
+Portionen und zehn Minuten Zubereitungszeit. Relevante Zutaten werden vollständig
+abgebildet; nur Backpulver und Vanille werden nach ausdrücklicher Entscheidung
+aus der Nährwert- und Einkaufsberechnung ausgeschlossen.
+
+Phase 6E führt für Lebensmittel dieselbe Sicherheitsgrenze ein. Der
+FoodData-Central-Adapter ruft genau eine bekannte FDC-ID ab und speichert die
+unveränderte Antwort zunächst in `food_imports`. Nur Foundation- und SR-Legacy-
+Datensätze werden als generische Kandidaten ausgewertet. Nährstoffkennungen
+werden explizit zugeordnet; europäische Kohlenhydrate entstehen als Differenz
+aus Gesamt-Kohlenhydraten und Ballaststoffen.
+
+Die Food-Inbox schreibt nicht direkt in `foods`. Erst ein vollständiger und
+ausdrücklich freigegebener Kandidat erzeugt ein gramm-basiertes Lebensmittel.
+`Food.origin` und der eindeutige Verweis zum Food-Import schützen vor doppelter
+Freigabe. Der Seed verwaltet ausschließlich `curated_seed`-Lebensmittel und
+erhält importierte Lebensmittel. Der FDC-Schlüssel wird nur über
+`PREPPILOT_FOOD_DATA_CENTRAL_API_KEY` konfiguriert und nicht im Repository
+gespeichert; für lokale Erkundung ist der dokumentierte `DEMO_KEY`
+voreingestellt.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die

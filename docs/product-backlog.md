@@ -22,6 +22,18 @@ stellvertretende Testnutzer verpflichtet.
 
 ## Katalog und Datenimport
 
+### Lebensmittel aus FoodData Central importieren
+
+**Status:** kontrollierter Detailimport per FDC-ID als Phase 6E und erster
+kuratierter 29er-Datenbatch als Phase 6F abgeschlossen; Suche, automatische
+Massenergänzung und Open Food Facts bleiben im Backlog
+
+Der erste Adapter hält FoodData-Central-Rohdaten und abgeleitete Kandidaten in
+einer getrennten Inbox. Nur vollständige, ausdrücklich bestätigte Kandidaten
+gelangen in `foods`; importierte Einträge bleiben bei einem Katalog-Seed
+erhalten. Als Folgeschritt kann die freie Suche Vorschläge liefern, darf aber
+keinen Treffer automatisch auswählen oder freigeben.
+
 ### Import-Inbox und Zutaten-Normalisierung
 
 **Status:** als Phase 6A in `docs/roadmap.md` abgeschlossen
@@ -34,6 +46,8 @@ Veröffentlichung im produktiven Katalog.
 
 ### Normalisierte Rezepte in den produktiven Katalog übernehmen
 
+**Status:** als Phase 6B in `docs/roadmap.md` abgeschlossen
+
 Ein eigener Folgeabschnitt soll vollständig normalisierte Kandidaten fachlich
 prüfen und anschließend kontrolliert als Mahlzeiten veröffentlichen. Vorher
 müssen insbesondere Mahlzeitenrolle, Grundportion, erlaubte Portionsfaktoren,
@@ -45,6 +59,10 @@ nicht löschen oder unkontrolliert überschreiben. Der genaue Freigabe- und
 Aktualisierungsprozess wird erst vor diesem Abschnitt beschlossen.
 
 ### Live-Rezeptquellen und weitere Adapter
+
+**Status:** erster TheMealDB-Adapter als Phase 6C, praktische Härtung mit acht
+realen Rezepten als Phase 6D und Ausbau der Inbox auf 20 Rezepte als Phase 6F
+abgeschlossen; weitere Adapter und automatisierte Abrufe bleiben im Backlog
 
 Nach der Import-Inbox kann ein konkreter Rezeptanbieter anhand von
 Datenqualität, strukturierten Zutatenmengen, Nutzungsrechten, Kosten,

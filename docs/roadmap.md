@@ -26,6 +26,7 @@ Beginn des jeweiligen Abschnitts festgelegt.
 | 4 | Tagesplaner nutzbar | abgeschlossen |
 | 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
 | 6A | Externe Rezepte sicher aufnehmen und normalisieren | abgeschlossen |
+| 6B | Normalisierte Rezepte kontrolliert veröffentlichen | abgeschlossen |
 
 ## Phase 0: Produkt ausrichten
 
@@ -289,10 +290,236 @@ Typische maschinenlesbare Prüfgründe sind `unknown_food`, `ambiguous_food`,
 
 **Status:** abgeschlossen
 
+## Phase 6B: Normalisierte Rezepte kontrolliert veröffentlichen
+
+**Ziel:** Ein vollständig normalisierter Rezeptimport kann nach ausdrücklicher
+fachlicher Bestätigung als produktive Mahlzeit veröffentlicht und anschließend
+vom Planer verwendet werden. Seed-Mahlzeiten und importierte Mahlzeiten bleiben
+dabei dauerhaft unterscheidbar.
+
+**Umfang:**
+
+- Mahlzeitenherkunft `curated_seed` oder `recipe_import` speichern
+- importierte Mahlzeiten eindeutig mit ihrem Rezeptimport verbinden
+- Name, stabile Katalogkennung, Zubereitungszeit, Anleitung, Rollen und erlaubte
+  Portionsfaktoren bei der Freigabe ausdrücklich bestätigen
+- ausschließlich Importe mit `ready_for_catalog_review` freigeben
+- normalisierte Zutaten einer Grundportion transaktional in den produktiven
+  Katalog übernehmen; mehrfach vorkommende Lebensmittel zusammenfassen
+- wiederholte Freigabe desselben Imports ohne Duplikat beantworten
+- Katalog-Seed so begrenzen, dass nur versionierte Seed-Mahlzeiten ersetzt und
+  importierte Mahlzeiten erhalten bleiben
+- freigegebene Mahlzeiten über den bestehenden Datenbankkatalog für die
+  Planungslogik verfügbar machen
+
+**Bewusste Nicht-Ziele:**
+
+- nachträgliches Bearbeiten oder Zurückziehen veröffentlichter Mahlzeiten
+- automatische Ableitung von Rollen oder Portionsfaktoren
+- automatische Freigabe durch eine externe API oder ein LLM
+- öffentliche oder ausgearbeitete Administrationsoberfläche
+- Live-Anbindung an einen Rezeptanbieter
+
+**Abnahme:**
+
+- Ein unvollständiger Import kann nicht veröffentlicht werden.
+- Ein vollständiger Import erzeugt genau eine Mahlzeit mit vollständigen
+  Zutaten, Rollen und Portionsfaktoren.
+- Eine wiederholte identische Freigabe erzeugt kein Duplikat.
+- Ein erneuter Seed erhält die importierte Mahlzeit und ihre Zuordnungen.
+- Der bestehende Datenbankkatalog liefert die importierte Mahlzeit an die
+  Planungslogik aus.
+- Migration, Freigabe und erneuter Seed sind gegen PostgreSQL geprüft.
+
+**Status:** abgeschlossen
+
+## Phase 6C: Erster Live-Quellenadapter
+
+**Ziel:** Ein einzelnes Rezept kann anhand seiner stabilen externen Kennung
+kontrolliert von TheMealDB abgerufen und über dieselbe deterministische Pipeline
+in die Import-Inbox aufgenommen werden. Die externe Quelle bleibt vollständig
+von Katalog und Planer getrennt.
+
+**Umfang:**
+
+- genau ein TheMealDB-Adapter mit konfigurierbarem API-Schlüssel, Basis-URL und
+  Abruf-Timeout
+- interner Endpunkt zum Abruf genau eines Rezepts anhand seiner numerischen
+  TheMealDB-ID
+- unverändertes TheMealDB-Rezeptobjekt als Rohdaten und daraus getrennt
+  abgeleitete interne Zutatenzeilen speichern
+- bis zu 20 Zutaten-/Maßpaare übernehmen; einfache ganze, dezimale und
+  gebrochene Mengen deterministisch lesen
+- unbekannte Zutaten, nicht sicher interpretierbare Maße und die bei TheMealDB
+  fehlende Portionenzahl wie bisher in die Prüfwarteschlange leiten
+- identische erneut abgerufene Inhalte über Quelle, externe Kennung und
+  Inhalts-Hash ohne Duplikat beantworten
+- Nicht-vorhanden-, ungültige-Antwort- und Nicht-erreichbar-Fälle getrennt
+  behandeln
+- Adaptertests vollständig ohne Live-Netzwerk ausführen und einen echten Abruf
+  zusätzlich gegen die lokale PostgreSQL-Inbox prüfen
+
+**Bewusste Nicht-Ziele:**
+
+- Suche, Zufallsauswahl, Kategorien oder Massenimport von TheMealDB
+- regelmäßiger oder automatischer Hintergrundabruf
+- weitere Rezeptquellen
+- automatische Anlage unbekannter Lebensmittel oder unsichere Umrechnungen
+- automatische Katalogfreigabe, Rollenwahl oder Portionsfaktoren
+- TheMealDB als Laufzeitabhängigkeit des Planers
+
+**Abnahme:**
+
+- Eine numerische TheMealDB-ID erzeugt einen nachvollziehbaren Import mit der
+  Quelle `themealdb` und der externen ID.
+- Die empfangenen Quelldaten bleiben erhalten; der Adapter erzeugt daraus das
+  bestehende interne Inbox-Format.
+- Ein wiederholter Abruf desselben unveränderten Rezepts erzeugt keinen zweiten
+  Importdatensatz.
+- Unvollständige Angaben landen mit konkreten Prüfgründen in `needs_review` und
+  nicht im produktiven Katalog.
+- Adapter, HTTP-Endpunkt und Fehlerfälle sind ohne externe API testbar.
+- Der echte Abruf des TheMealDB-Rezepts `52771` wurde am 31. August 2026 gegen
+  die lokale PostgreSQL-Inbox geprüft.
+
+**Status:** abgeschlossen
+
+## Phase 6D: Reale Imports und Normalisierung härten
+
+**Ziel:** Die Importpipeline wird anhand einer kleinen, gemischten Stichprobe
+echter TheMealDB-Rezepte praktisch geprüft. Wiederkehrende sichere Zuordnungen
+werden reproduzierbar, fachlich relevante Lücken bleiben sichtbar, und ein
+geeigneter realer Kandidat durchläuft den vollständigen Weg bis zum Planer.
+
+**Umfang:**
+
+- insgesamt acht reale TheMealDB-Rezepte mit 81 Zutatenzeilen kontrolliert in
+  die lokale PostgreSQL-Inbox aufnehmen
+- Prüfgründe je Rezept auswerten, ohne unbekannte Zutaten automatisch anzulegen
+  oder unsichere Begriffe zu erraten
+- bestätigte Aliase und belegte lebensmittelspezifische Maße im versionierten
+  Katalog hinterlegen und beim Seed idempotent in PostgreSQL übernehmen
+- manuell angelegte Aliase und Maße bei einem Seed weiterhin erhalten
+- Pflanzenöl, Pekannüsse und Himbeeren mit nachvollziehbaren Nährwertquellen zum
+  kleinen Lebensmittelkatalog ergänzen
+- Banana Pancakes aus TheMealDB anhand der Originalquelle auf zwei Portionen
+  festlegen; nur Backpulver und Vanille als ernährungsseitig unerhebliche
+  Zutaten ausdrücklich ausschließen
+- den vollständig normalisierten Kandidaten als Frühstück veröffentlichen und
+  anschließend Seed, Datenbankkatalog und Nährwertberechnung prüfen
+
+**Bewusste Nicht-Ziele:**
+
+- alle Zutaten der Stichprobe in den Lebensmittelkatalog aufnehmen
+- generische Begriffe wie `Chicken`, `Bread` oder konkrete Reisarten auf einen
+  nur ungefähr passenden vorhandenen Katalogeintrag abbilden
+- relevante Saucen, Nüsse, Früchte oder Öle aus der Nährwertberechnung
+  ausschließen, nur um ein Rezept freigeben zu können
+- automatische Freigabe weiterer Stichprobenrezepte
+- Massenimport, Zeitplan oder weitere Quellenadapter
+
+**Abnahme:**
+
+- Alle acht Rezepte bleiben mit Rohdaten, externer ID und konkreten
+  Prüfgründen nachvollziehbar.
+- Der erneute Seed erzeugt bestätigte Katalog-Aliase und Maße reproduzierbar,
+  löscht aber keine manuell geprüften Ergänzungen.
+- Der Banana-Pancakes-Import normalisiert pro Portion Banane, Ei, Pflanzenöl,
+  Pekannüsse und Himbeeren auf Gramm beziehungsweise Milliliter.
+- Das veröffentlichte Rezept bleibt nach einem erneuten Seed erhalten und wird
+  mit den übrigen Mahlzeiten aus dem produktiven Datenbankkatalog geladen.
+- Der vollständige reale Ablauf ist zusätzlich als netzwerkunabhängiger Test
+  mit einem versionierten TheMealDB-Payload abgesichert.
+
+**Status:** abgeschlossen
+
+## Phase 6E: FoodData-Central-Import für Lebensmittel
+
+**Ziel:** Generische Lebensmittel können anhand einer stabilen FoodData-Central-
+ID in einen getrennten Prüfbereich importiert und erst nach ausdrücklicher
+Bestätigung in den produktiven Lebensmittelkatalog übernommen werden.
+
+**Umfang:**
+
+- eigene Tabelle `food_imports` für Quelle, externe ID, Abrufzeitpunkt,
+  unveränderte Rohdaten, Inhalts-Hash, Kandidatenwerte und Prüfgründe
+- genau ein FoodData-Central-Detailadapter für numerische FDC-IDs; keine
+  automatische Suche oder Trefferauswahl
+- zunächst ausschließlich `Foundation`- und `SR Legacy`-Datensätze als
+  generische Lebensmittel akzeptieren
+- Energie, Protein, Fett, Gesamt-Kohlenhydrate und Ballaststoffe anhand stabiler
+  FDC-Nährstoffkennungen auslesen
+- europäische Kohlenhydrate reproduzierbar als Gesamt-Kohlenhydrate minus
+  Ballaststoffe berechnen; fehlende oder widersprüchliche Werte zurückstellen
+- vollständige Kandidaten ausdrücklich mit Katalogschlüssel und Anzeigename
+  als gramm-basiertes Lebensmittel freigeben
+- importierte und Seed-Lebensmittel dauerhaft unterscheiden; erneuter Seed darf
+  importierte Lebensmittel nicht löschen
+- interne Endpunkte zum Abruf der Food-Inbox, FDC-Import und Freigabe
+
+**Bewusste Nicht-Ziele:**
+
+- automatische Auswahl eines Suchtreffers anhand eines freien Zutatentexts
+- Open Food Facts, Markenprodukte oder Barcode-Import
+- Volumenlebensmittel ohne bestätigte Dichte
+- automatisches Erzeugen von Aliasen oder Portionsstandards
+- ungeprüftes Schreiben externer Daten direkt in `foods`
+- Massenimport oder regelmäßige Synchronisierung
+
+**Abnahme:**
+
+- Ein FDC-Datensatz wird mit unveränderten Rohdaten idempotent in der Food-Inbox
+  gespeichert.
+- Fehlende Ballaststoffe oder andere Pflichtwerte führen zu `needs_review` und
+  verhindern die Katalogfreigabe.
+- Ein vollständiger Kandidat erzeugt bei Freigabe genau ein Lebensmittel mit
+  nachvollziehbarer FDC-Referenz und europäischer Kohlenhydratdefinition.
+- Wiederholter Import und wiederholte Freigabe erzeugen keine Duplikate.
+- Das importierte Lebensmittel bleibt nach einem Seed erhalten und wird vom
+  produktiven Datenbankkatalog geliefert.
+- FDC `169230` wurde als `garlic` gegen die lokale PostgreSQL-Datenbank geprüft.
+
+**Status:** abgeschlossen
+
+## Phase 6F: Kontrollierter Ausbau des Datenbestands
+
+**Ziel:** Die in Phase 6E geschaffene Food-Inbox wird mit einem ersten
+größeren, weiterhin einzeln nachvollziehbaren Datenbatch praktisch genutzt.
+Gleichzeitig wächst die Rezept-Inbox auf einen Bestand, an dem sich die
+nächsten Normalisierungslücken belastbar priorisieren lassen.
+
+**Umfang und Ergebnis:**
+
+- 29 vorab geprüfte Foundation- oder SR-Legacy-Datensätze wurden anhand fester
+  FDC-IDs importiert und ausdrücklich als generische Lebensmittel freigegeben.
+- Der produktive Lebensmittelkatalog enthält damit 54 Einträge: 24 kuratierte
+  Seed-Lebensmittel und 30 kontrollierte Food-Imports einschließlich des in
+  Phase 6E übernommenen Knoblauchs.
+- 31 fachlich eindeutige Aliase sowie der durch FDC 169230 belegte Standard
+  `1 clove = 3 g` wurden ergänzt. Die unbekannten Zutaten in den ursprünglichen
+  acht Rezepten sanken nach Wiederverarbeitung von 66 auf 21.
+- Ein unvollständiger Coconut-Milk-Kandidat wurde wegen fehlender Ballaststoffe
+  nicht übernommen; stattdessen wurde ein vollständiger generischer Datensatz
+  ausgewählt.
+- Zwölf weitere feste TheMealDB-IDs wurden in die getrennte Rezept-Inbox
+  importiert. Diese enthält nun 20 reale Rezepte; der Batch erzeugte beim
+  zweiten Abruf keine Duplikate.
+- Ein erneuter Seed erhielt alle 30 importierten Lebensmittel und die bereits
+  veröffentlichte importierte Mahlzeit.
+- Die vollständige Auswahl einschließlich IDs, Katalogschlüsseln, Aliasen und
+  verworfenem Kandidaten ist in `docs/import-batches/phase-6f.json` versioniert.
+
+**Bewusste Grenze:** Die zwölf neuen Rezepte bleiben in der Prüfwarteschlange.
+Fehlende Portionszahlen, Maße und echte Kataloglücken werden nicht automatisch
+geschätzt; keines der Rezepte wird ungeprüft in den Planerkatalog übernommen.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
-Phase 3 ist abgeschlossen. Der versionierte Arbeitskatalog enthält 21
-Lebensmittel und je zwei Mahlzeiten für alle fünf Rollen. Sämtliche Nährwerte
+Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
+Lebensmittel und je zwei Mahlzeiten für alle fünf Rollen; Phase 6D ergänzt drei
+weitere Lebensmittel für den ersten realen Importkandidaten. Sämtliche Nährwerte
 sind gegen FoodData Central oder ein konkretes europäisches
 Herstelleretikett geprüft und ihre Herkunft ist direkt am Katalogeintrag
 festgehalten. Die Kohlenhydratwerte verwenden einheitlich die europäische
@@ -323,7 +550,19 @@ verfügbar gemeldet.
 Damit ist die technische MVP-Roadmap abgeschlossen. Phase 6A ist ebenfalls
 abgeschlossen: Die getrennte Import-Inbox, deterministische Normalisierung,
 Prüfentscheidungen und Wiederverarbeitung sind umgesetzt und gegen PostgreSQL
-geprüft. Der stabile produktive Katalog und die Planungslogik bleiben weiterhin
-von Importdaten getrennt. Die Veröffentlichung normalisierter Kandidaten wird
-erst als eigener Folgeabschnitt gemeinsam abgegrenzt. Eine echte Nutzerprüfung
-bleibt im Backlog für einen passenden Zeitpunkt festgehalten.
+geprüft. Phase 6B ist ebenfalls abgeschlossen: Vollständig normalisierte
+Kandidaten können kontrolliert veröffentlicht werden, bleiben bei einem Seed
+erhalten und werden über den produktiven Katalog an die Planungslogik geliefert.
+Phase 6C ist ebenfalls abgeschlossen: Ein einzelnes TheMealDB-Rezept kann per
+externer ID live abgerufen werden, ohne dass Quelle oder unsichere Importdaten
+die Planungslogik erreichen. Phase 6D ist ebenfalls abgeschlossen: Acht reale
+Rezepte wurden ausgewertet, sichere Normalisierungsmetadaten versioniert und ein
+fachlich geprüfter Kandidat bis in den produktiven Planerkatalog übernommen.
+Phase 6E ist ebenfalls abgeschlossen: Der erste reale FoodData-Central-Datensatz
+wurde kontrolliert importiert, freigegeben und bleibt beim Seed erhalten. Als
+Phase 6F wurden 29 weitere Lebensmittel und zwölf weitere Rezepte kontrolliert
+aufgenommen. Als Nächstes kann die Prüfwarteschlange priorisiert abgearbeitet
+werden: zuerst sichere Alias- und Portionsentscheidungen für einfache Rezepte,
+danach weitere echte Kataloglücken. Automatische Suche und Open Food Facts
+bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt im Backlog für
+einen passenden Zeitpunkt festgehalten.
