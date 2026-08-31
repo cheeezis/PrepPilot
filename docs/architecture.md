@@ -138,6 +138,20 @@ Herkunft `curated_seed`; veröffentlichte Importmahlzeiten bleiben erhalten. Der
 Planer benötigt dadurch keine Importlogik und liest weiterhin ausschließlich
 den produktiven Datenbankkatalog.
 
+Phase 6C ergänzt davor genau einen TheMealDB-Adapter. Der interne Endpunkt ruft
+ein Rezept nur auf ausdrückliche Anforderung anhand seiner externen ID ab. Der
+Adapter bewahrt das empfangene Rezeptobjekt als Rohdaten und übersetzt dessen
+Zutaten-/Maßpaare in das bestehende, quellenneutrale Inbox-Format. Einfache
+Brüche werden deterministisch in Dezimalmengen überführt; unsichere Texte werden
+nicht geschätzt. Weil TheMealDB keine verlässliche Portionenzahl liefert, muss
+diese vor einer möglichen Freigabe geprüft und ergänzt werden.
+
+Netzwerk- und Anbieterdetails enden am Adapter. Weder Normalisierung noch
+Katalogfreigabe oder Planung rufen TheMealDB auf. Der Entwicklungszugang nutzt
+standardmäßig den von TheMealDB dokumentierten Testschlüssel `1`; Schlüssel,
+Basis-URL und Timeout bleiben über `PREPPILOT_`-Umgebungsvariablen
+konfigurierbar.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die

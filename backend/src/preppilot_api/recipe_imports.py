@@ -121,9 +121,16 @@ _THREE_PLACES = Decimal("0.001")
 
 
 def create_recipe_import(
-    session: Session, command: CreateRecipeImportCommand
+    session: Session,
+    command: CreateRecipeImportCommand,
+    *,
+    source_payload: dict[str, object] | None = None,
 ) -> tuple[RecipeImport, bool]:
-    raw_payload = command.payload.model_dump(mode="json")
+    raw_payload = (
+        command.payload.model_dump(mode="json")
+        if source_payload is None
+        else source_payload
+    )
     content_hash = _content_hash(raw_payload)
     existing = session.scalar(
         select(RecipeImport).where(

@@ -127,6 +127,14 @@ Ein Import ist `received`, `needs_review`, `ready_for_catalog_review` oder
 `rejected`. `ready_for_catalog_review` ist ausdrücklich noch keine Freigabe für
 den Planer oder den produktiven Mahlzeitenkatalog.
 
+Beim manuellen quellenneutralen Eingang enthält `raw_payload` das interne
+Eingangsformat. Beim TheMealDB-Adapter enthält es stattdessen das unveränderte
+empfangene Rezeptobjekt; die daraus abgeleiteten Zutatenzeilen werden wie zuvor
+separat in `recipe_import_ingredients` gespeichert. Der Inhalts-Hash wird über
+diese Rohdaten gebildet. Dadurch erzeugt ein unveränderter erneuter Abruf kein
+Duplikat, während eine tatsächlich geänderte Quellenversion als neuer,
+nachvollziehbarer Import erhalten bleiben kann.
+
 Phase 6B ergänzt `meals` um die Herkunft `curated_seed` oder `recipe_import`.
 Eine importierte Mahlzeit verweist eindeutig auf genau einen vollständig
 normalisierten Rezeptimport. Seed-Mahlzeiten besitzen keinen solchen Verweis.

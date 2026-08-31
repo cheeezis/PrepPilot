@@ -25,9 +25,17 @@ from preppilot_api.recipe_imports import (
     list_recipe_imports,
     process_recipe_import,
 )
+from preppilot_api.recipe_sources import (
+    RecipeSourceNotFoundError,
+    RecipeSourcePayloadError,
+    RecipeSourceUnavailableError,
+    TheMealDbSource,
+    get_themealdb_source,
+)
 
 router = APIRouter(prefix="/api/internal/recipe-imports", tags=["recipe-imports"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
+TheMealDbDependency = Annotated[TheMealDbSource, Depends(get_themealdb_source)]
 
 
 class ImportedIngredientResponse(BaseModel):
@@ -98,6 +106,51 @@ def read_recipe_imports(
         _serialize_recipe_import(session, recipe_import)
         for recipe_import in list_recipe_imports(session, import_status)
     ]
+
+
+@router.post(
+    "/sources/themealdb/{external_id}",
+    response_model=CreatedRecipeImportResponse,
+)
+def import_themealdb_recipe(
+    external_id: str,
+    response: Response,
+    session: DatabaseSession,
+    source: TheMealDbDependency,
+) -> CreatedRecipeImportResponse:
+    try:
+        fetched = source.fetch(external_id)
+        recipe_import, created = create_recipe_import(
+            session,
+            fetched.command,
+            source_payload=fetched.source_payload,
+        )
+        session.commit()
+    except RecipeSourceNotFoundError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=404, detail="TheMealDB-Rezept nicht gefunden"
+        ) from error
+    except RecipeSourcePayloadError as error:
+        session.rollback()
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except RecipeSourceUnavailableError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="TheMealDB nicht erreichbar",
+        ) from error
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Importdatenbank nicht verfügbar",
+        ) from error
+    response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    return CreatedRecipeImportResponse(
+        created=created,
+        recipe_import=_serialize_recipe_import(session, recipe_import),
+    )
 
 
 @router.get("/{recipe_import_id}", response_model=RecipeImportResponse)

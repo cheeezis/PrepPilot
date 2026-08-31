@@ -333,6 +333,57 @@ dabei dauerhaft unterscheidbar.
 
 **Status:** abgeschlossen
 
+## Phase 6C: Erster Live-Quellenadapter
+
+**Ziel:** Ein einzelnes Rezept kann anhand seiner stabilen externen Kennung
+kontrolliert von TheMealDB abgerufen und über dieselbe deterministische Pipeline
+in die Import-Inbox aufgenommen werden. Die externe Quelle bleibt vollständig
+von Katalog und Planer getrennt.
+
+**Umfang:**
+
+- genau ein TheMealDB-Adapter mit konfigurierbarem API-Schlüssel, Basis-URL und
+  Abruf-Timeout
+- interner Endpunkt zum Abruf genau eines Rezepts anhand seiner numerischen
+  TheMealDB-ID
+- unverändertes TheMealDB-Rezeptobjekt als Rohdaten und daraus getrennt
+  abgeleitete interne Zutatenzeilen speichern
+- bis zu 20 Zutaten-/Maßpaare übernehmen; einfache ganze, dezimale und
+  gebrochene Mengen deterministisch lesen
+- unbekannte Zutaten, nicht sicher interpretierbare Maße und die bei TheMealDB
+  fehlende Portionenzahl wie bisher in die Prüfwarteschlange leiten
+- identische erneut abgerufene Inhalte über Quelle, externe Kennung und
+  Inhalts-Hash ohne Duplikat beantworten
+- Nicht-vorhanden-, ungültige-Antwort- und Nicht-erreichbar-Fälle getrennt
+  behandeln
+- Adaptertests vollständig ohne Live-Netzwerk ausführen und einen echten Abruf
+  zusätzlich gegen die lokale PostgreSQL-Inbox prüfen
+
+**Bewusste Nicht-Ziele:**
+
+- Suche, Zufallsauswahl, Kategorien oder Massenimport von TheMealDB
+- regelmäßiger oder automatischer Hintergrundabruf
+- weitere Rezeptquellen
+- automatische Anlage unbekannter Lebensmittel oder unsichere Umrechnungen
+- automatische Katalogfreigabe, Rollenwahl oder Portionsfaktoren
+- TheMealDB als Laufzeitabhängigkeit des Planers
+
+**Abnahme:**
+
+- Eine numerische TheMealDB-ID erzeugt einen nachvollziehbaren Import mit der
+  Quelle `themealdb` und der externen ID.
+- Die empfangenen Quelldaten bleiben erhalten; der Adapter erzeugt daraus das
+  bestehende interne Inbox-Format.
+- Ein wiederholter Abruf desselben unveränderten Rezepts erzeugt keinen zweiten
+  Importdatensatz.
+- Unvollständige Angaben landen mit konkreten Prüfgründen in `needs_review` und
+  nicht im produktiven Katalog.
+- Adapter, HTTP-Endpunkt und Fehlerfälle sind ohne externe API testbar.
+- Der echte Abruf des TheMealDB-Rezepts `52771` wurde am 31. August 2026 gegen
+  die lokale PostgreSQL-Inbox geprüft.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der versionierte Arbeitskatalog enthält 21
@@ -370,5 +421,8 @@ Prüfentscheidungen und Wiederverarbeitung sind umgesetzt und gegen PostgreSQL
 geprüft. Phase 6B ist ebenfalls abgeschlossen: Vollständig normalisierte
 Kandidaten können kontrolliert veröffentlicht werden, bleiben bei einem Seed
 erhalten und werden über den produktiven Katalog an die Planungslogik geliefert.
-Als Nächstes folgt ein einzelner Adapter für eine echte Rezeptquelle. Eine echte
-Nutzerprüfung bleibt im Backlog für einen passenden Zeitpunkt festgehalten.
+Phase 6C ist ebenfalls abgeschlossen: Ein einzelnes TheMealDB-Rezept kann per
+externer ID live abgerufen werden, ohne dass Quelle oder unsichere Importdaten
+die Planungslogik erreichen. Als Nächstes folgt die praktische Härtung anhand
+weiterer realer Imports und ihrer Prüfentscheidungen. Eine echte Nutzerprüfung
+bleibt im Backlog für einen passenden Zeitpunkt festgehalten.
