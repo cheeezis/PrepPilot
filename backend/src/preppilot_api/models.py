@@ -128,6 +128,51 @@ class FoodImport(Base):
     review_reasons: Mapped[list[str]] = mapped_column(JSON)
 
 
+class FoodReferenceItem(Base):
+    __tablename__ = "food_reference_items"
+    __table_args__ = (
+        CheckConstraint(
+            "length(trim(source_name)) > 0",
+            name="ck_food_reference_items_source_name_not_blank",
+        ),
+        CheckConstraint(
+            "length(trim(external_id)) > 0",
+            name="ck_food_reference_items_external_id_not_blank",
+        ),
+        CheckConstraint(
+            "length(trim(description)) > 0",
+            name="ck_food_reference_items_description_not_blank",
+        ),
+        CheckConstraint(
+            "length(trim(normalized_description)) > 0",
+            name="ck_food_reference_items_normalized_description_not_blank",
+        ),
+        UniqueConstraint(
+            "source_name",
+            "external_id",
+            name="uq_food_reference_items_source_external",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_name: Mapped[str] = mapped_column(String(100))
+    external_id: Mapped[str] = mapped_column(String(200))
+    data_type: Mapped[str] = mapped_column(String(50))
+    description: Mapped[str] = mapped_column(String(300))
+    normalized_description: Mapped[str] = mapped_column(String(300), index=True)
+    food_category: Mapped[str | None] = mapped_column(String(200))
+    publication_date: Mapped[str | None] = mapped_column(String(20))
+    dataset_release: Mapped[str] = mapped_column(String(50))
+    calories_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    protein_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    total_carbs_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    fiber_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    carbs_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    fat_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    portions: Mapped[list[dict[str, object]]] = mapped_column(JSON)
+    imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class Food(Base):
     __tablename__ = "foods"
     __table_args__ = (

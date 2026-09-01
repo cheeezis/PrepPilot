@@ -45,13 +45,11 @@ class RankedLocalFoodCandidate:
 _IGNORED_QUALIFIERS = {
     "fresh",
     "raw",
-    "cooked",
-    "dried",
-    "ground",
     "spice",
     "spices",
 }
 _SAFE_LOCAL_SUFFIXES = {"cheese", "leaf"}
+_SAFE_LOCAL_CANDIDATE_SUFFIXES = {"cooked"}
 _MINIMUM_SELECTION_SCORE = 90
 _MINIMUM_SCORE_GAP = 10
 
@@ -59,6 +57,8 @@ _MINIMUM_SCORE_GAP = 10
 def suggest_food(
     ingredient_name: str,
     candidates: tuple[FoodSearchCandidate, ...],
+    *,
+    result_limit: int | None = None,
 ) -> FoodSuggestion:
     ranked = tuple(
         sorted(
@@ -92,7 +92,7 @@ def suggest_food(
         ingredient_name=ingredient_name,
         normalized_name=normalize_text(ingredient_name),
         status=status,
-        candidates=ranked,
+        candidates=ranked if result_limit is None else ranked[:result_limit],
         selected_external_id=selected_external_id,
     )
 
@@ -136,6 +136,10 @@ def _score(ingredient_name: str, candidate_name: str) -> int:
     candidate_core = _core(candidate)
     if ingredient_core and ingredient_core == candidate_core:
         return 95
+    if ingredient_core and set(ingredient_core.split()) == set(
+        candidate_core.split()
+    ):
+        return 95
     if candidate_core.startswith(f"{ingredient_core} "):
         return 85
 
@@ -156,6 +160,10 @@ def _local_score(ingredient_name: str, candidate_name: str) -> int:
     if candidate_core and ingredient_core.startswith(f"{candidate_core} "):
         suffix = set(ingredient_core.removeprefix(candidate_core).split())
         if suffix and suffix <= _SAFE_LOCAL_SUFFIXES:
+            return max(score, 90)
+    if ingredient_core and candidate_core.startswith(f"{ingredient_core} "):
+        suffix = set(candidate_core.removeprefix(ingredient_core).split())
+        if suffix and suffix <= _SAFE_LOCAL_CANDIDATE_SUFFIXES:
             return max(score, 90)
     return score
 

@@ -1,6 +1,6 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 31. August 2026
+Stand: 1. September 2026
 
 Diese Roadmap führt PrepPilot von der Produktidee zu einem technisch vollständigen
 Minimum Viable Product (MVP), also der kleinsten sinnvoll nutzbaren
@@ -27,6 +27,8 @@ Beginn des jeweiligen Abschnitts festgelegt.
 | 5 | Wochenplan und Einkaufsliste nutzbar | abgeschlossen |
 | 6A | Externe Rezepte sicher aufnehmen und normalisieren | abgeschlossen |
 | 6B | Normalisierte Rezepte kontrolliert veröffentlichen | abgeschlossen |
+| 6C–6H | Live-Quellen und automatische Importverarbeitung | abgeschlossen |
+| 6I | Lokalen FDC-Referenzbestand bulkweise aufbauen | abgeschlossen |
 
 ## Phase 0: Produkt ausrichten
 
@@ -614,6 +616,43 @@ Food-Inbox entfernt und als Negativfälle abgesichert.
 
 **Status:** abgeschlossen
 
+## Phase 6I: Lokaler FoodData-Central-Referenzbestand
+
+**Ziel:** Rezeptzutaten werden nicht dauerhaft durch einzelne externe
+Suchrequests gegen einen winzigen Produktivkatalog abgeglichen. Foundation Foods
+und SR Legacy stehen als kompakter lokaler Referenzbestand zur Verfügung, ohne
+dabei ungeprüfte Lebensmittel in den Planerkatalog zu veröffentlichen.
+
+**Umfang:**
+
+- offizielle FDC-CSV-ZIP-Archive für Foundation Foods und SR Legacy abrufen
+- ausschließlich die Mitglieder des gewählten Datentyps übernehmen; gemeinsam
+  gelieferte Analyse- und Unterstützungsdatensätze ausschließen
+- FDC-ID, Beschreibung, Kategorie, Release, vier verwendbare Makrowerte sowie
+  Portionsgewichte idempotent in `food_reference_items` speichern
+- europäische Kohlenhydrate weiterhin als Gesamt-Kohlenhydrate minus
+  Ballaststoffe berechnen
+- Statistik und lokale Kandidatensuche über interne Endpunkte anbieten
+- gruppierte Rezeptzutaten zuerst lokal abgleichen und nur eindeutige Treffer in
+  die bestehende Food-Inbox übernehmen
+- vorhandene Food-Imports anhand Quelle und FDC-ID wiederverwenden
+
+**Bewusste Grenze:** Die Referenzdaten sind keine automatische Freigabe. Der
+Matcher entfernt bedeutungsverändernde Zustände wie `dried`, `ground` und
+`cooked` nicht pauschal. Mehrdeutige Begriffe bleiben prüfpflichtig; ohne lokal
+geladenen Bestand bleibt die bisherige FDC-API-Suche verfügbar.
+
+**Praktische Abnahme:** Der reale Bulk-Lauf importierte exakt 395 Foundation-
+und 7.793 SR-Legacy-Datensätze. Insgesamt 7.269 der 8.188 Referenzen enthalten
+alle für PrepPilot benötigten Makrowerte. Ein lokaler Lauf über die 25 häufigsten
+offenen Zutaten fand ohne externe Einzelrequests vier eindeutige Kandidaten
+(`Parsley`, `Carrots`, `Heavy Cream`, `cheddar cheese`) und blieb beim zweiten
+Lauf ohne neue Food-Imports. Zu großzügige Testtreffer für `Chicken`,
+`Dried Apricots`, `Ground Onion` und ungekennzeichnetes gekochtes Couscous
+wurden vor Abschluss ausgeschlossen.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
@@ -663,6 +702,8 @@ Phase 6F wurden 29 weitere Lebensmittel und zwölf weitere Rezepte kontrolliert
 aufgenommen. Phase 6G automatisiert nun Kategorie-Discovery, Batchimport,
 Qualitätsbewertung, Priorisierung und Wiederverarbeitung. Phase 6H ergänzt
 konservative lokale Alias- und FDC-Treffervorschläge für gruppierte unbekannte
-Zutaten. Automatische Food-Freigabe, Open Food Facts und regelmäßige Ausführung
-bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt im Backlog für
-einen passenden Zeitpunkt festgehalten.
+Zutaten. Phase 6I hält Foundation Foods und SR Legacy nun vollständig als lokale
+Referenzschicht vor und verwendet sie für Vorschläge ohne einzelne API-Suchen.
+Kanonische Zutatenbegriffe, automatische Food-Freigabe, Open Food Facts und
+regelmäßige Ausführung bleiben getrennte Folgeschritte. Eine echte
+Nutzerprüfung bleibt im Backlog für einen passenden Zeitpunkt festgehalten.

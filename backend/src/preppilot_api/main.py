@@ -13,6 +13,7 @@ from preppilot_api.catalog_repository import (
 )
 from preppilot_api.database import get_session
 from preppilot_api.food_imports_api import router as food_imports_router
+from preppilot_api.food_reference_api import router as food_reference_router
 from preppilot_api.nutrition import Nutrients
 from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
 from preppilot_api.recipe_imports_api import router as recipe_imports_router
@@ -81,6 +82,7 @@ class DayPlansResponse(BaseModel):
 app = FastAPI(title="PrepPilot API", version="0.1.0")
 app.include_router(recipe_imports_router)
 app.include_router(food_imports_router)
+app.include_router(food_reference_router)
 DatabaseSession = Annotated[Session, Depends(get_session)]
 
 

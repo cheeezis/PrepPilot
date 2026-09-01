@@ -13,12 +13,15 @@ from preppilot_api.food_imports import (
     FoodImportPromotionError,
     PromoteFoodImportCommand,
     create_food_import,
+    find_latest_food_import,
     get_food_import,
     list_food_imports,
     promote_food_import,
 )
+from preppilot_api.food_reference import reference_to_food_import
 from preppilot_api.food_sources import (
     FoodDataCentralSource,
+    FoodSearchCandidate,
     FoodSourceNotFoundError,
     FoodSourcePayloadError,
     FoodSourceUnavailableError,
@@ -32,6 +35,7 @@ from preppilot_api.food_suggestions import (
 from preppilot_api.models import (
     Food,
     FoodImport,
+    FoodReferenceItem,
     ImportedIngredientStatus,
     ImportReviewReason,
     RecipeImport,
@@ -197,6 +201,18 @@ def suggest_foods_for_recipe_inbox(
         )
         for food in session.scalars(select(Food).order_by(Food.id))
     )
+    reference_items = tuple(session.scalars(select(FoodReferenceItem)))
+    reference_by_external_id = {
+        item.external_id: item for item in reference_items
+    }
+    reference_candidates = tuple(
+        FoodSearchCandidate(
+            external_id=item.external_id,
+            name=item.description,
+            data_type=item.data_type,
+        )
+        for item in reference_items
+    )
 
     suggestions: list[FoodSuggestionResponse] = []
     try:
@@ -232,16 +248,41 @@ def suggest_foods_for_recipe_inbox(
                     continue
                 suggestion = suggest_food(
                     ingredient_name,
-                    source.search(ingredient_name, limit=5),
+                    (
+                        reference_candidates
+                        if reference_candidates
+                        else source.search(ingredient_name, limit=5)
+                    ),
+                    result_limit=5,
                 )
                 food_import_id: int | None = None
                 food_import_created = False
                 item_status = suggestion.status.value
                 if suggestion.selected_external_id is not None:
-                    food_import, food_import_created = create_food_import(
-                        session,
-                        source.fetch(suggestion.selected_external_id),
+                    reference_item = reference_by_external_id.get(
+                        suggestion.selected_external_id
                     )
+                    command = (
+                        reference_to_food_import(reference_item)
+                        if reference_item is not None
+                        else source.fetch(suggestion.selected_external_id)
+                    )
+                    existing_import = (
+                        find_latest_food_import(
+                            session,
+                            reference_item.source_name,
+                            reference_item.external_id,
+                        )
+                        if reference_item is not None
+                        else None
+                    )
+                    if existing_import is not None:
+                        food_import = existing_import
+                        food_import_created = False
+                    else:
+                        food_import, food_import_created = create_food_import(
+                            session, command
+                        )
                     food_import_id = food_import.id
                 suggestions.append(
                     FoodSuggestionResponse(

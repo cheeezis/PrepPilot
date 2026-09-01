@@ -1,6 +1,6 @@
 # Architektur
 
-Stand: 31. August 2026
+Stand: 1. September 2026
 
 Dieses Dokument hält bestätigte technische Entscheidungen fest. Details werden
 schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
@@ -214,6 +214,22 @@ damit bleiben Katalogschlüssel, fachlich unsichere Zuordnung und Freigabe unter
 Kontrolle. Wiederholte Vorschlagsläufe nutzen die bestehende Inhalts-
 Idempotenz der Food-Inbox. Ein zusätzlicher Negativtest verhindert insbesondere
 die Verwechslung von `Plum Tomatoes` mit `Plums`.
+
+Phase 6I ersetzt die wiederholte FDC-Suche im Normalbetrieb durch einen lokalen
+Referenzbestand. Die offiziellen CSV-Archive für Foundation Foods und SR Legacy
+werden anhand ihrer jeweiligen Mitgliedschaftstabelle gefiltert und idempotent
+in `food_reference_items` übernommen. Gespeichert werden nur stabile FDC-
+Kennung, Beschreibung, Datentyp, Kategorie, relevante Nährwerte und verfügbare
+Portionsgewichte; die Referenztabelle ist weder Food-Inbox noch produktiver
+Katalog.
+
+Zutatenvorschläge durchsuchen nach einem erfolgreichen Bulk-Import zuerst den
+lokalen Bestand und erzeugen für einen eindeutigen Treffer weiterhin nur einen
+Eintrag in `food_imports`. Ein vorhandener Food-Import derselben Quelle und
+FDC-ID wird wiederverwendet. Zustandswörter wie `dried`, `ground` oder `cooked`
+werden bei externen Kandidaten nicht pauschal entfernt, weil sie Nährwerte und
+Bedeutung verändern können. Ohne lokale Referenzdaten bleibt die bisherige
+FDC-API-Suche als Fallback erhalten.
 
 ## Lokale Entwicklungsumgebung
 

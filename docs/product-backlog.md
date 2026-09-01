@@ -1,6 +1,6 @@
 # Produkt-Backlog
 
-Stand: 31. August 2026
+Stand: 1. September 2026
 
 Dieses Backlog sammelt interessante Produktideen, die noch nicht Teil einer
 beschlossenen Roadmap-Phase sind. Ein Eintrag ist keine Umsetzungszusage. Bevor
@@ -26,15 +26,18 @@ stellvertretende Testnutzer verpflichtet.
 
 **Status:** kontrollierter Detailimport per FDC-ID als Phase 6E, erster
 kuratierter 29er-Datenbatch als Phase 6F und konservative Suchvorschläge für
-unbekannte Rezeptzutaten als Phase 6H umgesetzt; automatische Food-Freigabe,
-Massenergänzung und Open Food Facts bleiben im Backlog
+unbekannte Rezeptzutaten als Phase 6H umgesetzt; Foundation Foods und SR Legacy
+werden seit Phase 6I vollständig als lokale Referenzdaten geführt. Automatische
+Food-Freigabe, kanonische Zutatenbegriffe und Open Food Facts bleiben im Backlog
 
 Der erste Adapter hält FoodData-Central-Rohdaten und abgeleitete Kandidaten in
 einer getrennten Inbox. Nur vollständige, ausdrücklich bestätigte Kandidaten
 gelangen in `foods`; importierte Einträge bleiben bei einem Katalog-Seed
 erhalten. Phase 6H gruppiert unbekannte Rezeptzutaten und legt nur einen
 eindeutigen Suchtreffer automatisch in der Food-Inbox ab; sie veröffentlicht
-ihn nicht im produktiven Katalog.
+ihn nicht im produktiven Katalog. Phase 6I beseitigt dafür einzelne
+Suchrequests, indem die offiziellen FDC-Archive reproduzierbar lokal importiert
+und aktualisiert werden.
 
 ### Import-Inbox und Zutaten-Normalisierung
 

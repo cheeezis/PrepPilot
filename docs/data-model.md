@@ -1,6 +1,6 @@
 # Datenmodell
 
-Stand: 31. August 2026
+Stand: 1. September 2026
 
 ## Ziel und Systemgrenze
 
@@ -168,6 +168,15 @@ Ein importiertes Lebensmittel verweist eindeutig auf seinen freigegebenen
 Food-Import; ein Seed-Lebensmittel besitzt keinen solchen Verweis. Dadurch kann
 der Seed versionierte Lebensmittel weiterhin ersetzen, ohne über die Food-Inbox
 ergänzte Katalogeinträge zu löschen.
+
+Phase 6I ergänzt `food_reference_items` als lokale, aktualisierbare
+Rechercheebene zwischen externer FDC-Datei und Food-Inbox. Ein Datensatz ist
+durch Quelle und FDC-ID eindeutig und enthält die kompakt extrahierten
+Nährwerte, Beschreibung, Datentyp, Kategorie, Veröffentlichung, Dataset-Release
+und Portionsgewichte. Auch ein vollständiger Referenzdatensatz ist ausdrücklich
+noch kein `Food`. Erst ein eindeutiger Zutatenmatch erzeugt einen Food-Import;
+die bestehende kontrollierte Freigabe erzeugt anschließend gegebenenfalls das
+produktive Lebensmittel.
 
 ## Bewusste Grenzen des MVP
 

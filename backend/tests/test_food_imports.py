@@ -15,6 +15,7 @@ from preppilot_api.database import get_session
 from preppilot_api.food_imports import (
     PromoteFoodImportCommand,
     create_food_import,
+    find_latest_food_import,
     promote_food_import,
 )
 from preppilot_api.food_sources import (
@@ -268,6 +269,31 @@ def test_internal_api_suggests_and_imports_unknown_food_idempotently() -> None:
             assert session.scalar(select(func.count()).select_from(Food)) == 24
     finally:
         app.dependency_overrides.clear()
+
+
+def test_finds_latest_food_import_by_stable_source_identity() -> None:
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    source = _source()
+    with Session(engine) as session, session.begin():
+        first, _ = create_food_import(session, source.fetch("169230"))
+        changed_payload = _payload()
+        changed_payload["publicationDate"] = "2026-09-01"
+        changed_source = FoodDataCentralSource(
+            api_key="test-key",
+            base_url="https://example.test",
+            timeout_seconds=4,
+            fetch_json=lambda url, timeout: changed_payload,
+        )
+        second, _ = create_food_import(session, changed_source.fetch("169230"))
+        found = find_latest_food_import(session, "fooddata_central", "169230")
+        first_id = first.id
+        second_id = second.id
+        found_id = found.id if found is not None else None
+
+    assert first_id != second_id
+    assert found is not None
+    assert found_id == second_id
 
 
 def test_internal_api_adds_safe_local_alias_before_fdc_search() -> None:

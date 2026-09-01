@@ -68,7 +68,7 @@ def test_local_suggestion_matches_safe_food_variant() -> None:
 
     assert suggestion is not None
     assert suggestion.catalog_key == "chickpeas_cooked"
-    assert suggestion.score == 95
+    assert suggestion.score == 90
 
 
 def test_local_suggestion_does_not_collapse_broad_food_name() -> None:
@@ -90,3 +90,21 @@ def test_local_suggestion_does_not_collapse_concentrated_food() -> None:
     )
 
     assert suggestion is None
+
+
+def test_processing_state_is_not_discarded_for_selection() -> None:
+    dried = suggest_food(
+        "Dried Apricots",
+        (
+            FoodSearchCandidate("1", "Apricots, raw", "SR Legacy"),
+            FoodSearchCandidate("2", "Apricots, dried", "SR Legacy"),
+        ),
+    )
+    ground = suggest_food(
+        "Ground Onion",
+        (FoodSearchCandidate("3", "Onions, raw", "SR Legacy"),),
+    )
+
+    assert dried.selected_external_id == "2"
+    assert ground.status == FoodSuggestionStatus.AMBIGUOUS
+    assert ground.selected_external_id is None
