@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from preppilot_api.database import get_session
+from preppilot_api.food_auto_resolution import canonical_catalog_key
 from preppilot_api.food_reference import (
     FoodReferenceDataset,
     FoodReferenceSource,
@@ -22,7 +23,14 @@ from preppilot_api.food_sources import (
     get_fooddata_central_source,
 )
 from preppilot_api.main import app
-from preppilot_api.models import Base, FoodReferenceItem
+from preppilot_api.models import (
+    Base,
+    Food,
+    FoodAlias,
+    FoodReferenceItem,
+    RecipeImport,
+    RecipeImportStatus,
+)
 
 
 def test_parses_and_imports_fdc_csv_archive_idempotently() -> None:
@@ -60,6 +68,11 @@ def test_parses_and_imports_fdc_csv_archive_idempotently() -> None:
         assert (
             session.scalar(select(func.count()).select_from(FoodReferenceItem)) == 2
         )
+
+
+def test_canonical_catalog_key_singularizes_common_recipe_plurals() -> None:
+    assert canonical_catalog_key("Carrots", "1") == "carrot"
+    assert canonical_catalog_key("Sun-Dried Tomatoes", "2") == "sun_dried_tomato"
 
 
 def test_internal_api_bulk_imports_and_searches_local_reference() -> None:
@@ -129,6 +142,18 @@ def test_internal_api_bulk_imports_and_searches_local_reference() -> None:
                 "/api/internal/food-imports/suggestions/from-recipe-inbox",
                 params={"limit": 5},
             )
+            dry_run = client.post(
+                "/api/internal/food-imports/auto-resolve/from-recipe-inbox",
+                params={"limit": 5, "dry_run": True},
+            )
+            resolved = client.post(
+                "/api/internal/food-imports/auto-resolve/from-recipe-inbox",
+                params={"limit": 5, "dry_run": False},
+            )
+            repeated_resolution = client.post(
+                "/api/internal/food-imports/auto-resolve/from-recipe-inbox",
+                params={"limit": 5, "dry_run": False},
+            )
     finally:
         app.dependency_overrides.clear()
 
@@ -155,6 +180,19 @@ def test_internal_api_bulk_imports_and_searches_local_reference() -> None:
     assert suggested.json()["created"] == 1
     assert suggested.json()["suggestions"][0]["selected_fdc_id"] == "1001"
     assert repeated_suggestion.json()["created"] == 0
+    assert dry_run.json()["eligible"] == 1
+    assert dry_run.json()["promoted"] == 0
+    assert resolved.json()["promoted"] == 1
+    assert resolved.json()["aliases_added"] == 1
+    assert resolved.json()["ready_recipes_before"] == 0
+    assert resolved.json()["ready_recipes_after"] == 1
+    assert repeated_resolution.json()["processed"] == 0
+    with Session(engine) as session:
+        assert session.scalar(select(func.count()).select_from(Food)) == 1
+        assert session.scalar(select(func.count()).select_from(FoodAlias)) == 1
+        recipe_import = session.scalar(select(RecipeImport))
+        assert recipe_import is not None
+        assert recipe_import.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
 
 
 def _unexpected_fdc_request() -> dict[str, object]:

@@ -29,6 +29,7 @@ Beginn des jeweiligen Abschnitts festgelegt.
 | 6B | Normalisierte Rezepte kontrolliert veröffentlichen | abgeschlossen |
 | 6C–6H | Live-Quellen und automatische Importverarbeitung | abgeschlossen |
 | 6I | Lokalen FDC-Referenzbestand bulkweise aufbauen | abgeschlossen |
+| 6J | Eindeutige Referenztreffer automatisch materialisieren | abgeschlossen |
 
 ## Phase 0: Produkt ausrichten
 
@@ -653,6 +654,40 @@ wurden vor Abschluss ausgeschlossen.
 
 **Status:** abgeschlossen
 
+## Phase 6J: Konservative automatische Food-Materialisierung
+
+**Ziel:** Vollständige, eindeutig zugeordnete Referenztreffer sollen nicht mehr
+einzeln freigegeben werden müssen. Unsichere Kandidaten bleiben weiterhin hinter
+der Review-Grenze.
+
+**Umfang:**
+
+- alle gruppierten unbekannten Zutaten gegen den lokalen Referenzbestand prüfen
+- Dry-Run mit Treffer, FDC-ID, geplantem Katalogschlüssel und Konflikten anbieten
+- nur vollständige Kandidaten mit bestehender 90-Punkte-/Abstandsgrenze zulassen
+- stabile, aus dem Rezeptbegriff abgeleitete Katalogschlüssel erzeugen
+- vorhandene Foods derselben FDC-ID wiederverwenden
+- neue Kandidaten über Food-Inbox und bestehende Promotion veröffentlichen
+- den exakten Rezeptbegriff als auditierte globale Alias-Entscheidung speichern
+- alle offenen Rezepte anschließend neu verarbeiten
+
+**Bewusste Grenze:** Mehrdeutige, unvollständige oder kollidierende Treffer
+werden nicht verändert. Der Resolver schätzt keine Portionszahlen und erfindet
+keine Maßumrechnungen. Ein produktives Rezept entsteht weiterhin erst, wenn
+sämtliche Zutaten und Mengen belastbar normalisiert sind.
+
+**Praktische Abnahme:** Der Dry-Run über 217 unbekannte Begriffe identifizierte
+28 eindeutige und vollständige Treffer ohne Kollision. Der echte Lauf legte 25
+neue Foods und 28 Aliase an und verwendete drei bereits vorhandene Foods wieder.
+Die Zahl unterschiedlicher unbekannter Begriffe sank von 217 auf 189, die Zahl
+offener Zutatenzeilen von 451 auf 390. Der zweite Lauf erzeugte keine Änderungen.
+Kein weiteres Rezept wurde vollständig, weil TheMealDB für den Großteil des
+Bestands keine Portionszahl liefert; 373 Zutatenzeilen tragen deshalb weiterhin
+`missing_serving_count`. Dieser Befund verlagert den nächsten Go/No-Go-Schritt
+von Lebensmitteldaten auf Rezeptportionen und Quellenqualität.
+
+**Status:** abgeschlossen
+
 ## Nächster Meilenstein
 
 Phase 3 ist abgeschlossen. Der damals versionierte Arbeitskatalog enthielt 21
@@ -704,6 +739,8 @@ Qualitätsbewertung, Priorisierung und Wiederverarbeitung. Phase 6H ergänzt
 konservative lokale Alias- und FDC-Treffervorschläge für gruppierte unbekannte
 Zutaten. Phase 6I hält Foundation Foods und SR Legacy nun vollständig als lokale
 Referenzschicht vor und verwendet sie für Vorschläge ohne einzelne API-Suchen.
-Kanonische Zutatenbegriffe, automatische Food-Freigabe, Open Food Facts und
-regelmäßige Ausführung bleiben getrennte Folgeschritte. Eine echte
-Nutzerprüfung bleibt im Backlog für einen passenden Zeitpunkt festgehalten.
+Phase 6J materialisiert streng eindeutige und vollständige Referenztreffer und
+legt ihre Rezeptbegriffe als auditierte Aliase ab. Breitere kanonische
+Begriffshierarchien, Open Food Facts, Portionsschätzung und regelmäßige
+Ausführung bleiben getrennte Folgeschritte. Eine echte Nutzerprüfung bleibt im
+Backlog für einen passenden Zeitpunkt festgehalten.

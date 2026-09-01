@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
+from preppilot_api.food_auto_resolution import auto_resolve_recipe_foods
 from preppilot_api.food_imports import (
     FoodImportNotFoundError,
     FoodImportPromotionError,
@@ -44,6 +45,7 @@ from preppilot_api.models import (
     ReviewDecisionAction,
 )
 from preppilot_api.recipe_imports import (
+    RecipeImportDecisionError,
     ReviewDecisionCommand,
     apply_review_decision,
     normalize_text,
@@ -115,6 +117,35 @@ class FoodSuggestionBatchResponse(BaseModel):
     no_match: int
     failed: int
     suggestions: list[FoodSuggestionResponse]
+
+
+class FoodAutoResolutionItemResponse(BaseModel):
+    ingredient_name: str
+    normalized_name: str
+    occurrence_count: int
+    status: str
+    fdc_id: str | None
+    reference_name: str | None
+    score: int | None
+    catalog_key: str | None
+    food_id: int | None
+
+
+class FoodAutoResolutionResponse(BaseModel):
+    dry_run: bool
+    unique_unknown_ingredients: int
+    processed: int
+    eligible: int
+    promoted: int
+    aliases_added: int
+    reused_foods: int
+    ambiguous: int
+    no_match: int
+    incomplete: int
+    conflicts: int
+    ready_recipes_before: int
+    ready_recipes_after: int
+    items: list[FoodAutoResolutionItemResponse]
 
 
 @router.get("", response_model=list[FoodImportResponse])
@@ -365,6 +396,63 @@ def suggest_foods_for_recipe_inbox(
         no_match=no_match,
         failed=failed,
         suggestions=suggestions,
+    )
+
+
+@router.post(
+    "/auto-resolve/from-recipe-inbox",
+    response_model=FoodAutoResolutionResponse,
+)
+def auto_resolve_foods_for_recipe_inbox(
+    session: DatabaseSession,
+    limit: Annotated[int, Query(ge=1, le=250)] = 250,
+    dry_run: bool = True,
+) -> FoodAutoResolutionResponse:
+    try:
+        result = auto_resolve_recipe_foods(
+            session, limit=limit, dry_run=dry_run
+        )
+        if dry_run:
+            session.rollback()
+        else:
+            session.commit()
+    except (FoodImportPromotionError, RecipeImportDecisionError) as error:
+        session.rollback()
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Lebensmittelkatalog nicht verfügbar",
+        ) from error
+    return FoodAutoResolutionResponse(
+        dry_run=result.dry_run,
+        unique_unknown_ingredients=result.unique_unknown_ingredients,
+        processed=result.processed,
+        eligible=result.eligible,
+        promoted=result.promoted,
+        aliases_added=result.aliases_added,
+        reused_foods=result.reused_foods,
+        ambiguous=result.ambiguous,
+        no_match=result.no_match,
+        incomplete=result.incomplete,
+        conflicts=result.conflicts,
+        ready_recipes_before=result.ready_recipes_before,
+        ready_recipes_after=result.ready_recipes_after,
+        items=[
+            FoodAutoResolutionItemResponse(
+                ingredient_name=item.ingredient_name,
+                normalized_name=item.normalized_name,
+                occurrence_count=item.occurrence_count,
+                status=item.status,
+                fdc_id=item.fdc_id,
+                reference_name=item.reference_name,
+                score=item.score,
+                catalog_key=item.catalog_key,
+                food_id=item.food_id,
+            )
+            for item in result.items
+        ],
     )
 
 

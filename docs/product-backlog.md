@@ -28,7 +28,9 @@ stellvertretende Testnutzer verpflichtet.
 kuratierter 29er-Datenbatch als Phase 6F und konservative Suchvorschläge für
 unbekannte Rezeptzutaten als Phase 6H umgesetzt; Foundation Foods und SR Legacy
 werden seit Phase 6I vollständig als lokale Referenzdaten geführt. Automatische
-Food-Freigabe, kanonische Zutatenbegriffe und Open Food Facts bleiben im Backlog
+Materialisierung streng eindeutiger und vollständiger Treffer ist als Phase 6J
+umgesetzt. Breitere automatische Freigabe, kanonische Begriffshierarchien und
+Open Food Facts bleiben im Backlog
 
 Der erste Adapter hält FoodData-Central-Rohdaten und abgeleitete Kandidaten in
 einer getrennten Inbox. Nur vollständige, ausdrücklich bestätigte Kandidaten
@@ -37,7 +39,9 @@ erhalten. Phase 6H gruppiert unbekannte Rezeptzutaten und legt nur einen
 eindeutigen Suchtreffer automatisch in der Food-Inbox ab; sie veröffentlicht
 ihn nicht im produktiven Katalog. Phase 6I beseitigt dafür einzelne
 Suchrequests, indem die offiziellen FDC-Archive reproduzierbar lokal importiert
-und aktualisiert werden.
+und aktualisiert werden. Phase 6J veröffentlicht ausschließlich vollständige,
+eindeutig zugeordnete Referenztreffer und speichert die konkrete Zutatenform als
+wiederverwendbaren Alias.
 
 ### Import-Inbox und Zutaten-Normalisierung
 

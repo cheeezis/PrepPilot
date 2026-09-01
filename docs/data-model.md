@@ -178,6 +178,12 @@ noch kein `Food`. Erst ein eindeutiger Zutatenmatch erzeugt einen Food-Import;
 die bestehende kontrollierte Freigabe erzeugt anschließend gegebenenfalls das
 produktive Lebensmittel.
 
+Phase 6J benötigt keine weitere Tabelle. Automatisch materialisierte
+Referenztreffer durchlaufen dieselben `food_imports`, `foods`, `food_aliases`
+und `import_review_decisions` wie manuell bestätigte Treffer. Herkunft und
+Freigabe bleiben dadurch nachvollziehbar; ein wiederholter Lauf erkennt bereits
+aufgelöste Zutaten über den globalen Alias und erzeugt keine Duplikate.
+
 ## Bewusste Grenzen des MVP
 
 Nicht zum MVP-Datenmodell gehören:

@@ -231,6 +231,16 @@ werden bei externen Kandidaten nicht pauschal entfernt, weil sie Nährwerte und
 Bedeutung verändern können. Ohne lokale Referenzdaten bleibt die bisherige
 FDC-API-Suche als Fallback erhalten.
 
+Phase 6J schließt für streng eindeutige und vollständige Referenzen den
+automatischen Weg bis zum produktiven Lebensmittel. Ein Dry-Run zeigt alle
+geplanten Entscheidungen. Der echte Lauf erzeugt einen deterministischen
+Katalogschlüssel, veröffentlicht den zugehörigen Food-Import, legt den exakten
+Rezeptbegriff als auditierte Alias-Entscheidung ab und verarbeitet sämtliche
+offenen Rezepte erneut. Bereits veröffentlichte Foods derselben FDC-ID werden
+wiederverwendet; Schlüssel- und Alias-Kollisionen sowie unvollständige oder
+mehrdeutige Kandidaten bleiben unverändert. Der Ablauf veröffentlicht keine
+Rezepte und setzt keine fehlenden Portionen oder Maßeinheiten.
+
 ## Lokale Entwicklungsumgebung
 
 PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die
