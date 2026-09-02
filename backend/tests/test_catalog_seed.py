@@ -14,6 +14,7 @@ from preppilot_api.models import (
     FoodAlias,
     FoodConcept,
     FoodMeasureDefault,
+    FoodSourceIdentifier,
     Meal,
     MealIngredient,
     MealPortionFactor,
@@ -54,9 +55,88 @@ def test_replaces_database_catalog_reproducibly() -> None:
             select(func.count()).select_from(FoodMeasureDefault)
         ) == sum(len(food.measure_defaults) for food in catalog.foods)
         assert session.scalar(select(func.count()).select_from(FoodConcept)) == len(
-            catalog.foods
+            {food.concept_key for food in catalog.foods}
         )
         assert all(food.concept_id is not None for food in session.scalars(select(Food)))
+
+        milk = session.scalar(
+            select(FoodConcept)
+            .join(Food, Food.concept_id == FoodConcept.id)
+            .where(Food.catalog_key == "milk_1_5")
+        )
+        assert milk is not None
+        assert (milk.key, milk.name) == ("milk", "Milk")
+
+
+def test_seed_removes_only_unreferenced_concepts() -> None:
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+
+    with Session(engine) as session, session.begin():
+        orphan = FoodConcept(key="old_profile_key", name="Old profile concept")
+        referenced = FoodConcept(key="external_concept", name="External concept")
+        session.add_all((orphan, referenced))
+        session.flush()
+        session.add(
+            FoodSourceIdentifier(
+                concept_id=referenced.id,
+                source_name="test",
+                external_id="ingredient-1",
+                source_label="Test ingredient",
+                source_url=None,
+            )
+        )
+
+    with Session(engine) as session, session.begin():
+        replace_catalog(session, load_catalog())
+
+    with Session(engine) as session:
+        concept_keys = set(session.scalars(select(FoodConcept.key)))
+
+    assert "old_profile_key" not in concept_keys
+    assert "external_concept" in concept_keys
+
+
+def test_seed_moves_source_identity_from_legacy_profile_concept() -> None:
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+
+    with Session(engine) as session, session.begin():
+        replace_catalog(session, load_catalog())
+        milk = session.scalar(select(FoodConcept).where(FoodConcept.key == "milk"))
+        assert milk is not None
+        milk.key = "milk_1_5"
+        milk.name = "Milk, 1.5% fat"
+        generalized_milk = FoodConcept(key="milk", name="Milk")
+        session.add(generalized_milk)
+        session.flush()
+        milk_profile = session.scalar(
+            select(Food).where(Food.catalog_key == "milk_1_5")
+        )
+        assert milk_profile is not None
+        milk_profile.concept_id = generalized_milk.id
+        session.add(
+            FoodSourceIdentifier(
+                concept_id=milk.id,
+                source_name="wikibooks",
+                external_id="3612",
+                source_label="Cookbook:Milk",
+                source_url="https://en.wikibooks.org/wiki/Cookbook:Milk",
+            )
+        )
+
+    with Session(engine) as session, session.begin():
+        replace_catalog(session, load_catalog())
+
+    with Session(engine) as session:
+        identity = session.scalar(select(FoodSourceIdentifier))
+        assert identity is not None
+        concept = session.get(FoodConcept, identity.concept_id)
+        concept_keys = set(session.scalars(select(FoodConcept.key)))
+
+    assert concept is not None
+    assert (concept.key, concept.name) == ("milk", "Milk")
+    assert "milk_1_5" not in concept_keys
 
 
 def test_seed_keeps_normalized_ingredient_amounts() -> None:

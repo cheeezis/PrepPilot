@@ -66,8 +66,10 @@ Die fachliche Zutatenidentität ist von konkreten Nährwertwerten getrennt:
 Ein Konzept darf mehrere Profile besitzen. Das Modell kennzeichnet absichtlich
 noch kein Standardprofil: Wenn eine Quelle nur „Milch“ nennt, wird nicht
 automatisch zwischen Vollmilch und fettarmer Milch entschieden. Der bestehende
-Katalog wird beim Seed zunächst 1:1 abgebildet, damit Planer und Mahlzeiten
-unverändert bleiben.
+Katalog benennt deshalb Konzept und Profil ausdrücklich getrennt: Das Profil
+„Milk, 1.5% fat“ gehört beispielsweise zum allgemeinen Konzept „Milk“.
+Künftige weitere Milchprofile können dasselbe Konzept verwenden, ohne den
+Planer oder bestehende Mahlzeiten zu verändern.
 
 Wird eine externe Kennung einmal einem Konzept zugeordnet, werden alle bereits
 damit verbundenen Rezeptimporte neu verarbeitet. Genau ein vorhandenes Profil

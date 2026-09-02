@@ -42,12 +42,15 @@ dass zusätzliche Nährwertdatensätze keine fehlende Zutatenontologie ersetzen.
 **Ziel:** Kanonische Lebensmittelkonzepte werden von konkreten
 Nährwertprofilen getrennt.
 
-**Aktueller Stand:** Datenmodell, rückwärtskompatible Seed-Verknüpfung und die
-eindeutige Registrierung externer Zutatenkennungen sind implementiert. Jedes
-konkrete `food` verweist direkt auf sein Konzept; eine zusätzliche
+**Aktueller Stand:** Datenmodell, explizite Konzeptzuordnung im kuratierten
+Katalog und die eindeutige Registrierung externer Zutatenkennungen sind
+implementiert. Jedes konkrete `food` verweist direkt auf sein allgemeineres
+Konzept; beispielsweise gehört `milk_1_5` zu `milk`. Eine zusätzliche
 Zuordnungstabelle oder eine automatische Standardprofil-Wahl gibt es nicht. Die
 PostgreSQL-Abnahme bestätigt nach zwei identischen Seed-Läufen 24 Foods mit 24
-direkten Konzeptverknüpfungen. Externe Zutatenkennungen können einmalig offen
+direkten Konzeptverknüpfungen. Eine vorhandene Wikibooks-Zuordnung zu Milch
+wurde dabei ohne Verlust auf das allgemeinere Konzept migriert. Externe
+Zutatenkennungen können einmalig offen
 gespeichert, von mehreren Rezepten wiederverwendet und später einem Konzept
 zugeordnet werden. Die Zuordnung verarbeitet alle betroffenen Rezeptimporte
 erneut; konkurrierende Food-Profile werden weiterhin nicht automatisch gewählt.

@@ -12,6 +12,7 @@ from preppilot_api.catalog_data import (
 )
 from preppilot_api.models import (
     Food,
+    FoodConcept,
     Meal,
     MealIngredient,
     MealPortionFactor,
@@ -29,6 +30,12 @@ def load_catalog_from_database(session: Session) -> Catalog:
     meals = tuple(session.scalars(select(Meal).order_by(Meal.catalog_key)))
     if not foods or not meals:
         raise CatalogUnavailableError("Database catalog is empty")
+
+    concepts_by_id = {
+        concept.id: concept for concept in session.scalars(select(FoodConcept))
+    }
+    if any(food.concept_id not in concepts_by_id for food in foods):
+        raise CatalogUnavailableError("Food references an unknown concept")
 
     food_keys_by_id = {food.id: food.catalog_key for food in foods}
     ingredients_by_meal: defaultdict[int, list[MealIngredientDefinition]] = defaultdict(
@@ -73,6 +80,8 @@ def load_catalog_from_database(session: Session) -> Catalog:
             FoodDefinition(
                 key=food.catalog_key,
                 name=food.name,
+                concept_key=concepts_by_id[food.concept_id].key,
+                concept_name=concepts_by_id[food.concept_id].name,
                 brand=food.brand,
                 unit=food.unit,
                 calories_per_100=food.calories_per_100,

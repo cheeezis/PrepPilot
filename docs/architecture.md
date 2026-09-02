@@ -91,10 +91,13 @@ weiterhin mehrere Nährwertprofile besitzen. Eine importierte Zutatenzeile
 verweist über `source_identifier_id` auf die Quellenkennung und hält das erkannte
 Konzept zusätzlich über `concept_id` fest.
 
-Der Katalog-Seed erzeugt für jedes bestehende Food zunächst ein gleichnamiges
-Konzept und setzt dessen `concept_id`. Diese rückwärtskompatible Ausgangslage
-ändert den Planer nicht. Mehrere Foods desselben Konzepts führen bewusst noch
-nicht zu einer automatischen Standardauswahl.
+Der Katalog beschreibt für jedes Food-Profil einen ausdrücklichen
+`concept_key` und `concept_name`. Dadurch kann ein konkretes Profil wie
+`milk_1_5` dem allgemeinen Konzept `milk` zugeordnet werden. Der Seed migriert
+Quellen- und Rezeptzuordnungen von den früheren 1:1-Konzepten und entfernt nur
+Konzepte, die danach von keinem Food, keiner Quellenidentität und keiner
+Importzutat mehr referenziert werden. Mehrere Foods desselben Konzepts führen
+bewusst noch nicht zu einer automatischen Standardauswahl.
 Besitzt ein geklärtes Konzept genau ein Food-Profil, darf dieses deterministisch
 verwendet werden. Bei mehreren oder keinem Profil bleibt die Rezeptzutat in der
 Review-Grenze.

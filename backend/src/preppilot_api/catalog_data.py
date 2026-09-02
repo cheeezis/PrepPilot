@@ -23,6 +23,8 @@ class FoodMeasureDefaultDefinition(CatalogModel):
 class FoodDefinition(CatalogModel):
     key: str = Field(pattern=r"^[a-z0-9_]+$")
     name: str = Field(min_length=1)
+    concept_key: str = Field(pattern=r"^[a-z0-9_]+$")
+    concept_name: str = Field(min_length=1)
     brand: str | None = None
     unit: MeasurementUnit
     calories_per_100: Decimal = Field(ge=0)
@@ -91,6 +93,16 @@ class Catalog(CatalogModel):
         food_keys = [food.key for food in self.foods]
         if len(set(food_keys)) != len(food_keys):
             raise ValueError("Catalog contains duplicate food keys")
+
+        concept_names: dict[str, str] = {}
+        for food in self.foods:
+            existing_name = concept_names.setdefault(
+                food.concept_key, food.concept_name
+            )
+            if existing_name != food.concept_name:
+                raise ValueError(
+                    f"Concept {food.concept_key!r} has conflicting names"
+                )
 
         alias_owners: dict[str, str] = {}
         food_identity_owners = {

@@ -28,6 +28,16 @@ def test_catalog_contains_reviewed_import_normalization_metadata() -> None:
     assert foods["vegetable_oil"].aliases == ("Oil",)
 
 
+def test_food_profiles_reference_general_food_concepts() -> None:
+    catalog = load_catalog()
+    foods = {food.key: food for food in catalog.foods}
+
+    assert foods["milk_1_5"].concept_key == "milk"
+    assert foods["milk_1_5"].concept_name == "Milk"
+    assert foods["rice_dry"].concept_key == "long_grain_rice"
+    assert foods["rice_dry"].concept_name == "Long-grain rice"
+
+
 def test_every_food_has_a_reviewed_traceable_source() -> None:
     catalog = load_catalog()
 
@@ -111,6 +121,8 @@ def test_rejects_meal_with_unknown_food() -> None:
         {
           "key": "known",
           "name": "Known food",
+          "concept_key": "known",
+          "concept_name": "Known food",
           "unit": "g",
           "calories_per_100": 1,
           "protein_per_100": 1,

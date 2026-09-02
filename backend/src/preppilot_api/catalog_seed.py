@@ -1,4 +1,6 @@
-from sqlalchemy import delete, select
+from collections import Counter
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from preppilot_api.catalog_data import Catalog, load_catalog
@@ -9,11 +11,13 @@ from preppilot_api.models import (
     FoodConcept,
     FoodMeasureDefault,
     FoodOrigin,
+    FoodSourceIdentifier,
     Meal,
     MealIngredient,
     MealOrigin,
     MealPortionFactor,
     MealRoleAssignment,
+    RecipeImportIngredient,
 )
 from preppilot_api.recipe_imports import canonical_measure, normalize_text
 
@@ -43,19 +47,37 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
         )
 
     existing_foods = {food.catalog_key: food for food in session.scalars(select(Food))}
+    initial_concept_food_counts = Counter(
+        food.concept_id for food in existing_foods.values()
+    )
     concepts = {
         concept.key: concept for concept in session.scalars(select(FoodConcept))
     }
     foods: dict[str, Food] = {}
     for food_definition in catalog.foods:
-        concept = concepts.get(food_definition.key)
+        concept = concepts.get(food_definition.concept_key)
         if concept is None:
-            concept = FoodConcept(key=food_definition.key, name=food_definition.name)
+            concept = FoodConcept(
+                key=food_definition.concept_key,
+                name=food_definition.concept_name,
+            )
             session.add(concept)
             session.flush()
-            concepts[food_definition.key] = concept
+            concepts[food_definition.concept_key] = concept
         else:
-            concept.name = food_definition.name
+            concept.name = food_definition.concept_name
+
+        legacy_concept = concepts.get(food_definition.key)
+        if (
+            legacy_concept is not None
+            and legacy_concept.id != concept.id
+            and initial_concept_food_counts[legacy_concept.id] <= 1
+        ):
+            _move_legacy_concept_references(
+                session,
+                old_concept_id=legacy_concept.id,
+                new_concept_id=concept.id,
+            )
 
         food = existing_foods.pop(food_definition.key, None)
         if food is not None and food.origin != FoodOrigin.CURATED_SEED:
@@ -126,6 +148,44 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
     for stale_meal in existing_meals.values():
         if stale_meal.origin == MealOrigin.CURATED_SEED:
             session.delete(stale_meal)
+
+    session.flush()
+    _delete_unreferenced_concepts(session)
+
+
+def _delete_unreferenced_concepts(session: Session) -> None:
+    referenced_concept_ids = set(session.scalars(select(Food.concept_id)))
+    referenced_concept_ids.update(
+        concept_id
+        for concept_id in session.scalars(select(FoodSourceIdentifier.concept_id))
+        if concept_id is not None
+    )
+    referenced_concept_ids.update(
+        concept_id
+        for concept_id in session.scalars(select(RecipeImportIngredient.concept_id))
+        if concept_id is not None
+    )
+    for concept in session.scalars(select(FoodConcept)):
+        if concept.id not in referenced_concept_ids:
+            session.delete(concept)
+
+
+def _move_legacy_concept_references(
+    session: Session,
+    *,
+    old_concept_id: int,
+    new_concept_id: int,
+) -> None:
+    session.execute(
+        update(FoodSourceIdentifier)
+        .where(FoodSourceIdentifier.concept_id == old_concept_id)
+        .values(concept_id=new_concept_id)
+    )
+    session.execute(
+        update(RecipeImportIngredient)
+        .where(RecipeImportIngredient.concept_id == old_concept_id)
+        .values(concept_id=new_concept_id)
+    )
 
 
 def _replace_curated_normalization_metadata(

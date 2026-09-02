@@ -11,11 +11,11 @@ Lebensmittelidentitäten. Eine Zutat wie „milk“ soll einmal dem Konzept „M
 zugeordnet werden. FDC, CoFID oder andere Quellen liefern dazu getrennte
 Nährwertprofile und Zustände.
 
-Kleinster sinnvoller Umfang:
+Der technische Grundschnitt ist umgesetzt:
 
 - Konzept und externe Quellenidentität speichern
 - konkrete Nährwertprofile direkt einem Konzept zuordnen
-- bestehende `foods` rückwärtskompatibel anbinden
+- bestehende `foods` über explizite allgemeine Konzeptschlüssel anbinden
 - ungeklärte Konzepte einmalig statt pro Rezept prüfen
 
 Eine automatische Wahl eines Standardprofils ist in diesem Abschnitt bewusst

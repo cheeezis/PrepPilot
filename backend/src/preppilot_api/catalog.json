@@ -3,6 +3,8 @@
     {
       "key": "wholegrain_bread",
       "name": "Wholegrain bread",
+      "concept_key": "wholegrain_bread",
+      "concept_name": "Wholegrain bread",
       "brand": null,
       "unit": "g",
       "calories_per_100": 252,
@@ -15,6 +17,8 @@
     {
       "key": "chicken_breast",
       "name": "Chicken breast, raw",
+      "concept_key": "chicken_breast",
+      "concept_name": "Chicken breast",
       "brand": null,
       "unit": "g",
       "calories_per_100": 120,
@@ -28,6 +32,8 @@
     {
       "key": "light_cream_cheese",
       "name": "Light cream cheese",
+      "concept_key": "cream_cheese",
+      "concept_name": "Cream cheese",
       "brand": null,
       "unit": "g",
       "calories_per_100": 163,
@@ -40,6 +46,8 @@
     {
       "key": "tomato",
       "name": "Tomato",
+      "concept_key": "tomato",
+      "concept_name": "Tomato",
       "brand": null,
       "unit": "g",
       "calories_per_100": 18,
@@ -53,6 +61,8 @@
     {
       "key": "oats",
       "name": "Rolled oats",
+      "concept_key": "oats",
+      "concept_name": "Oats",
       "brand": null,
       "unit": "g",
       "calories_per_100": 379,
@@ -65,6 +75,8 @@
     {
       "key": "skyr",
       "name": "Plain skyr",
+      "concept_key": "skyr",
+      "concept_name": "Skyr",
       "brand": null,
       "unit": "g",
       "calories_per_100": 60,
@@ -77,6 +89,8 @@
     {
       "key": "banana",
       "name": "Banana",
+      "concept_key": "banana",
+      "concept_name": "Banana",
       "brand": null,
       "unit": "g",
       "calories_per_100": 89,
@@ -98,6 +112,8 @@
     {
       "key": "egg",
       "name": "Whole egg",
+      "concept_key": "egg",
+      "concept_name": "Egg",
       "brand": null,
       "unit": "g",
       "calories_per_100": 143,
@@ -119,6 +135,8 @@
     {
       "key": "milk_1_5",
       "name": "Milk, 1.5% fat",
+      "concept_key": "milk",
+      "concept_name": "Milk",
       "brand": null,
       "unit": "ml",
       "calories_per_100": 47,
@@ -131,6 +149,8 @@
     {
       "key": "butter",
       "name": "Butter",
+      "concept_key": "butter",
+      "concept_name": "Butter",
       "brand": null,
       "unit": "g",
       "calories_per_100": 717,
@@ -143,6 +163,8 @@
     {
       "key": "wheat_wrap",
       "name": "Wheat tortilla wrap",
+      "concept_key": "wheat_tortilla",
+      "concept_name": "Wheat tortilla",
       "brand": null,
       "unit": "g",
       "calories_per_100": 296,
@@ -155,6 +177,8 @@
     {
       "key": "cucumber",
       "name": "Cucumber",
+      "concept_key": "cucumber",
+      "concept_name": "Cucumber",
       "brand": null,
       "unit": "g",
       "calories_per_100": 15,
@@ -167,6 +191,8 @@
     {
       "key": "whey",
       "name": "Whey protein powder",
+      "concept_key": "whey_protein",
+      "concept_name": "Whey protein",
       "brand": null,
       "unit": "g",
       "calories_per_100": 374,
@@ -179,6 +205,8 @@
     {
       "key": "rice_dry",
       "name": "Long-grain rice, dry",
+      "concept_key": "long_grain_rice",
+      "concept_name": "Long-grain rice",
       "brand": null,
       "unit": "g",
       "calories_per_100": 365,
@@ -191,6 +219,8 @@
     {
       "key": "olive_oil",
       "name": "Olive oil",
+      "concept_key": "olive_oil",
+      "concept_name": "Olive oil",
       "brand": null,
       "unit": "ml",
       "calories_per_100": 823,
@@ -204,6 +234,8 @@
     {
       "key": "broccoli",
       "name": "Broccoli",
+      "concept_key": "broccoli",
+      "concept_name": "Broccoli",
       "brand": null,
       "unit": "g",
       "calories_per_100": 34,
@@ -216,6 +248,8 @@
     {
       "key": "chickpeas_cooked",
       "name": "Chickpeas, cooked",
+      "concept_key": "chickpea",
+      "concept_name": "Chickpea",
       "brand": null,
       "unit": "g",
       "calories_per_100": 164,
@@ -228,6 +262,8 @@
     {
       "key": "couscous_dry",
       "name": "Couscous, dry",
+      "concept_key": "couscous",
+      "concept_name": "Couscous",
       "brand": null,
       "unit": "g",
       "calories_per_100": 376,
@@ -240,6 +276,8 @@
     {
       "key": "cottage_cheese",
       "name": "Cottage cheese",
+      "concept_key": "cottage_cheese",
+      "concept_name": "Cottage cheese",
       "brand": null,
       "unit": "g",
       "calories_per_100": 98,
@@ -252,6 +290,8 @@
     {
       "key": "rice_cakes",
       "name": "Plain rice cakes",
+      "concept_key": "rice_cake",
+      "concept_name": "Rice cake",
       "brand": null,
       "unit": "g",
       "calories_per_100": 387,
@@ -264,6 +304,8 @@
     {
       "key": "turkey_slices",
       "name": "Turkey breast slices",
+      "concept_key": "turkey_breast",
+      "concept_name": "Turkey breast",
       "brand": null,
       "unit": "g",
       "calories_per_100": 97,
@@ -276,6 +318,8 @@
     {
       "key": "vegetable_oil",
       "name": "Vegetable oil",
+      "concept_key": "vegetable_oil",
+      "concept_name": "Vegetable oil",
       "brand": null,
       "unit": "ml",
       "calories_per_100": 884,
@@ -289,6 +333,8 @@
     {
       "key": "pecans",
       "name": "Pecans, raw",
+      "concept_key": "pecan",
+      "concept_name": "Pecan",
       "brand": null,
       "unit": "g",
       "calories_per_100": 691,
@@ -302,6 +348,8 @@
     {
       "key": "raspberries",
       "name": "Raspberries, raw",
+      "concept_key": "raspberry",
+      "concept_name": "Raspberry",
       "brand": null,
       "unit": "g",
       "calories_per_100": 52,
