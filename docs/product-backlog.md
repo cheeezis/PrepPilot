@@ -1,33 +1,21 @@
 # Produkt-Backlog
 
-Stand: 1. September 2026
+Stand: 2. September 2026
 
-## Nächster Datenabschnitt
+## Nächster Produktabschnitt
 
-### Lebensmittelkonzepte von Nährwertprofilen trennen
+### Recipe-first-MVP
 
-Vor einem großen Rezeptimport benötigt PrepPilot stabile kanonische
-Lebensmittelidentitäten. Eine Zutat wie „milk“ soll einmal dem Konzept „Milch“
-zugeordnet werden. FDC, CoFID oder andere Quellen liefern dazu getrennte
-Nährwertprofile und Zustände.
+Der nächste Schnitt baut einen vollständigen, aber bewusst kleinen Ablauf aus
+genau einer Quelle. Importierte Rezepte bringen ihre Nährwerte pro Portion
+bereits mit und können deshalb ohne normalisierte Lebensmittel geplant werden.
 
-Kleinster sinnvoller Umfang:
+Der erste Prüfkandidat ist die USDA Child Nutrition Recipe Box. Zunächst wird
+eine Stichprobe von zehn geeigneten Rezepten hinsichtlich Datenformat,
+Nährwertvollständigkeit und dauerhafter Nutzbarkeit geprüft.
 
-- Konzept und externe Quellenidentität speichern
-- ein Standard-Nährwertprofil zuordnen
-- bestehende `foods` rückwärtskompatibel anbinden
-- ungeklärte Konzepte einmalig statt pro Rezept prüfen
-
-### Offenen Rezeptbestand anbinden
-
-Wikibooks Cookbook ist der bevorzugte erste Kandidat. Der erste Lauf bleibt ein
-begrenzter Dry Run und prüft Portionen, Zutaten, Anleitung, Lizenzmetadaten und
-kanonische Zutatenlinks. Nur vollständige Kandidaten gelangen in die bestehende
-Rezept-Inbox.
-
-USDA Team Nutrition kann später einen kleinen hochwertigen Zusatzbestand
-liefern. Historische Public-Domain-Archive bleiben wegen fehlender Portionen und
-uneinheitlicher Qualität zunächst in Quarantäne.
+Die verbindliche Spezifikation steht in
+[`recipe-first-mvp.md`](recipe-first-mvp.md).
 
 ### Nutzerinitiierter URL-Import
 
@@ -41,6 +29,13 @@ und muss Quellrechte, Attribution und Bilder gesondert behandeln.
 Noch zu entscheiden ist, ob wiederholte Importläufe als Kommando, Hintergrundjob
 oder kleine Admin-Oberfläche gestartet werden. Temporäre interne HTTP-Endpunkte
 sollen dafür nicht erneut entstehen.
+
+### Zutaten und Lebensmittel
+
+Normalisierte Zutaten, Lebensmittelkonzepte und eigene Nährwertprofile werden
+erst nach dem Recipe-first-MVP wieder aufgenommen. Sie dienen dann konkreten
+Funktionen wie Einkaufslisten, Allergenen, Ausschlüssen und Ersetzungen, nicht
+der grundlegenden Freigabe eines importierten Rezepts.
 
 ## Produktvalidierung
 

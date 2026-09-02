@@ -1,6 +1,6 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 1. September 2026
+Stand: 2. September 2026
 
 ## Abgeschlossene Produktphasen
 
@@ -35,46 +35,36 @@ Zutatenvorschläge, automatische Food-Materialisierung und die dazugehörigen
 internen HTTP-Endpunkte wurden nach der Erkundung entfernt. Sie haben gezeigt,
 dass zusätzliche Nährwertdatensätze keine fehlende Zutatenontologie ersetzen.
 
-## Nächster Meilenstein: belastbarer Datenbestand
+## Nächster Meilenstein: Recipe-first-MVP
 
-### Abschnitt 1: Zutatenidentität
+PrepPilot wird zunächst auf einen kleinen vertikalen Produktablauf reduziert:
+vollständige Rezepte aus einer Quelle importieren, mit ihren bereits gelieferten
+Nährwerten in PostgreSQL speichern und daraus einen Tagesplan erzeugen.
 
-**Ziel:** Kanonische Lebensmittelkonzepte werden von konkreten
-Nährwertprofilen getrennt.
+Die Zutatennormalisierung ist keine Voraussetzung mehr für den Planer. Ein
+importiertes Rezept wird über seine eigenen Werte pro Portion geplant.
+Lebensmittelprofile werden erst wieder eingeführt, wenn eine konkrete spätere
+Funktion wie Einkaufsliste, Ausschluss oder Ersetzung sie benötigt.
 
-**Abnahme:**
+Die vollständige Abgrenzung und Abnahme steht in
+[`recipe-first-mvp.md`](recipe-first-mvp.md).
 
-- Eine externe kanonische Zutatenkennung kann genau einem internen Konzept
-  zugeordnet werden.
-- Ein Konzept kann mindestens ein Nährwertprofil mit Quelle und Zustand tragen.
-- Bestehender Planer und kuratierter Katalog funktionieren unverändert weiter.
-- Eine ungeklärte Zutat erzeugt genau einen wiederverwendbaren Review-Fall.
+### Umsetzungsschnitte
 
-### Abschnitt 2: offener Rezeptadapter
-
-**Ziel:** Ein begrenzter Wikibooks-Lauf übersetzt offen lizenzierte Rezepte in
-das quellenneutrale Inbox-Format.
-
-**Abnahme:**
-
-- Der Dry Run weist entdeckte, geeignete und abgelehnte Seiten samt Gründen aus.
-- Importiert werden nur Rezepte mit Portionen, Zutaten und Anleitung.
-- Seitenkennung, Revision, URL, Lizenz und Attribution bleiben erhalten.
-- Kanonische Wikibooks-Zutatenlinks werden als externe Identitäten genutzt.
-- Derselbe Lauf erzeugt keine Duplikate.
-
-### Abschnitt 3: kontrollierter Bestandslauf
-
-Erst nach erfolgreicher Abnahme der ersten beiden Abschnitte wird die Laufgröße
-erhöht. Unbekannte Konzepte werden nach Häufigkeit priorisiert. Fehlende
-Nährwertprofile blockieren nicht die Aufnahme des Rohrezepts, aber weiterhin
-dessen Veröffentlichung im Planerkatalog.
+1. aktuelle Tabellen und Dienste gegen das neue Ziel klassifizieren
+2. zehn echte Kandidaten einer rechtlich kompatiblen Quelle prüfen
+3. minimales Rezeptmodell und neue Ausgangsmigration festlegen
+4. genau diese Quelle kontrolliert anbinden
+5. Planer auf Nährwerte pro Rezeptportion umstellen
+6. gespeicherte Rezepte und erzeugte Pläne im Frontend sichtbar machen
+7. vollständigen Ablauf automatisiert und im Browser abnehmen
 
 ## Nicht Teil des nächsten Schnitts
 
 - Bulk-Scraping kommerzieller Rezeptseiten
-- automatische Schätzung fehlender Portionen
-- automatische Wahl einer beliebigen FDC-Variante
+- Nährwertberechnung aus einzelnen Zutaten
+- Zutatenontologie und Lebensmittelprofile
+- Quellen ohne dauerhaft speicherbare Rezept- und Nährwertdaten
 - Bilderimport
 - regelmäßiger Hintergrundbetrieb
 - öffentliche Import- oder Admin-Oberfläche
