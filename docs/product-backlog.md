@@ -1,61 +1,48 @@
 # Produkt-Backlog
 
-Stand: 1. September 2026
+Stand: 2. September 2026
 
-## Nächster Datenabschnitt
+## Als Nächstes
 
-### Lebensmittelkonzepte von Nährwertprofilen trennen
+### Rezeptqualität und Darstellung
 
-Vor einem großen Rezeptimport benötigt PrepPilot stabile kanonische
-Lebensmittelidentitäten. Eine Zutat wie „milk“ soll einmal dem Konzept „Milch“
-zugeordnet werden. FDC, CoFID oder andere Quellen liefern dazu getrennte
-Nährwertprofile und Zustände.
+- lange NHS-Zubereitungstexte in lesbare Schritte trennen
+- Importablehnungen mit konkretem Grund im Frontend anzeigen
+- Rezeptübersicht mit echten Nutzern auf Verständlichkeit prüfen
 
-Kleinster sinnvoller Umfang:
+### Mehr Rezepte derselben Quelle
 
-- Konzept und externe Quellenidentität speichern
-- ein Standard-Nährwertprofil zuordnen
-- bestehende `foods` rückwärtskompatibel anbinden
-- ungeklärte Konzepte einmalig statt pro Rezept prüfen
+Nach der Abnahme der ersten zehn Rezepte wird die feste NHS-Liste kontrolliert
+erweitert. Neue Seiten müssen dieselben Pflichtfelder, Rechte und
+Attributionsregeln erfüllen. Ziel ist zunächst bessere Vielfalt, nicht möglichst
+große Datenmenge.
 
-### Offenen Rezeptbestand anbinden
+### Planung verbessern
 
-Wikibooks Cookbook ist der bevorzugte erste Kandidat. Der erste Lauf bleibt ein
-begrenzter Dry Run und prüft Portionen, Zutaten, Anleitung, Lizenzmetadaten und
-kanonische Zutatenlinks. Nur vollständige Kandidaten gelangen in die bestehende
-Rezept-Inbox.
+- passende Rezeptkategorien einführen
+- Wiederholungen und Portionspraktikabilität bewerten
+- erklären, warum ein Plan gültig oder nur eine Annäherung ist
 
-USDA Team Nutrition kann später einen kleinen hochwertigen Zusatzbestand
-liefern. Historische Public-Domain-Archive bleiben wegen fehlender Portionen und
-uneinheitlicher Qualität zunächst in Quarantäne.
+## Spätere Produktabschnitte
 
 ### Nutzerinitiierter URL-Import
 
-Ein späterer Nutzer kann ein einzelnes Rezept aus einer URL in seine private
-Sammlung übernehmen. Schema.org/JSON-LD und `recipe-scrapers` sind dafür
-technisch geeignet. Diese Funktion ist von einem Bulk-Katalogimport zu trennen
-und muss Quellrechte, Attribution und Bilder gesondert behandeln.
+Ein Nutzer kann später ein einzelnes Rezept aus einer URL in seine private
+Sammlung übernehmen. Diese Funktion braucht eine eigene Quellen- und
+Rechteprüfung und ist nicht Teil des aktuellen NHS-Bestandsimports.
 
-### Importbetrieb
+### Zutaten und Lebensmittel
 
-Noch zu entscheiden ist, ob wiederholte Importläufe als Kommando, Hintergrundjob
-oder kleine Admin-Oberfläche gestartet werden. Temporäre interne HTTP-Endpunkte
-sollen dafür nicht erneut entstehen.
+Normalisierte Zutaten und Lebensmittelprofile werden erst für konkrete
+Funktionen wie Filter, Allergene, Einkaufslisten oder eigene Rezepte ergänzt.
+Sie sind keine Voraussetzung für den aktuellen Planer.
 
-## Produktvalidierung
-
-Der technische MVP soll mit geeigneten Personen aus der Zielgruppe geprüft
-werden. Erfolgskriterien und Ablauf werden festgelegt, sobald eine passende
-Testgruppe verfügbar ist.
-
-## Spätere Produktfunktionen
+### Weitere Funktionen
 
 - unterschiedliche Tagespläne innerhalb einer Woche
-- Mahlzeiten austauschen und Wiederholungen steuern
-- Ernährungsformen, Ausschlüsse und Favoriten
-- eigene Mahlzeiten und gespeicherte Pläne
+- Mahlzeiten austauschen und Favoriten speichern
+- Ernährungsformen und Ausschlüsse
 - Benutzerkonten und geräteübergreifende Nutzung
 - Zucker, Ballaststoffe, Salz und Allergene
 - Preise, Packungsgrößen, Budgets und Vorräte
-- Produkt- und Mahlzeitenbilder
-- KI-gestützte, aber niemals selbstständig freigebende Review-Vorschläge
+- Produkt- und Rezeptbilder mit geklärten Nutzungsrechten

@@ -1,67 +1,49 @@
 # Lokale Entwicklung
 
-Stand: 28. August 2026
+## Datenbank
 
-PrepPilot benötigt lokal PostgreSQL, das Backend und das Frontend. Alle Befehle
-werden in PowerShell ausgeführt.
-
-## Datenbank vorbereiten
-
-Im Repository-Hauptordner:
+PostgreSQL starten:
 
 ```powershell
-docker compose up -d
-docker compose ps
+docker compose up -d postgres
 ```
 
-Beim ersten Start, nach neuen Migrationen oder nach Änderungen am kuratierten
-Katalog im Ordner `backend`:
+Nach dem ausdrücklich freigegebenen Recipe-first-Reset wird das neue Schema im
+Backend angelegt:
 
 ```powershell
-.\.venv\Scripts\python.exe -m alembic upgrade head
-.\.venv\Scripts\python.exe -m preppilot_api.catalog_seed
+.\.venv\Scripts\alembic.exe upgrade head
 ```
 
-Der Seed synchronisiert den kuratierten Grundbestand reproduzierbar mit der
-versionierten `catalog.json`. Kontrolliert importierte Lebensmittel und
-Mahlzeiten werden dabei nicht überschrieben.
-
-## Anwendung starten
-
-Backend im Ordner `backend`:
+## Backend
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn preppilot_api.main:app --reload --port 8000
+cd backend
+.\.venv\Scripts\fastapi.exe dev src/preppilot_api/main.py
 ```
 
-Frontend in einem zweiten Terminal im Ordner `frontend`:
+Prüfungen:
 
 ```powershell
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m mypy src
+.\.venv\Scripts\python.exe -m pytest
+```
+
+## Frontend
+
+```powershell
+cd frontend
 npm run dev
 ```
 
-Die Oberfläche ist anschließend unter `http://localhost:5173` erreichbar. Erst
-wenn PostgreSQL erreichbar und der Katalog befüllt ist, zeigt sie `System bereit`
-an und erstellt Tagespläne.
-
-## Prüfungen
-
-Backend im Ordner `backend`:
+Prüfungen:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest
-.\.venv\Scripts\python.exe -m ruff check .
-.\.venv\Scripts\python.exe -m mypy src tests
-```
-
-Frontend im Ordner `frontend`:
-
-```powershell
-npm test
 npm run lint
+npm test
 npm run build
-npm run test:e2e
 ```
 
-Für den End-to-End-Test muss der migrierte und befüllte PostgreSQL-Container
-laufen.
+Im Browser startet „10 NHS-Rezepte importieren“ den begrenzten Import. Der
+zweite Lauf muss zehn unveränderte Rezepte und keine Duplikate melden.

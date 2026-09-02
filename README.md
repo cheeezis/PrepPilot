@@ -1,11 +1,23 @@
 # PrepPilot
 
-PrepPilot ist ein Programm zur Erstellung und Planung von Ernährungsplänen.
-Auf Basis von Kalorien- und Makronährstoffzielen sollen passende Mahlzeiten,
-Tagespläne und Einkaufslisten erstellt werden.
+PrepPilot baut einen kleinen, nachvollziehbaren Tagesplan aus vollständigen
+Rezepten. Der Recipe-first-MVP importiert zehn fest geprüfte Rezepte von NHS
+Healthier Families, speichert deren Nährwerte pro Portion in PostgreSQL und
+kombiniert sie passend zu Kalorien- und Makrozielen.
 
-Aktuell gibt es einen kleinen internen Mahlzeitenkatalog und einen ersten
-Tagesplaner. Das Projekt befindet sich noch in einer frühen Entwicklungsphase
-und ist noch nicht für den produktiven Einsatz gedacht.
+Der aktuelle Ablauf:
 
-Work in Progress.
+```text
+10 freigegebene NHS-Seiten
+  -> validieren und idempotent importieren
+  -> recipes in PostgreSQL
+  -> Tagesplan aus ganzen Portionen
+  -> Rezept, Zutaten und Quelle im Frontend anzeigen
+```
+
+Lebensmittel-Normalisierung, Einkaufslisten und Wochenpläne gehören bewusst
+nicht zu diesem ersten Schnitt. Die Abgrenzung steht in
+[`docs/recipe-first-mvp.md`](docs/recipe-first-mvp.md).
+
+Das Projekt befindet sich in Entwicklung und ist nicht für den produktiven
+Einsatz gedacht.

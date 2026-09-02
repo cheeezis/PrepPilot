@@ -9,6 +9,8 @@ const backendPython = path.join(
   '.venv',
   process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python',
 )
+const backendPort = process.env.PREPPILOT_E2E_BACKEND_PORT ?? '8000'
+const frontendPort = process.env.PREPPILOT_E2E_FRONTEND_PORT ?? '5173'
 
 export default defineConfig({
   testDir: './e2e',
@@ -17,7 +19,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'list',
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: `http://127.0.0.1:${frontendPort}`,
     trace: 'retain-on-failure',
   },
   projects: [
@@ -29,9 +31,9 @@ export default defineConfig({
   webServer: [
     {
       name: 'Backend',
-      command: `"${backendPython}" -m uvicorn preppilot_api.main:app`,
+      command: `"${backendPython}" -m uvicorn preppilot_api.main:app --port ${backendPort}`,
       cwd: backendDirectory,
-      url: 'http://127.0.0.1:8000/docs',
+      url: `http://127.0.0.1:${backendPort}/docs`,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
     },
@@ -39,7 +41,7 @@ export default defineConfig({
       name: 'Frontend',
       command: 'npm run dev -- --host 127.0.0.1',
       cwd: frontendDirectory,
-      url: 'http://127.0.0.1:5173',
+      url: `http://127.0.0.1:${frontendPort}`,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
     },

@@ -1,80 +1,41 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 1. September 2026
+Stand: 2. September 2026
 
-## Abgeschlossene Produktphasen
+## Aktueller Stand: Recipe-first-MVP
 
-| Phase | Ergebnis | Status |
+Der frühere Lebensmittel-, Normalisierungs- und Import-Inbox-Ansatz wurde durch
+einen kleinen vertikalen Rezeptablauf ersetzt.
+
+| Schnitt | Ergebnis | Status |
 |---|---|---|
-| 0 | Produktziel und Zielgruppe beschrieben | abgeschlossen |
-| 1 | Fachliche Planungsregeln festgelegt | abgeschlossen |
-| 2 | Technischer Stack und Systemgrenzen festgelegt | abgeschlossen |
-| 3 | Kuratierter Lebensmittel- und Mahlzeitenkatalog in PostgreSQL | abgeschlossen |
-| 4 | Tagesplaner und API | abgeschlossen |
-| 5 | Wochenansicht und Einkaufsliste | abgeschlossen |
-| 6A | Quellenneutrale Rezept-Inbox und deterministische Normalisierung | abgeschlossen |
-| 6B | Kontrollierte Veröffentlichung normalisierter Rezepte | abgeschlossen |
+| Quellenprüfung | zehn geeignete NHS-Rezepte und Nutzungsbedingungen geprüft | abgeschlossen |
+| Datenmodell | eine fachliche Tabelle `recipes` | abgeschlossen |
+| Datenbank | alte lokale Tabellen entfernt und neue Basismigration ausgeführt | abgeschlossen |
+| Import | begrenzter, validierender und idempotenter NHS-Import | abgeschlossen |
+| Planung | Kombination gespeicherter Rezeptmakros mit ganzen Portionen | abgeschlossen |
+| Frontend | Import, Rezeptbestand, Rezeptdetails und Tagespläne sichtbar | abgeschlossen |
+| Abnahme | Backend-, Frontend- und Browsertests | abgeschlossen |
 
-Damit ist der technische MVP abgeschlossen. Der Planer arbeitet ausschließlich
-mit dem freigegebenen PostgreSQL-Katalog und benötigt keine externe Datenquelle
-zur Laufzeit.
+Der aktuelle Ablauf und seine Grenzen stehen in
+[`recipe-first-mvp.md`](recipe-first-mvp.md).
 
-## Behaltener Stand aus der Import-Erkundung
+## Nächster Produktabschnitt
 
-Die Import-Erkundung hat drei dauerhaft brauchbare Bausteine geliefert:
+1. aktuellen Umbau verständlich committen und als Ganzes prüfen
+2. Qualität der zehn Rezepte im Frontend manuell bewerten
+3. Zubereitungsschritte aus NHS-Daten lesbarer trennen
+4. weitere geeignete Rezepte derselben Quelle kontrolliert aufnehmen
+5. Kategorien und bessere Planvielfalt ergänzen
 
-1. Rohrezepte können idempotent und getrennt vom Produktivkatalog gespeichert
-   werden.
-2. Unvollständige Zutaten und Mengen bleiben hinter einer nachvollziehbaren
-   Review-Grenze.
-3. Foundation Foods und SR Legacy können als lokaler FDC-Referenzbestand
-   gespeichert werden.
+## Später
 
-Quellenspezifische TheMealDB-Logik, direkte FDC-Einzelrequests, heuristische
-Zutatenvorschläge, automatische Food-Materialisierung und die dazugehörigen
-internen HTTP-Endpunkte wurden nach der Erkundung entfernt. Sie haben gezeigt,
-dass zusätzliche Nährwertdatensätze keine fehlende Zutatenontologie ersetzen.
+- zweite rechtlich kompatible Rezeptquelle
+- Nutzerimport einzelner Rezept-URLs
+- Ernährungsformen, Ausschlüsse und Favoriten
+- normalisierte Zutaten für Filter und Einkaufslisten
+- Lebensmittelprofile für eigene Rezepte und Ersetzungen
+- Benutzerkonten und gespeicherte Pläne
 
-## Nächster Meilenstein: belastbarer Datenbestand
-
-### Abschnitt 1: Zutatenidentität
-
-**Ziel:** Kanonische Lebensmittelkonzepte werden von konkreten
-Nährwertprofilen getrennt.
-
-**Abnahme:**
-
-- Eine externe kanonische Zutatenkennung kann genau einem internen Konzept
-  zugeordnet werden.
-- Ein Konzept kann mindestens ein Nährwertprofil mit Quelle und Zustand tragen.
-- Bestehender Planer und kuratierter Katalog funktionieren unverändert weiter.
-- Eine ungeklärte Zutat erzeugt genau einen wiederverwendbaren Review-Fall.
-
-### Abschnitt 2: offener Rezeptadapter
-
-**Ziel:** Ein begrenzter Wikibooks-Lauf übersetzt offen lizenzierte Rezepte in
-das quellenneutrale Inbox-Format.
-
-**Abnahme:**
-
-- Der Dry Run weist entdeckte, geeignete und abgelehnte Seiten samt Gründen aus.
-- Importiert werden nur Rezepte mit Portionen, Zutaten und Anleitung.
-- Seitenkennung, Revision, URL, Lizenz und Attribution bleiben erhalten.
-- Kanonische Wikibooks-Zutatenlinks werden als externe Identitäten genutzt.
-- Derselbe Lauf erzeugt keine Duplikate.
-
-### Abschnitt 3: kontrollierter Bestandslauf
-
-Erst nach erfolgreicher Abnahme der ersten beiden Abschnitte wird die Laufgröße
-erhöht. Unbekannte Konzepte werden nach Häufigkeit priorisiert. Fehlende
-Nährwertprofile blockieren nicht die Aufnahme des Rohrezepts, aber weiterhin
-dessen Veröffentlichung im Planerkatalog.
-
-## Nicht Teil des nächsten Schnitts
-
-- Bulk-Scraping kommerzieller Rezeptseiten
-- automatische Schätzung fehlender Portionen
-- automatische Wahl einer beliebigen FDC-Variante
-- Bilderimport
-- regelmäßiger Hintergrundbetrieb
-- öffentliche Import- oder Admin-Oberfläche
+Die früheren technischen Phasen bleiben über die Git-Historie nachvollziehbar,
+bestimmen aber nicht mehr die aktuelle Architektur.

@@ -1,110 +1,62 @@
 from decimal import Decimal
 
-import pytest
-from fastapi.testclient import TestClient
-from pytest import MonkeyPatch
-
-import preppilot_api.main as main_module
-from preppilot_api.catalog_data import load_catalog
-from preppilot_api.catalog_repository import CatalogUnavailableError
+from preppilot_api.nutrition import Nutrients
 from preppilot_api.planner import PlanTargets, generate_day_plans
+from preppilot_api.recipe_repository import RecipeDefinition
 
 
-@pytest.fixture(autouse=True)
-def use_test_catalog(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        main_module,
-        "load_catalog_from_database",
-        lambda session: load_catalog(),
+def recipe(recipe_id: int, values: tuple[str, str, str, str]) -> RecipeDefinition:
+    return RecipeDefinition(
+        id=recipe_id,
+        title=f"Recipe {recipe_id}",
+        servings=4,
+        source_url=f"https://example.test/{recipe_id}",
+        license_name="Open Government Licence v3.0",
+        attribution_text="NHS",
+        ingredients=("ingredient",),
+        instructions=("instruction",),
+        nutrients=Nutrients(*(Decimal(value) for value in values)),
     )
 
 
-@pytest.mark.parametrize(
-    ("meal_count", "minimum_valid_plans"), ((3, 2), (4, 3), (5, 3), (6, 3))
+RECIPES = (
+    recipe(1, ("525", "52", "48", "15.5")),
+    recipe(2, ("409", "26.5", "61", "9")),
+    recipe(3, ("404", "36", "54", "6.5")),
+    recipe(4, ("384", "42", "48", "4")),
+    recipe(5, ("295", "21", "45", "5")),
+    recipe(6, ("384", "22", "67", "3.5")),
+    recipe(7, ("363", "25.5", "49.7", "5.3")),
+    recipe(8, ("465", "34.2", "45.9", "13.8")),
+    recipe(9, ("255", "17", "19", "13")),
+    recipe(10, ("296", "21.5", "30.8", "7.2")),
 )
-def test_reference_profile_returns_ranked_plans(
-    meal_count: int, minimum_valid_plans: int
-) -> None:
-    targets = PlanTargets(
-        calories=Decimal(2500),
-        protein_minimum=Decimal(220),
-        fat_maximum=Decimal(71),
-        carbs=Decimal(233),
-        meal_count=meal_count,
-    )
-
-    plans = generate_day_plans(targets, load_catalog())
-
-    assert len(plans) == 3
-    assert sum(plan.status == "valid" for plan in plans) >= minimum_valid_plans
-    assert [plan.status for plan in plans] == sorted(
-        (plan.status for plan in plans), key=lambda status: status != "valid"
-    )
-    assert all(len(plan.meals) == meal_count for plan in plans)
-    assert len({plan.stable_key for plan in plans}) == len(plans)
-    assert all(
-        len({meal.meal.key for meal in plan.meals}) == len(plan.meals) for plan in plans
-    )
 
 
-@pytest.mark.parametrize(
-    "targets",
-    (
-        pytest.param(
-            PlanTargets(
-                calories=Decimal(2000),
-                protein_minimum=Decimal(160),
-                fat_maximum=Decimal(65),
-                carbs=Decimal(200),
-                meal_count=4,
-            ),
-            id="lower-targets",
-        ),
-        pytest.param(
-            PlanTargets(
-                calories=Decimal(3000),
-                protein_minimum=Decimal(240),
-                fat_maximum=Decimal(90),
-                carbs=Decimal(320),
-                meal_count=6,
-            ),
-            id="higher-targets",
-        ),
-    ),
-)
-def test_varied_target_profiles_return_three_valid_plans(
-    targets: PlanTargets,
-) -> None:
-    plans = generate_day_plans(targets, load_catalog())
+def targets() -> PlanTargets:
+    return PlanTargets(Decimal(2500), Decimal(220), Decimal(71), Decimal(233), 5)
 
-    assert len(plans) == 3
-    assert all(plan.status == "valid" for plan in plans)
-    assert all(len(plan.meals) == targets.meal_count for plan in plans)
-    assert all(
-        evaluation.satisfied
-        for plan in plans
-        for evaluation in plan.evaluations
-        if evaluation.kind == "hard"
-    )
+
+def test_reference_profile_returns_recipe_first_plan() -> None:
+    plans = generate_day_plans(targets(), RECIPES)
+    assert plans and plans[0].status == "valid"
+    assert len(plans[0].recipes) == 5
+    assert all(item.portions in (1, 2) for item in plans[0].recipes)
+    assert len({item.recipe.id for item in plans[0].recipes}) == 5
 
 
 def test_plan_generation_is_reproducible() -> None:
-    targets = PlanTargets(
-        calories=Decimal(2500),
-        protein_minimum=Decimal(220),
-        fat_maximum=Decimal(71),
-        carbs=Decimal(233),
-        meal_count=5,
+    assert generate_day_plans(targets(), RECIPES) == generate_day_plans(
+        targets(), RECIPES
     )
-    catalog = load_catalog()
-
-    first_result = generate_day_plans(targets, catalog)
-    second_result = generate_day_plans(targets, catalog)
-
-    assert first_result == second_result
 
 
-def test_api_returns_scaled_ingredients_and_rule_evaluations() -> None:
+def test_api_serializes_recipe_source_data(monkeypatch) -> None:
+    from fastapi.testclient import TestClient
+
+    import preppilot_api.main as main_module
+
+    monkeypatch.setattr(main_module, "load_recipes", lambda session: RECIPES)
     with TestClient(main_module.app) as client:
         response = client.post(
             "/api/day-plans",
@@ -116,103 +68,23 @@ def test_api_returns_scaled_ingredients_and_rule_evaluations() -> None:
                 "meal_count": 5,
             },
         )
-
     assert response.status_code == 200
-    value = response.json()
-    assert value["outcome"] == "plans_found"
-    assert len(value["plans"]) == 3
-    assert len(value["plans"][0]["evaluations"]) == 4
-    assert len(value["plans"][0]["meals"]) == 5
-    assert value["plans"][0]["meals"][0]["ingredients"][0]["amount"] > 0
+    planned = response.json()["plans"][0]["recipes"][0]
+    assert planned["source_url"].startswith("https://")
+    assert planned["ingredients"] == ["ingredient"]
+    assert planned["portions"] in (1, 2)
 
 
-def test_api_labels_approximations_instead_of_presenting_them_as_valid() -> None:
+def test_recipe_api_exposes_the_stored_inventory(monkeypatch) -> None:
+    from fastapi.testclient import TestClient
+
+    import preppilot_api.main as main_module
+
+    monkeypatch.setattr(main_module, "load_recipes", lambda session: RECIPES)
     with TestClient(main_module.app) as client:
-        response = client.post(
-            "/api/day-plans",
-            json={
-                "calories": 1800,
-                "protein_minimum": 160,
-                "fat_maximum": 71,
-                "carbs": 233,
-                "meal_count": 3,
-            },
-        )
-
+        response = client.get("/api/recipes")
     assert response.status_code == 200
-    value = response.json()
-    assert value["outcome"] == "approximations_only"
-    assert value["plans"]
-    assert all(plan["status"] == "approximation" for plan in value["plans"])
-    assert all(
-        any(
-            evaluation["kind"] == "hard" and not evaluation["satisfied"]
-            for evaluation in plan["evaluations"]
-        )
-        for plan in value["plans"]
-    )
-
-
-def test_api_reports_when_no_candidate_is_within_outer_limits() -> None:
-    with TestClient(main_module.app) as client:
-        response = client.post(
-            "/api/day-plans",
-            json={
-                "calories": 10000,
-                "protein_minimum": 220,
-                "fat_maximum": 71,
-                "carbs": 233,
-                "meal_count": 3,
-            },
-        )
-
-    assert response.status_code == 200
-    assert response.json() == {"outcome": "no_usable_plan", "plans": []}
-
-
-@pytest.mark.parametrize(
-    ("field", "value"),
-    (("calories", 0), ("protein_minimum", 0), ("meal_count", 2), ("meal_count", 7)),
-)
-def test_api_rejects_unsupported_targets(field: str, value: int) -> None:
-    request = {
-        "calories": 2500,
-        "protein_minimum": 220,
-        "fat_maximum": 71,
-        "carbs": 233,
-        "meal_count": 5,
-    }
-    request[field] = value
-
-    with TestClient(main_module.app) as client:
-        response = client.post("/api/day-plans", json=request)
-
-    assert response.status_code == 422
-
-
-def test_api_rejects_unavailable_database_catalog(
-    monkeypatch: MonkeyPatch,
-) -> None:
-    def raise_catalog_error(session: object) -> None:
-        raise CatalogUnavailableError("catalog unavailable")
-
-    monkeypatch.setattr(
-        main_module,
-        "load_catalog_from_database",
-        raise_catalog_error,
-    )
-
-    with TestClient(main_module.app) as client:
-        response = client.post(
-            "/api/day-plans",
-            json={
-                "calories": 2500,
-                "protein_minimum": 220,
-                "fat_maximum": 71,
-                "carbs": 233,
-                "meal_count": 5,
-            },
-        )
-
-    assert response.status_code == 503
-    assert response.json() == {"detail": "Mahlzeitenkatalog nicht verfügbar"}
+    assert len(response.json()) == 10
+    assert response.json()[0]["ingredients"] == ["ingredient"]
+    assert response.json()[0]["instructions"] == ["instruction"]
+    assert response.json()[0]["servings"] == 4
