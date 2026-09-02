@@ -29,6 +29,17 @@ const metricUnits: Record<RuleEvaluation['metric'], string> = {
   carbs: 'g',
 }
 
+const importFieldNames: Record<string, string> = {
+  title: 'Titel',
+  servings: 'Portionszahl',
+  calories: 'Kalorien',
+  protein: 'Protein',
+  carbs: 'Kohlenhydrate',
+  fat: 'Fett',
+  ingredients: 'Zutaten',
+  instructions: 'Zubereitung',
+}
+
 function App() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking')
   const [requestStatus, setRequestStatus] = useState<RequestStatus>('idle')
@@ -138,10 +149,29 @@ function App() {
           {importStatus === 'loading' ? 'Rezepte werden importiert …' : '10 NHS-Rezepte importieren'}
         </button>
         {importResult && (
-          <p className="notice" role="status">
-            {importResult.created} neu · {importResult.updated} aktualisiert ·{' '}
-            {importResult.unchanged} unverändert · {importResult.rejected} abgelehnt
-          </p>
+          <div className="import-result" role="status">
+            <p className="notice">
+              {importResult.created} neu · {importResult.updated} aktualisiert ·{' '}
+              {importResult.unchanged} unverändert · {importResult.rejected} abgelehnt
+            </p>
+            {importResult.rejected > 0 && (
+              <div className="import-rejections">
+                <strong>Nicht importiert</strong>
+                <ul>
+                  {importResult.items
+                    .filter((item) => item.status === 'rejected')
+                    .map((item) => (
+                      <li key={item.source_url}>
+                        <a href={item.source_url} target="_blank" rel="noreferrer">
+                          {recipeNameFromUrl(item.source_url)}
+                        </a>
+                        <span>{describeImportReason(item.reason)}</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
         {importStatus === 'error' && (
           <p className="notice notice--error">Der Rezeptimport ist fehlgeschlagen.</p>
@@ -521,6 +551,28 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('de-DE', {
     maximumFractionDigits: 1,
   }).format(value)
+}
+
+function recipeNameFromUrl(sourceUrl: string) {
+  try {
+    const segments = new URL(sourceUrl).pathname.split('/').filter(Boolean)
+    const slug = segments.at(-1)
+    return slug ? slug.replaceAll('-', ' ') : sourceUrl
+  } catch {
+    return sourceUrl
+  }
+}
+
+function describeImportReason(reason: string | null) {
+  if (!reason) return 'Unbekannter Importfehler'
+  if (reason === 'recipe JSON-LD missing') {
+    return 'Strukturierte Rezeptdaten fehlen auf der Quellseite.'
+  }
+  const missingField = reason.match(/^(\w+) missing$/)?.[1]
+  if (missingField && importFieldNames[missingField]) {
+    return `Pflichtfeld „${importFieldNames[missingField]}“ fehlt auf der Quellseite.`
+  }
+  return reason
 }
 
 export default App

@@ -6,9 +6,10 @@ Stand: 2. September 2026
 
 ### Rezeptqualität und Darstellung
 
-- lange NHS-Zubereitungstexte in lesbare Schritte trennen
-- Importablehnungen mit konkretem Grund im Frontend anzeigen
 - Rezeptübersicht mit echten Nutzern auf Verständlichkeit prüfen
+
+Die technische Qualitätsprüfung der ersten zehn Rezepte ist in
+[`recipe-quality.md`](recipe-quality.md) dokumentiert.
 
 ### Mehr Rezepte derselben Quelle
 

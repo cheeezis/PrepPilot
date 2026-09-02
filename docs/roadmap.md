@@ -16,17 +16,16 @@ einen kleinen vertikalen Rezeptablauf ersetzt.
 | Planung | Kombination gespeicherter Rezeptmakros mit ganzen Portionen | abgeschlossen |
 | Frontend | Import, Rezeptbestand, Rezeptdetails und Tagespläne sichtbar | abgeschlossen |
 | Abnahme | Backend-, Frontend- und Browsertests | abgeschlossen |
+| Technische Rezeptqualität | zehn Rezepte vollständig und Methodenschritte lesbar getrennt | abgeschlossen |
 
 Der aktuelle Ablauf und seine Grenzen stehen in
 [`recipe-first-mvp.md`](recipe-first-mvp.md).
 
 ## Nächster Produktabschnitt
 
-1. aktuellen Umbau verständlich committen und als Ganzes prüfen
-2. Qualität der zehn Rezepte im Frontend manuell bewerten
-3. Zubereitungsschritte aus NHS-Daten lesbarer trennen
-4. weitere geeignete Rezepte derselben Quelle kontrolliert aufnehmen
-5. Kategorien und bessere Planvielfalt ergänzen
+1. Rezeptübersicht mit weiteren Nutzern auf Verständlichkeit prüfen
+2. weitere geeignete Rezepte derselben Quelle kontrolliert aufnehmen
+3. Kategorien und bessere Planvielfalt ergänzen
 
 ## Später
 

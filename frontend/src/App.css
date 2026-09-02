@@ -125,6 +125,35 @@ h1 {
   grid-column: 1 / -1;
 }
 
+.import-result {
+  display: grid;
+  gap: 12px;
+  grid-column: 1 / -1;
+}
+
+.import-result .notice {
+  grid-column: auto;
+}
+
+.import-rejections {
+  padding-left: 14px;
+  border-left: 3px solid #c33d32;
+}
+
+.import-rejections ul {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.import-rejections li span {
+  display: block;
+  margin-top: 2px;
+  color: #5d6863;
+  font-size: 14px;
+}
+
 .recipe-inventory {
   margin: 32px 0 44px;
 }

@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
+from html.parser import HTMLParser
 from typing import Literal, cast
 from urllib.request import Request, urlopen
 
@@ -84,7 +85,9 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     )
     title = _required_string(recipe_data.get("name"), "title")
     ingredients = _string_list(recipe_data.get("recipeIngredient"), "ingredients")
-    instructions = _instructions(recipe_data.get("recipeInstructions"))
+    instructions = _method_instructions(page) or _instructions(
+        recipe_data.get("recipeInstructions")
+    )
     servings = int(_required_match(visible_text, r"Serves\s+(\d+)", "servings"))
     calories = _decimal_match(visible_text, r"([\d.]+)\s*kcal", "calories")
     protein = _decimal_match(visible_text, r"([\d.]+)\s*g protein", "protein")
@@ -183,22 +186,108 @@ def _string_list(value: object, field: str) -> list[str]:
 
 
 def _instructions(value: object) -> list[str]:
-    if isinstance(value, str):
-        result = [line.strip() for line in value.splitlines() if line.strip()]
-    elif isinstance(value, list):
-        result = []
-        for item in value:
-            if isinstance(item, str) and item.strip():
-                result.append(item.strip())
-            elif isinstance(item, dict) and isinstance(item.get("text"), str):
-                result.extend(
-                    line.strip() for line in item["text"].splitlines() if line.strip()
-                )
-    else:
-        result = []
+    result = _instruction_items(value)
     if not result:
         raise ValueError("instructions missing")
     return result
+
+
+def _method_instructions(page: str) -> list[str]:
+    parser = _MethodListParser()
+    parser.feed(page)
+    parser.close()
+    return parser.steps
+
+
+class _MethodListParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.method_nesting = 0
+        self.list_nesting = 0
+        self.step_nesting = 0
+        self.step_parts: list[str] = []
+        self.steps: list[str] = []
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        classes = dict(attrs).get("class", "") or ""
+        if tag == "div":
+            if self.method_nesting:
+                self.method_nesting += 1
+            elif "bh-recipe-instructions__method" in classes.split():
+                self.method_nesting = 1
+        if tag == "ol" and self.method_nesting:
+            self.list_nesting += 1
+        if tag == "li" and self.list_nesting:
+            if not self.step_nesting:
+                self.step_parts = []
+            self.step_nesting += 1
+
+    def handle_startendtag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "li" and self.step_nesting:
+            self.step_nesting -= 1
+            if not self.step_nesting:
+                step = re.sub(r"\s+", " ", " ".join(self.step_parts)).strip()
+                if step:
+                    self.steps.append(step)
+                self.step_parts = []
+        if tag == "ol" and self.list_nesting:
+            self.list_nesting -= 1
+        if tag == "div" and self.method_nesting:
+            self.method_nesting -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self.step_nesting and data.strip():
+            self.step_parts.append(data.strip())
+
+
+def _instruction_items(value: object) -> list[str]:
+    if isinstance(value, str):
+        return _split_instruction_text(value)
+    if isinstance(value, list):
+        return [step for item in value for step in _instruction_items(item)]
+    if not isinstance(value, dict):
+        return []
+
+    nested = value.get("itemListElement")
+    if nested is not None:
+        nested_steps = _instruction_items(nested)
+        if nested_steps:
+            return nested_steps
+
+    text = value.get("text")
+    return _split_instruction_text(text) if isinstance(text, str) else []
+
+
+def _split_instruction_text(value: str) -> list[str]:
+    text = html_module.unescape(value).replace("\u00a0", " ").strip()
+    if not text:
+        return []
+
+    lines = [re.sub(r"\s+", " ", line).strip() for line in text.splitlines()]
+    result: list[str] = []
+    for line in (line for line in lines if line):
+        markers = list(re.finditer(r"(?i)(?<!\w)(?:step\s+)?\d+[.)]\s+", line))
+        if len(markers) < 2 or markers[0].start() != 0:
+            result.append(_without_step_marker(line))
+            continue
+        for index, marker in enumerate(markers):
+            end = markers[index + 1].start() if index + 1 < len(markers) else len(line)
+            step = line[marker.end():end].strip()
+            if step:
+                result.append(step)
+    return result
+
+
+def _without_step_marker(value: str) -> str:
+    return re.sub(r"(?i)^(?:step\s+)?\d+[.)]\s+", "", value).strip()
 
 
 def _required_match(text: str, pattern: str, field: str) -> str:

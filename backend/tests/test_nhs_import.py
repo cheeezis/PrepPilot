@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 
 import preppilot_api.nhs_import as import_module
 from preppilot_api.models import Base, Recipe
-from preppilot_api.nhs_import import import_nhs_recipes, parse_recipe_page
+from preppilot_api.nhs_import import (
+    _instructions,
+    import_nhs_recipes,
+    parse_recipe_page,
+)
 
 PAGE = """
 <html><head><script type="application/ld+json">
@@ -35,6 +39,86 @@ def test_rejects_page_without_complete_macros() -> None:
         assert str(error) == "protein missing"
     else:
         raise AssertionError("incomplete recipe was accepted")
+
+
+def test_keeps_structured_how_to_steps_separate() -> None:
+    instructions = [
+        {"@type": "HowToStep", "text": "Chop the vegetables."},
+        {"@type": "HowToStep", "text": "Cook everything."},
+    ]
+
+    assert _instructions(instructions) == [
+        "Chop the vegetables.",
+        "Cook everything.",
+    ]
+
+
+def test_prefers_visible_nhs_method_list_over_joined_json_ld_text() -> None:
+    page = PAGE.replace(
+        "</body>",
+        """
+        <div class="bh-recipe-instructions__method">
+          <h2>Method</h2>
+          <ol>
+            <li><p>Prepare the pan.</p></li>
+            <li>
+              <p>Add the ingredients.</p>
+              <div class="nhsuk-inset-text">
+                <span class="nhsuk-u-visually-hidden">Information:</span>
+                <p>A useful optional tip.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+        </body>
+        """,
+    )
+
+    recipe = parse_recipe_page("https://example.test/recipe", page)
+
+    assert recipe.instructions == [
+        "Prepare the pan.",
+        "Add the ingredients. Information: A useful optional tip.",
+    ]
+
+
+def test_reads_steps_from_nested_how_to_section() -> None:
+    instructions = [
+        {
+            "@type": "HowToSection",
+            "name": "Method",
+            "itemListElement": [
+                {"@type": "HowToStep", "text": "Prepare the pan."},
+                {"@type": "HowToStep", "text": "Add the ingredients."},
+            ],
+        }
+    ]
+
+    assert _instructions(instructions) == [
+        "Prepare the pan.",
+        "Add the ingredients.",
+    ]
+
+
+def test_splits_only_clear_numbered_step_markers() -> None:
+    assert _instructions(
+        "Step 1. Prepare the pan. Step 2. Add the ingredients. 3. Serve."
+    ) == ["Prepare the pan.", "Add the ingredients.", "Serve."]
+
+
+def test_keeps_unstructured_prose_as_one_step() -> None:
+    assert _instructions(
+        "Prepare the pan. Add the ingredients and cook until tender."
+    ) == ["Prepare the pan. Add the ingredients and cook until tender."]
+
+
+def test_rejects_missing_instructions() -> None:
+    try:
+        _instructions([])
+    except ValueError as error:
+        assert str(error) == "instructions missing"
+    else:
+        raise AssertionError("missing instructions were accepted")
 
 
 def test_identical_second_import_is_idempotent(monkeypatch) -> None:
