@@ -1,7 +1,7 @@
 export type HealthResponse = {
   status: 'ok' | 'error'
   database: 'ok' | 'unavailable'
-  catalog: 'ok' | 'unavailable'
+  recipes: 'ok' | 'unavailable'
 }
 
 export async function getHealth(signal?: AbortSignal): Promise<HealthResponse> {

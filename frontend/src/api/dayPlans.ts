@@ -23,20 +23,17 @@ export type RuleEvaluation = {
   satisfied: boolean
 }
 
-export type PlannedIngredient = {
-  food_key: string
-  name: string
-  amount: number
-  unit: 'g' | 'ml'
-}
-
-export type PlannedMeal = {
-  key: string
-  name: string
-  role: string
-  portion_factor: number
+export type PlannedRecipe = {
+  id: number
+  title: string
+  portions: number
+  recipe_servings: number
+  source_url: string
+  license_name: string
+  attribution_text: string
   nutrients: NutrientValues
-  ingredients: PlannedIngredient[]
+  ingredients: string[]
+  instructions: string[]
 }
 
 export type DayPlan = {
@@ -44,7 +41,7 @@ export type DayPlan = {
   score: number
   nutrients: NutrientValues
   evaluations: RuleEvaluation[]
-  meals: PlannedMeal[]
+  recipes: PlannedRecipe[]
 }
 
 export type DayPlansResponse = {

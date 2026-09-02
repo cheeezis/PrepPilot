@@ -6,19 +6,14 @@ import {
   type RuleEvaluation,
 } from './api/dayPlans'
 import { getHealth } from './api/health'
-import { buildShoppingList, weekDays } from './weeklyPlan'
+import { importNhsRecipes, type ImportRun } from './api/imports'
+import { getRecipes, type Recipe } from './api/recipes'
 import './App.css'
 
 type SystemStatus = 'checking' | 'ready' | 'unavailable'
 type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
-
-const roleNames: Record<string, string> = {
-  first_meal: 'Erste Mahlzeit',
-  quick_lunch: 'Schnelles Mittagessen',
-  protein_snack: 'Protein-Snack',
-  main_meal: 'Hauptgericht',
-  late_snack: 'Später Snack',
-}
+type ImportStatus = 'idle' | 'loading' | 'success' | 'error'
+type RecipeStatus = 'loading' | 'success' | 'error'
 
 const metricNames: Record<RuleEvaluation['metric'], string> = {
   calories: 'Kalorien',
@@ -37,6 +32,10 @@ const metricUnits: Record<RuleEvaluation['metric'], string> = {
 function App() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking')
   const [requestStatus, setRequestStatus] = useState<RequestStatus>('idle')
+  const [importStatus, setImportStatus] = useState<ImportStatus>('idle')
+  const [importResult, setImportResult] = useState<ImportRun | null>(null)
+  const [recipeStatus, setRecipeStatus] = useState<RecipeStatus>('loading')
+  const [recipes, setRecipes] = useState<Recipe[]>([])
   const [result, setResult] = useState<DayPlansResponse | null>(null)
   const [selectedPlanIndex, setSelectedPlanIndex] = useState<number | null>(null)
 
@@ -47,6 +46,15 @@ function App() {
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === 'AbortError') return
         setSystemStatus('unavailable')
+      })
+    getRecipes(controller.signal)
+      .then((storedRecipes) => {
+        setRecipes(storedRecipes)
+        setRecipeStatus('success')
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setRecipeStatus('error')
       })
     return () => controller.abort()
   }, [])
@@ -70,6 +78,27 @@ function App() {
       setRequestStatus('success')
     } catch {
       setRequestStatus('error')
+    }
+  }
+
+  async function handleImport() {
+    setImportStatus('loading')
+    setImportResult(null)
+    try {
+      const nextResult = await importNhsRecipes()
+      setImportResult(nextResult)
+      setImportStatus('success')
+      if (nextResult.created + nextResult.updated + nextResult.unchanged > 0) {
+        setSystemStatus('ready')
+      }
+      try {
+        setRecipes(await getRecipes())
+        setRecipeStatus('success')
+      } catch {
+        setRecipeStatus('error')
+      }
+    } catch {
+      setImportStatus('error')
     }
   }
 
@@ -98,6 +127,28 @@ function App() {
           Mahlzeiten und zeigt Abweichungen offen an.
         </p>
       </section>
+
+      <section className="import-control" aria-labelledby="import-heading">
+        <div>
+          <p className="eyebrow">Rezeptbestand</p>
+          <h2 id="import-heading">Geprüfte NHS-Rezepte laden</h2>
+          <p>Der Lauf verarbeitet ausschließlich die zehn fest freigegebenen Seiten.</p>
+        </div>
+        <button type="button" onClick={handleImport} disabled={importStatus === 'loading'}>
+          {importStatus === 'loading' ? 'Rezepte werden importiert …' : '10 NHS-Rezepte importieren'}
+        </button>
+        {importResult && (
+          <p className="notice" role="status">
+            {importResult.created} neu · {importResult.updated} aktualisiert ·{' '}
+            {importResult.unchanged} unverändert · {importResult.rejected} abgelehnt
+          </p>
+        )}
+        {importStatus === 'error' && (
+          <p className="notice notice--error">Der Rezeptimport ist fehlgeschlagen.</p>
+        )}
+      </section>
+
+      <RecipeInventory status={recipeStatus} recipes={recipes} />
 
       <form className="target-form" onSubmit={handleSubmit}>
         <NumberField name="calories" label="Kalorien" unit="kcal" value={2500} />
@@ -133,6 +184,83 @@ function App() {
         />
       )}
     </main>
+  )
+}
+
+function RecipeInventory({
+  status,
+  recipes,
+}: {
+  status: RecipeStatus
+  recipes: Recipe[]
+}) {
+  return (
+    <section className="recipe-inventory" aria-labelledby="recipes-heading">
+      <div className="inventory-heading">
+        <div>
+          <p className="eyebrow">PostgreSQL-Bestand</p>
+          <h2 id="recipes-heading">Gespeicherte Rezepte</h2>
+        </div>
+        {status === 'success' && (
+          <strong className="inventory-count">{recipes.length} Rezepte</strong>
+        )}
+      </div>
+
+      {status === 'loading' && <p>Rezeptbestand wird geladen …</p>}
+      {status === 'error' && (
+        <p className="notice notice--error">
+          Der Rezeptbestand ist noch nicht verfügbar. Starte oben den Import.
+        </p>
+      )}
+      {status === 'success' && recipes.length === 0 && (
+        <p>Noch keine Rezepte gespeichert.</p>
+      )}
+      {recipes.length > 0 && (
+        <div className="recipe-list">
+          {recipes.map((recipe) => (
+            <details className="recipe-card" key={recipe.id}>
+              <summary>
+                <strong>{recipe.title}</strong>
+                <span>
+                  {formatNumber(recipe.nutrients.calories)} kcal pro Portion ·{' '}
+                  ergibt {recipe.servings} Portionen
+                </span>
+              </summary>
+              <p className="nutrition-basis">Nährwerte pro Portion</p>
+              <div className="recipe-macros">
+                <span><strong>{formatNumber(recipe.nutrients.protein)} g</strong> Protein</span>
+                <span><strong>{formatNumber(recipe.nutrients.carbs)} g</strong> Kohlenhydrate</span>
+                <span><strong>{formatNumber(recipe.nutrients.fat)} g</strong> Fett</span>
+              </div>
+              <div className="recipe-details">
+                <div>
+                  <h3>Zutaten für {recipe.servings} Portionen</h3>
+                  <ul>
+                    {recipe.ingredients.map((ingredient) => (
+                      <li key={ingredient}>{ingredient}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3>Zubereitung</h3>
+                  <ol>
+                    {recipe.instructions.map((instruction) => (
+                      <li key={instruction}>{instruction}</li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
+              <p className="recipe-source">
+                <a href={recipe.source_url} target="_blank" rel="noreferrer">
+                  Originalrezept beim NHS
+                </a>
+                <small>{recipe.attribution_text} · {recipe.license_name}</small>
+              </p>
+            </details>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -211,10 +339,9 @@ function PlanResults({
             <span className="selection-check" aria-hidden="true">✓</span>
             <div>
               <strong>Vorschlag {selectedPlanNumber} ausgewählt</strong>
-              <p>Dieser Tagesplan wird für alle sieben Tage verwendet.</p>
+              <p>Dieser Vorschlag kombiniert vollständige Quellenrezepte.</p>
             </div>
           </div>
-          <WeeklyPlan plan={selectedPlan} />
         </>
       )}
       <div className="plan-list">
@@ -227,71 +354,6 @@ function PlanResults({
             onSelect={() => onSelect(index)}
           />
         ))}
-      </div>
-    </section>
-  )
-}
-
-function WeeklyPlan({ plan }: { plan: DayPlan }) {
-  const shoppingList = buildShoppingList(plan.meals)
-
-  return (
-    <section className="weekly-plan" aria-labelledby="weekly-plan-heading">
-      <div className="weekly-heading">
-        <div>
-          <p className="eyebrow">Wochenplan</p>
-          <h2 id="weekly-plan-heading">Deine Woche</h2>
-        </div>
-        <p>
-          Derselbe Tagesplan gilt von Montag bis Sonntag. So bleibt die Planung
-          für den ersten MVP bewusst einfach.
-        </p>
-      </div>
-
-      <div className="weekly-layout">
-        <div className="week-days">
-          {weekDays.map((day, index) => (
-            <details
-              key={day}
-              className="week-day"
-              data-testid="week-day"
-              open={index === 0}
-            >
-              <summary>
-                <span>
-                  <strong>{day}</strong>
-                  <small>{plan.meals.length} Mahlzeiten</small>
-                </span>
-                <span>{formatNumber(plan.nutrients.calories)} kcal</span>
-              </summary>
-              <ul>
-                {plan.meals.map((meal) => (
-                  <li key={`${day}-${meal.role}-${meal.key}`}>
-                    <span>
-                      <small>{roleNames[meal.role] ?? meal.role}</small>
-                      <strong>{meal.name}</strong>
-                    </span>
-                    <span>{formatNumber(meal.nutrients.calories)} kcal</span>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ))}
-        </div>
-
-        <aside className="shopping-list" aria-labelledby="shopping-list-heading">
-          <p className="eyebrow">Einkauf</p>
-          <h3 id="shopping-list-heading">Einkaufsliste</h3>
-          <p className="shopping-list-copy">Gesamtmengen für sieben Tage.</p>
-          <ul>
-            {shoppingList.map((item) => (
-              <li key={`${item.foodKey}-${item.unit}`}>
-                <span>{item.name}</span>
-                <strong>{formatNumber(item.amount)} {item.unit}</strong>
-              </li>
-            ))}
-          </ul>
-        </aside>
       </div>
     </section>
   )
@@ -339,25 +401,32 @@ function PlanCard({
       </button>
 
       <div className="meal-list">
-        {plan.meals.map((meal) => (
-          <details key={`${meal.role}-${meal.key}`} className="meal">
+        {plan.recipes.map((recipe) => (
+          <details key={recipe.id} className="meal">
             <summary>
               <span>
-                <small>{roleNames[meal.role] ?? meal.role}</small>
-                <strong>{meal.name}</strong>
+                <small>
+                  {recipe.portions}{' '}
+                  {recipe.portions === 1 ? 'Portion eingeplant' : 'Portionen eingeplant'}
+                </small>
+                <strong>{recipe.title}</strong>
               </span>
-              <span>{formatNumber(meal.nutrients.calories)} kcal</span>
+              <span>{formatNumber(recipe.nutrients.calories)} kcal im Plan</span>
             </summary>
+            <p className="ingredient-note">
+              Die Zutatenmengen gehören zum vollständigen Rezept für{' '}
+              {recipe.recipe_servings} Portionen. PrepPilot rechnet sie noch nicht
+              auf die eingeplante Portionszahl um.
+            </p>
             <ul>
-              {meal.ingredients.map((ingredient) => (
-                <li key={ingredient.food_key}>
-                  <span>{ingredient.name}</span>
-                  <span>
-                    {formatNumber(ingredient.amount)} {ingredient.unit}
-                  </span>
-                </li>
+              {recipe.ingredients.map((ingredient) => (
+                <li key={ingredient}><span>{ingredient}</span></li>
               ))}
             </ul>
+            <a href={recipe.source_url} target="_blank" rel="noreferrer">
+              Originalrezept beim NHS
+            </a>
+            <small>{recipe.attribution_text} · {recipe.license_name}</small>
           </details>
         ))}
       </div>
