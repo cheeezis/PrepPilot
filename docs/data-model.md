@@ -34,37 +34,48 @@ die festgelegten PrepPilot-Mengen. Stückangaben benötigen einen passenden
 lebensmittelspezifischen Standard; einen generischen Gewichtsfallback gibt es
 nicht.
 
-## Food-Inbox und Referenzdaten
+## Referenzdaten
 
-- `food_imports`: quellenneutrale Rohdaten und abgeleitete Kandidatenwerte vor
-  einer kontrollierten Veröffentlichung
 - `food_reference_items`: lokal importierte FoodData-Central-Nährwertprofile
 
-Beide Tabellen sind vom produktiven Katalog getrennt. Ein vollständiges
+Die Referenztabelle ist vom produktiven Katalog getrennt. Ein vollständiges
 Nährwertprofil ist nicht automatisch dasselbe wie ein kanonisches Lebensmittel.
+Wird ein Profil später als `food` übernommen, stehen Quelle und Referenz direkt
+am produktiven Food; eine zusätzliche Food-Inbox wird dafür nicht geführt.
 
 `carbs_per_100` verwendet die europäische Bedeutung verwertbarer Kohlenhydrate
 ohne Ballaststoffe. Bei FoodData Central wird dieser Wert aus
 Gesamtkohlenhydraten minus Ballaststoffen abgeleitet, sofern beide Werte
 vorliegen.
 
-## Offene Modelllücke
+## Lebensmittelkonzepte
 
-`foods` verbindet derzeit noch Lebensmittelidentität und genau ein
-Nährwertprofil. Für größere Rezeptbestände reicht das nicht aus. Geplant ist
-eine explizite Trennung zwischen:
+Die fachliche Zutatenidentität ist von konkreten Nährwertwerten getrennt:
 
-- kanonischem Lebensmittelkonzept, beispielsweise „Milch“
-- Quellenidentität, beispielsweise einer Wikibooks-Zutatenseite
-- Nährwertprofil, beispielsweise Vollmilch aus FDC oder CoFID
-- Zustand beziehungsweise Verarbeitung, beispielsweise roh, gekocht oder
-  getrocknet
+- `food_concepts`: kanonische interne Identität, beispielsweise „Milch“
+- `food_source_identifiers`: stabile externe Identitäten wie eine
+  Wikibooks-Zutatenseite; eine leere `concept_id` kennzeichnet einen offenen,
+  quellenweit wiederverwendbaren Review-Fall
+- `foods.concept_id`: eindeutige Zugehörigkeit eines Nährwertprofils zu seinem
+  Konzept
+- `recipe_import_ingredients.concept_id`: erkannte Identität vor der Wahl eines
+  konkreten Nährwertprofils
+- `recipe_import_ingredients.source_identifier_id`: Verbindung zur einmalig
+  gespeicherten externen Zutatenidentität
 
-Diese Tabellen existieren noch nicht. Sie werden vor dem ersten großen Import
-als eigener, rückwärtskompatibler Migrationsschnitt entworfen.
+Ein Konzept darf mehrere Profile besitzen. Das Modell kennzeichnet absichtlich
+noch kein Standardprofil: Wenn eine Quelle nur „Milch“ nennt, wird nicht
+automatisch zwischen Vollmilch und fettarmer Milch entschieden. Der bestehende
+Katalog wird beim Seed zunächst 1:1 abgebildet, damit Planer und Mahlzeiten
+unverändert bleiben.
+
+Wird eine externe Kennung einmal einem Konzept zugeordnet, werden alle bereits
+damit verbundenen Rezeptimporte neu verarbeitet. Genau ein vorhandenes Profil
+kann deterministisch verwendet werden; mehrere Profile bleiben mehrdeutig.
 
 ## Bewusste Grenzen
 
-Noch nicht modelliert sind konkurrierende Nährwertprofile, Allergene, Preise,
-Packungsgrößen, Vorräte, Bilder und Nutzerdaten. Externe Rezept- oder
-Lebensmittelquellen werden nicht vom Planer zur Laufzeit abgefragt.
+Noch nicht festgelegt sind die automatische Anlage neuer Konzepte und die
+Auswahl zwischen konkurrierenden Nährwertprofilen. Ebenfalls nicht modelliert
+sind Allergene, Preise, Packungsgrößen, Vorräte, Bilder und Nutzerdaten. Externe
+Rezept- oder Lebensmittelquellen werden nicht vom Planer zur Laufzeit abgefragt.

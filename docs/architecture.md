@@ -71,7 +71,7 @@ Scraping geschützter Seiten ist kein Weg zum PrepPilot-Grundbestand.
 Nutzerinitiierte URL-Imports werden später als getrennte Produktfunktion
 bewertet.
 
-## Nächste Modellentscheidung
+## Lebensmittelkonzepte und Nährwertprofile
 
 Vor einem großen Rezeptlauf werden Zutatenidentität und Nährwertprofil getrennt:
 
@@ -81,9 +81,28 @@ Quellenzutat
   -> ein oder mehrere Nährwertprofile mit Herkunft und Zustand
 ```
 
-Eine Quellenzutat wird einmal einem Konzept zugeordnet. Das ausgewählte
-Nährwertprofil darf davon unabhängig geändert oder ergänzt werden. Die genaue
-Migration wird erst im nächsten Umsetzungsschnitt festgelegt.
+`food_concepts` speichert die stabile fachliche Identität.
+`food_source_identifiers` speichert jede externe Zutatenkennung genau einmal.
+Solange `concept_id` dort leer ist, bildet die Zeile den gemeinsamen offenen
+Review-Fall für alle betroffenen Rezepte. Nach der einmaligen Zuordnung gilt sie
+für bestehende und spätere Importe derselben Quellenkennung. Jedes konkrete
+`food` verweist über `concept_id` auf genau ein Konzept; ein Konzept kann dadurch
+weiterhin mehrere Nährwertprofile besitzen. Eine importierte Zutatenzeile
+verweist über `source_identifier_id` auf die Quellenkennung und hält das erkannte
+Konzept zusätzlich über `concept_id` fest.
+
+Der Katalog-Seed erzeugt für jedes bestehende Food zunächst ein gleichnamiges
+Konzept und setzt dessen `concept_id`. Diese rückwärtskompatible Ausgangslage
+ändert den Planer nicht. Mehrere Foods desselben Konzepts führen bewusst noch
+nicht zu einer automatischen Standardauswahl.
+Besitzt ein geklärtes Konzept genau ein Food-Profil, darf dieses deterministisch
+verwendet werden. Bei mehreren oder keinem Profil bleibt die Rezeptzutat in der
+Review-Grenze.
+
+Eine lokale interne Importprüfung macht Rezeptimporte, offene Identitäten und
+deren Häufigkeit sichtbar. Ihre Endpunkte lesen ausschließlich den Importzustand
+oder ordnen eine Quellenidentität einem bestehenden Konzept zu. Sie starten
+keine externen Importläufe und sind keine öffentliche Produkt-API.
 
 ## Qualitätsgrenzen
 
@@ -95,7 +114,7 @@ Migration wird erst im nächsten Umsetzungsschnitt festgelegt.
 
 ## Noch zu entscheiden
 
-- genaue Tabellen für Lebensmittelkonzepte und Nährwertprofile
+- Regeln zum Anlegen neuer Konzepte und Auswählen konkreter Nährwertprofile
 - Betriebsform für Importläufe: Kommando, Job oder Admin-Oberfläche
 - Umgang mit CC-BY-SA-abgeleiteten Rezepttexten im Produkt
 - CI/CD und Deployment-Ziel

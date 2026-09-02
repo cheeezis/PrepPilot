@@ -1,6 +1,6 @@
 # Lokale Entwicklung
 
-Stand: 28. August 2026
+Stand: 2. September 2026
 
 PrepPilot benötigt lokal PostgreSQL, das Backend und das Frontend. Alle Befehle
 werden in PowerShell ausgeführt.
@@ -43,6 +43,24 @@ npm run dev
 Die Oberfläche ist anschließend unter `http://localhost:5173` erreichbar. Erst
 wenn PostgreSQL erreichbar und der Katalog befüllt ist, zeigt sie `System bereit`
 an und erstellt Tagespläne.
+
+Über die Navigation `Importprüfung` ist zusätzlich der lokale interne
+Importzustand sichtbar. Ein begrenzter Wikibooks-Lauf wird im Ordner `backend`
+zunächst ohne Datenbankänderung geprüft:
+
+```powershell
+.\.venv\Scripts\python.exe -m preppilot_api.wikibooks_import --limit 5
+```
+
+Nur mit dem ausdrücklichen Schalter `--write` werden geeignete Kandidaten in die
+Recipe-Inbox geschrieben:
+
+```powershell
+.\.venv\Scripts\python.exe -m preppilot_api.wikibooks_import --limit 5 --write
+```
+
+Der Bericht nennt entdeckte, geeignete, abgelehnte, importierte und bereits
+vorhandene Seiten. Die Laufgröße ist technisch auf höchstens 25 begrenzt.
 
 ## Prüfungen
 

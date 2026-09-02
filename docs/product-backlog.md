@@ -1,6 +1,6 @@
 # Produkt-Backlog
 
-Stand: 1. September 2026
+Stand: 2. September 2026
 
 ## Nächster Datenabschnitt
 
@@ -14,9 +14,13 @@ Nährwertprofile und Zustände.
 Kleinster sinnvoller Umfang:
 
 - Konzept und externe Quellenidentität speichern
-- ein Standard-Nährwertprofil zuordnen
+- konkrete Nährwertprofile direkt einem Konzept zuordnen
 - bestehende `foods` rückwärtskompatibel anbinden
 - ungeklärte Konzepte einmalig statt pro Rezept prüfen
+
+Eine automatische Wahl eines Standardprofils ist in diesem Abschnitt bewusst
+nicht enthalten. Wenn ein Konzept mehrere Profile besitzt, muss die passende
+Variante weiterhin explizit bestimmt werden.
 
 ### Offenen Rezeptbestand anbinden
 
@@ -39,8 +43,10 @@ und muss Quellrechte, Attribution und Bilder gesondert behandeln.
 ### Importbetrieb
 
 Noch zu entscheiden ist, ob wiederholte Importläufe als Kommando, Hintergrundjob
-oder kleine Admin-Oberfläche gestartet werden. Temporäre interne HTTP-Endpunkte
-sollen dafür nicht erneut entstehen.
+oder Admin-Aktion gestartet werden. Die vorhandene lokale Importprüfung zeigt
+den Zustand und erlaubt die einmalige Konzeptzuordnung; sie startet selbst keine
+Importläufe. Temporäre quellspezifische HTTP-Endpunkte sollen nicht erneut
+entstehen.
 
 ## Produktvalidierung
 

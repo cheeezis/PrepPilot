@@ -1,6 +1,6 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 1. September 2026
+Stand: 2. September 2026
 
 ## Abgeschlossene Produktphasen
 
@@ -42,6 +42,18 @@ dass zusätzliche Nährwertdatensätze keine fehlende Zutatenontologie ersetzen.
 **Ziel:** Kanonische Lebensmittelkonzepte werden von konkreten
 Nährwertprofilen getrennt.
 
+**Aktueller Stand:** Datenmodell, rückwärtskompatible Seed-Verknüpfung und die
+eindeutige Registrierung externer Zutatenkennungen sind implementiert. Jedes
+konkrete `food` verweist direkt auf sein Konzept; eine zusätzliche
+Zuordnungstabelle oder eine automatische Standardprofil-Wahl gibt es nicht. Die
+PostgreSQL-Abnahme bestätigt nach zwei identischen Seed-Läufen 24 Foods mit 24
+direkten Konzeptverknüpfungen. Externe Zutatenkennungen können einmalig offen
+gespeichert, von mehreren Rezepten wiederverwendet und später einem Konzept
+zugeordnet werden. Die Zuordnung verarbeitet alle betroffenen Rezeptimporte
+erneut; konkurrierende Food-Profile werden weiterhin nicht automatisch gewählt.
+Eine lokale interne Frontend-Ansicht zeigt Rezeptimporte, offene Identitäten und
+vorhandene Konzepte und erlaubt diese einmalige Zuordnung.
+
 **Abnahme:**
 
 - Eine externe kanonische Zutatenkennung kann genau einem internen Konzept
@@ -54,6 +66,14 @@ Nährwertprofilen getrennt.
 
 **Ziel:** Ein begrenzter Wikibooks-Lauf übersetzt offen lizenzierte Rezepte in
 das quellenneutrale Inbox-Format.
+
+**Aktueller Stand:** Der Adapter läuft standardmäßig als schreibfreier Dry Run
+und akzeptiert nur Seiten mit eindeutiger Portionszahl, Zutatenliste,
+Zubereitung und kanonischen Zutatenlinks. Der erste reale Fünferlauf entdeckte
+fünf Seiten, klassifizierte eine als geeignet und vier mit konkreten Gründen als
+abgelehnt. Das geeignete Rezept wurde einmal importiert; der identische zweite
+Lauf erkannte es als Duplikat. Page-ID, Revision, URL, CC-BY-SA-4.0-Hinweis und
+Attribution liegen im Rohdatensatz.
 
 **Abnahme:**
 
