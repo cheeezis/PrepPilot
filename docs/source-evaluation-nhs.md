@@ -93,3 +93,34 @@ Der erste Import bleibt auf die zehn geprüften URLs begrenzt. Es findet kein
 offenes Crawling der NHS-Website statt. Erst wenn Import, Speicherung, Planung
 und Anzeige vollständig funktionieren, wird über weitere NHS-Rezepte
 entschieden.
+
+## Kontrollierte Erweiterung auf 20 Rezepte
+
+Nach der Abnahme des ersten Schnitts wurden 19 weitere Hauptgericht-Kandidaten
+aus der offiziellen NHS-Rezeptübersicht technisch geprüft. Zehn davon erweitern
+den festen Bestand zunächst auf insgesamt 20 Rezepte:
+
+| Rezept | kcal | Protein | Kohlenhydrate | Fett |
+|---|---:|---:|---:|---:|
+| Bajan cou cou with spicy fish | 410 | 37,3 g | 48 g | 5,2 g |
+| Baked potatoes with mince | 306 | 20,6 g | 44,4 g | 3,5 g |
+| Bengali-style chicken curry | 428 | 26 g | 62 g | 7 g |
+| Caribbean tofu and sweet potato curry | 440 | 14,9 g | 51 g | 12,7 g |
+| Chilli con carne | 488 | 30 g | 82 g | 5 g |
+| Crunchy fish fingers with wedges | 416 | 34 g | 56 g | 2 g |
+| Falafel | 371 | 16,9 g | 56,5 g | 6,3 g |
+| Healthier full English breakfast | 262 | 20 g | 19 g | 13 g |
+| Meat-free cottage pie | 345 | 20 g | 52 g | 6 g |
+| Prawn jambalaya | 342 | 17,9 g | 59,3 g | 2,7 g |
+
+Alle zehn Seiten liefern dieselben Pflichtfelder und jeweils 4 bis 7 sichtbare
+Methodenschritte. Ein zweiter Prüflauf vermeidet weiterhin Duplikate.
+
+„Chicken jalfrezi“ wurde bewusst nicht aufgenommen: Die Quellseite nennt 334
+kcal und gleichzeitig 79 g Fett pro Portion. Diese Angaben sind energetisch
+widersprüchlich. Der Importer lehnt solche Fälle künftig automatisch ab.
+
+Die Begrenzung auf 20 ist außerdem eine Planergrenze: Bei fünf Mahlzeiten prüft
+der aktuelle Algorithmus knapp 500.000 Kombinationen. Vor einer weiteren
+Vergrößerung wird der Suchraum durch Kategorien oder eine andere Vorauswahl
+begrenzt.

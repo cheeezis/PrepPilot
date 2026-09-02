@@ -13,10 +13,10 @@ Die technische Qualitätsprüfung der ersten zehn Rezepte ist in
 
 ### Mehr Rezepte derselben Quelle
 
-Nach der Abnahme der ersten zehn Rezepte wird die feste NHS-Liste kontrolliert
-erweitert. Neue Seiten müssen dieselben Pflichtfelder, Rechte und
-Attributionsregeln erfüllen. Ziel ist zunächst bessere Vielfalt, nicht möglichst
-große Datenmenge.
+Die feste NHS-Liste wurde nach der Abnahme kontrolliert von 10 auf 20 Rezepte
+erweitert. Weitere geprüfte Kandidaten stehen zur Verfügung, werden wegen der
+vollständigen Kombinationssuche des aktuellen Planers aber erst nach Kategorien
+oder einer anderen Suchraumbegrenzung aufgenommen.
 
 ### Planung verbessern
 

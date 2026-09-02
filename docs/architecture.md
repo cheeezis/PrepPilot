@@ -12,9 +12,10 @@ React
   -> Ergebnis mit Portionen, Zutaten und Quelllink
 ```
 
-Der NHS-Adapter akzeptiert ausschließlich zehn fest hinterlegte URLs. Er liest
-Titel, Zutaten und Zubereitung aus Recipe-JSON-LD sowie Portionen, Zeiten und
-vier Makros aus dem wiederkehrenden Rezeptkopf. Unvollständige Seiten werden
+Der NHS-Adapter akzeptiert ausschließlich 20 fest hinterlegte URLs. Er liest
+Titel und Zutaten aus Recipe-JSON-LD, die sichtbare Methodenliste aus dem
+Rezeptbereich sowie Portionen, Zeiten und vier Makros aus dem wiederkehrenden
+Rezeptkopf. Unvollständige oder energetisch widersprüchliche Seiten werden
 abgelehnt. Quelle plus URL identifizieren ein Rezept; ein Inhalts-Hash erkennt
 unveränderte Wiederholungen und Aktualisierungen.
 

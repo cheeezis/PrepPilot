@@ -143,10 +143,10 @@ function App() {
         <div>
           <p className="eyebrow">Rezeptbestand</p>
           <h2 id="import-heading">Geprüfte NHS-Rezepte laden</h2>
-          <p>Der Lauf verarbeitet ausschließlich die zehn fest freigegebenen Seiten.</p>
+          <p>Der Lauf verarbeitet ausschließlich die 20 fest freigegebenen Seiten.</p>
         </div>
         <button type="button" onClick={handleImport} disabled={importStatus === 'loading'}>
-          {importStatus === 'loading' ? 'Rezepte werden importiert …' : '10 NHS-Rezepte importieren'}
+          {importStatus === 'loading' ? 'Rezepte werden importiert …' : '20 NHS-Rezepte importieren'}
         </button>
         {importResult && (
           <div className="import-result" role="status">

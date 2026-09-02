@@ -17,6 +17,7 @@ einen kleinen vertikalen Rezeptablauf ersetzt.
 | Frontend | Import, Rezeptbestand, Rezeptdetails und Tagespläne sichtbar | abgeschlossen |
 | Abnahme | Backend-, Frontend- und Browsertests | abgeschlossen |
 | Technische Rezeptqualität | zehn Rezepte vollständig und Methodenschritte lesbar getrennt | abgeschlossen |
+| Katalogerweiterung | zehn weitere NHS-Rezepte kontrolliert geprüft | abgeschlossen |
 
 Der aktuelle Ablauf und seine Grenzen stehen in
 [`recipe-first-mvp.md`](recipe-first-mvp.md).
@@ -24,8 +25,8 @@ Der aktuelle Ablauf und seine Grenzen stehen in
 ## Nächster Produktabschnitt
 
 1. Rezeptübersicht mit weiteren Nutzern auf Verständlichkeit prüfen
-2. weitere geeignete Rezepte derselben Quelle kontrolliert aufnehmen
-3. Kategorien und bessere Planvielfalt ergänzen
+2. Kategorien und bessere Planvielfalt ergänzen
+3. nach der Planerbegrenzung weitere geeignete NHS-Rezepte aufnehmen
 
 ## Später
 

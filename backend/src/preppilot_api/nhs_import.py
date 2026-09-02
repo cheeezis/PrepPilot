@@ -25,6 +25,16 @@ NHS_RECIPE_URLS = (
     "https://www.nhs.uk/healthier-families/recipes/salmon-and-broccoli-pasta/",
     "https://www.nhs.uk/healthier-families/recipes/super-scrambled-eggs/",
     "https://www.nhs.uk/healthier-families/recipes/sausage-tomato-butter-bean-bake/",
+    "https://www.nhs.uk/healthier-families/recipes/bajan-cou-cou-with-spicy-fish/",
+    "https://www.nhs.uk/healthier-families/recipes/baked-potatoes-with-mince/",
+    "https://www.nhs.uk/healthier-families/recipes/bengali-chicken-curry/",
+    "https://www.nhs.uk/healthier-families/recipes/caribbean-tofu-and-sweet-potato-curry-with-rice-and-peas/",
+    "https://www.nhs.uk/healthier-families/recipes/chilli-con-carne/",
+    "https://www.nhs.uk/healthier-families/recipes/homemade-fish-fingers-with-sweet-potato-wedges/",
+    "https://www.nhs.uk/healthier-families/recipes/falafels/",
+    "https://www.nhs.uk/healthier-families/recipes/healthier-full-english-breakfast/",
+    "https://www.nhs.uk/healthier-families/recipes/meat-free-cottage-pie/",
+    "https://www.nhs.uk/healthier-families/recipes/prawn-jambalaya/",
 )
 SOURCE_NAME = "nhs-healthier-families"
 LICENSE_NAME = "Open Government Licence v3.0"
@@ -93,6 +103,7 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     protein = _decimal_match(visible_text, r"([\d.]+)\s*g protein", "protein")
     carbs = _decimal_match(visible_text, r"([\d.]+)\s*g carbohydrate", "carbs")
     fat = _decimal_match(visible_text, r"([\d.]+)\s*g fat", "fat")
+    _validate_nutrients(calories, protein, carbs, fat)
     preparation = _optional_minutes(visible_text, "Prep")
     cooking = _optional_minutes(visible_text, "Cook")
     payload: dict[str, object] = {
@@ -304,3 +315,13 @@ def _decimal_match(text: str, pattern: str, field: str) -> Decimal:
 def _optional_minutes(text: str, label: str) -> int | None:
     match = re.search(rf"{label}:\s*(\d+)\s*mins?", text, re.IGNORECASE)
     return int(match.group(1)) if match else None
+
+
+def _validate_nutrients(
+    calories: Decimal, protein: Decimal, carbs: Decimal, fat: Decimal
+) -> None:
+    if calories <= 0 or min(protein, carbs, fat) < 0:
+        raise ValueError("nutrient values invalid")
+    macro_calories = protein * 4 + carbs * 4 + fat * 9
+    if macro_calories > calories * Decimal("1.25"):
+        raise ValueError("nutrient energy inconsistent")

@@ -2,16 +2,16 @@ import { expect, test } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: '10 NHS-Rezepte importieren' }).click()
+  await page.getByRole('button', { name: '20 NHS-Rezepte importieren' }).click()
   await expect(page.getByRole('status')).toContainText(/neu|unverändert/)
   await expect(page.getByText('System bereit')).toBeVisible()
 })
 
 test('shows the stored recipe inventory', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Gespeicherte Rezepte' })).toBeVisible()
-  await expect(page.getByText('10 Rezepte')).toBeVisible()
+  await expect(page.getByText('20 Rezepte')).toBeVisible()
   const recipes = page.locator('.recipe-card')
-  await expect(recipes).toHaveCount(10)
+  await expect(recipes).toHaveCount(20)
   await expect(recipes.first()).toContainText('525 kcal pro Portion · ergibt 6 Portionen')
   await recipes.first().locator('summary').click()
   await expect(

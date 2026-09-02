@@ -41,6 +41,17 @@ def test_rejects_page_without_complete_macros() -> None:
         raise AssertionError("incomplete recipe was accepted")
 
 
+def test_rejects_energetically_impossible_macros() -> None:
+    inconsistent = PAGE.replace("3.5g fat", "79g fat")
+
+    try:
+        parse_recipe_page("https://example.test/recipe", inconsistent)
+    except ValueError as error:
+        assert str(error) == "nutrient energy inconsistent"
+    else:
+        raise AssertionError("inconsistent nutrient values were accepted")
+
+
 def test_keeps_structured_how_to_steps_separate() -> None:
     instructions = [
         {"@type": "HowToStep", "text": "Chop the vegetables."},
