@@ -1,27 +1,10 @@
 from decimal import Decimal
 
-from preppilot_api.catalog_data import load_catalog
-from preppilot_api.nutrition import Nutrients, calculate_meal_nutrients
+from preppilot_api.nutrition import Nutrients
 
 
-def test_calculates_meal_nutrients_from_normalized_ingredients() -> None:
-    catalog = load_catalog()
-    foods = {food.key: food for food in catalog.foods}
-    meal = next(meal for meal in catalog.meals if meal.key == "whey_shake")
-
-    assert calculate_meal_nutrients(meal, foods) == Nutrients(
-        calories=Decimal("290.6"),
-        protein=Decimal("41.4"),
-        carbs=Decimal("16.82"),
-        fat=Decimal("6.3"),
+def test_scales_source_nutrients_by_whole_portions() -> None:
+    nutrients = Nutrients(Decimal("525"), Decimal("52"), Decimal("48"), Decimal("15.5"))
+    assert nutrients.scaled(2) == Nutrients(
+        Decimal("1050"), Decimal("104"), Decimal("96"), Decimal("31.0")
     )
-
-
-def test_every_catalog_meal_has_positive_energy_and_protein() -> None:
-    catalog = load_catalog()
-    foods = {food.key: food for food in catalog.foods}
-
-    for meal in catalog.meals:
-        nutrients = calculate_meal_nutrients(meal, foods)
-        assert nutrients.calories > 0, meal.key
-        assert nutrients.protein > 0, meal.key

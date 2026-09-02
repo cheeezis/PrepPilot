@@ -1,11 +1,10 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from itertools import product
+from itertools import combinations, product
 from typing import Literal
 
-from preppilot_api.catalog_data import Catalog, MealDefinition
-from preppilot_api.models import MealRole
-from preppilot_api.nutrition import Nutrients, calculate_meal_nutrients
+from preppilot_api.nutrition import Nutrients
+from preppilot_api.recipe_repository import RecipeDefinition
 
 PlanStatus = Literal["valid", "approximation"]
 RuleKind = Literal["hard", "soft"]
@@ -22,10 +21,9 @@ class PlanTargets:
 
 
 @dataclass(frozen=True)
-class PlannedMeal:
-    meal: MealDefinition
-    role: MealRole
-    portion_factor: Decimal
+class PlannedRecipe:
+    recipe: RecipeDefinition
+    portions: int
     nutrients: Nutrients
 
 
@@ -47,114 +45,56 @@ class DayPlan:
     stable_key: str
     nutrients: Nutrients
     evaluations: tuple[RuleEvaluation, ...]
-    meals: tuple[PlannedMeal, ...]
-
-
-ROLE_STRUCTURES: dict[int, tuple[MealRole, ...]] = {
-    3: (
-        MealRole.FIRST_MEAL,
-        MealRole.QUICK_LUNCH,
-        MealRole.MAIN_MEAL,
-    ),
-    4: (
-        MealRole.FIRST_MEAL,
-        MealRole.QUICK_LUNCH,
-        MealRole.PROTEIN_SNACK,
-        MealRole.MAIN_MEAL,
-    ),
-    5: (
-        MealRole.FIRST_MEAL,
-        MealRole.QUICK_LUNCH,
-        MealRole.PROTEIN_SNACK,
-        MealRole.PROTEIN_SNACK,
-        MealRole.MAIN_MEAL,
-    ),
-    6: (
-        MealRole.FIRST_MEAL,
-        MealRole.QUICK_LUNCH,
-        MealRole.PROTEIN_SNACK,
-        MealRole.PROTEIN_SNACK,
-        MealRole.MAIN_MEAL,
-        MealRole.LATE_SNACK,
-    ),
-}
+    recipes: tuple[PlannedRecipe, ...]
 
 
 def generate_day_plans(
-    targets: PlanTargets, catalog: Catalog, limit: int = 3
+    targets: PlanTargets,
+    recipes: tuple[RecipeDefinition, ...],
+    limit: int = 3,
 ) -> tuple[DayPlan, ...]:
-    if targets.meal_count not in ROLE_STRUCTURES:
-        raise ValueError("meal_count must be between 3 and 6")
+    if targets.meal_count < 1:
+        raise ValueError("meal_count must be positive")
     if limit < 1:
         raise ValueError("limit must be positive")
 
-    foods = {food.key: food for food in catalog.foods}
-    structures = ROLE_STRUCTURES[targets.meal_count]
-    options_by_role = {
-        role: tuple(
-            PlannedMeal(
-                meal=meal,
-                role=role,
-                portion_factor=factor,
-                nutrients=calculate_meal_nutrients(meal, foods).scaled(factor),
-            )
-            for meal in catalog.meals
-            if role in meal.roles
-            for factor in meal.portion_factors
-        )
-        for role in set(structures)
-    }
-
     candidates: list[DayPlan] = []
-    seen_signatures: set[tuple[tuple[str, str, Decimal], ...]] = set()
-    for meals in product(*(options_by_role[role] for role in structures)):
-        meal_keys = [planned_meal.meal.key for planned_meal in meals]
-        if len(meal_keys) != len(set(meal_keys)):
-            continue
-
-        signature = tuple(
-            sorted(
-                (
-                    planned_meal.role.value,
-                    planned_meal.meal.key,
-                    planned_meal.portion_factor,
+    for selected in combinations(recipes, targets.meal_count):
+        for portions in product((1, 2), repeat=targets.meal_count):
+            planned = tuple(
+                PlannedRecipe(
+                    recipe=recipe,
+                    portions=portion_count,
+                    nutrients=recipe.nutrients.scaled(portion_count),
                 )
-                for planned_meal in meals
+                for recipe, portion_count in zip(selected, portions, strict=True)
             )
-        )
-        if signature in seen_signatures:
-            continue
-        seen_signatures.add(signature)
-
-        nutrients = sum(
-            (planned_meal.nutrients for planned_meal in meals), start=Nutrients()
-        )
-        if not _is_within_outer_limits(nutrients, targets):
-            continue
-
-        evaluations = _evaluate_rules(nutrients, targets)
-        status: PlanStatus = (
-            "valid"
-            if all(
-                evaluation.satisfied
-                for evaluation in evaluations
-                if evaluation.kind == "hard"
+            nutrients = sum((item.nutrients for item in planned), start=Nutrients())
+            if not _is_within_outer_limits(nutrients, targets):
+                continue
+            evaluations = _evaluate_rules(nutrients, targets)
+            status: PlanStatus = (
+                "valid"
+                if all(
+                    evaluation.satisfied
+                    for evaluation in evaluations
+                    if evaluation.kind == "hard"
+                )
+                else "approximation"
             )
-            else "approximation"
-        )
-        stable_key = "|".join(
-            f"{role}:{meal_key}:{factor}" for role, meal_key, factor in signature
-        )
-        candidates.append(
-            DayPlan(
-                status=status,
-                score=_calculate_score(nutrients, targets),
-                stable_key=stable_key,
-                nutrients=nutrients,
-                evaluations=evaluations,
-                meals=meals,
+            stable_key = "|".join(
+                f"{item.recipe.id}:{item.portions}" for item in planned
             )
-        )
+            candidates.append(
+                DayPlan(
+                    status=status,
+                    score=_calculate_score(nutrients, targets),
+                    stable_key=stable_key,
+                    nutrients=nutrients,
+                    evaluations=evaluations,
+                    recipes=planned,
+                )
+            )
 
     candidates.sort(
         key=lambda candidate: (
@@ -176,42 +116,40 @@ def _evaluate_rules(
     carb_maximum = targets.carbs * Decimal("1.2")
     return (
         RuleEvaluation(
-            metric="calories",
-            kind="hard",
-            actual=nutrients.calories,
-            target=targets.calories,
-            minimum=calorie_minimum,
-            maximum=calorie_maximum,
-            satisfied=calorie_minimum
-            <= nutrients.calories
-            <= calorie_maximum,
+            "calories",
+            "hard",
+            nutrients.calories,
+            targets.calories,
+            calorie_minimum,
+            calorie_maximum,
+            calorie_minimum <= nutrients.calories <= calorie_maximum,
         ),
         RuleEvaluation(
-            metric="protein",
-            kind="hard",
-            actual=nutrients.protein,
-            target=None,
-            minimum=targets.protein_minimum,
-            maximum=None,
-            satisfied=nutrients.protein >= targets.protein_minimum,
+            "protein",
+            "hard",
+            nutrients.protein,
+            None,
+            targets.protein_minimum,
+            None,
+            nutrients.protein >= targets.protein_minimum,
         ),
         RuleEvaluation(
-            metric="fat",
-            kind="hard",
-            actual=nutrients.fat,
-            target=None,
-            minimum=fat_minimum,
-            maximum=targets.fat_maximum,
-            satisfied=fat_minimum <= nutrients.fat <= targets.fat_maximum,
+            "fat",
+            "hard",
+            nutrients.fat,
+            None,
+            fat_minimum,
+            targets.fat_maximum,
+            fat_minimum <= nutrients.fat <= targets.fat_maximum,
         ),
         RuleEvaluation(
-            metric="carbs",
-            kind="soft",
-            actual=nutrients.carbs,
-            target=targets.carbs,
-            minimum=carb_minimum,
-            maximum=carb_maximum,
-            satisfied=carb_minimum <= nutrients.carbs <= carb_maximum,
+            "carbs",
+            "soft",
+            nutrients.carbs,
+            targets.carbs,
+            carb_minimum,
+            carb_maximum,
+            carb_minimum <= nutrients.carbs <= carb_maximum,
         ),
     )
 
@@ -237,21 +175,17 @@ def _calculate_score(nutrients: Nutrients, targets: PlanTargets) -> Decimal:
         / (targets.protein_minimum * Decimal("0.1"))
     )
     calorie_deviation = _cap_at_one(
-        abs(nutrients.calories - targets.calories)
-        / (targets.calories * Decimal("0.1"))
+        abs(nutrients.calories - targets.calories) / (targets.calories * Decimal("0.1"))
     )
-
     fat_minimum = targets.fat_maximum * Decimal("0.8")
-    if nutrients.fat < fat_minimum:
-        fat_distance = fat_minimum - nutrients.fat
-    elif nutrients.fat > targets.fat_maximum:
-        fat_distance = nutrients.fat - targets.fat_maximum
-    else:
-        fat_distance = Decimal(0)
-    fat_deviation = _cap_at_one(
-        fat_distance / (targets.fat_maximum * Decimal("0.1"))
+    fat_distance = (
+        fat_minimum - nutrients.fat
+        if nutrients.fat < fat_minimum
+        else nutrients.fat - targets.fat_maximum
+        if nutrients.fat > targets.fat_maximum
+        else Decimal(0)
     )
-
+    fat_deviation = _cap_at_one(fat_distance / (targets.fat_maximum * Decimal("0.1")))
     carb_deviation = _cap_at_one(
         abs(nutrients.carbs - targets.carbs) / (targets.carbs * Decimal("0.5"))
     )

@@ -1,8 +1,5 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Mapping
-
-from preppilot_api.catalog_data import FoodDefinition, MealDefinition
 
 
 @dataclass(frozen=True)
@@ -20,26 +17,11 @@ class Nutrients:
             fat=self.fat + other.fat,
         )
 
-    def scaled(self, factor: Decimal) -> "Nutrients":
+    def scaled(self, factor: int) -> "Nutrients":
+        scale = Decimal(factor)
         return Nutrients(
-            calories=self.calories * factor,
-            protein=self.protein * factor,
-            carbs=self.carbs * factor,
-            fat=self.fat * factor,
+            calories=self.calories * scale,
+            protein=self.protein * scale,
+            carbs=self.carbs * scale,
+            fat=self.fat * scale,
         )
-
-
-def calculate_meal_nutrients(
-    meal: MealDefinition, foods: Mapping[str, FoodDefinition]
-) -> Nutrients:
-    nutrients = Nutrients()
-    for ingredient in meal.ingredients:
-        food = foods[ingredient.food_key]
-        factor = ingredient.amount / Decimal(100)
-        nutrients += Nutrients(
-            calories=food.calories_per_100 * factor,
-            protein=food.protein_per_100 * factor,
-            carbs=food.carbs_per_100 * factor,
-            fat=food.fat_per_100 * factor,
-        )
-    return nutrients
