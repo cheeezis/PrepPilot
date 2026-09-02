@@ -1,119 +1,61 @@
 # Produkt-Backlog
 
-Stand: 31. August 2026
+Stand: 1. September 2026
 
-Dieses Backlog sammelt interessante Produktideen, die noch nicht Teil einer
-beschlossenen Roadmap-Phase sind. Ein Eintrag ist keine Umsetzungszusage. Bevor
-eine Idee in die Roadmap wandert, klären wir kurz das Nutzerproblem, den Nutzen,
-den kleinsten sinnvollen Umfang und den passenden Zeitpunkt. Bereits
-priorisierte Ausschnitte werden hier nur noch zur Abgrenzung ihrer späteren
-Folgeschritte erwähnt.
+## Nächster Datenabschnitt
+
+### Lebensmittelkonzepte von Nährwertprofilen trennen
+
+Vor einem großen Rezeptimport benötigt PrepPilot stabile kanonische
+Lebensmittelidentitäten. Eine Zutat wie „milk“ soll einmal dem Konzept „Milch“
+zugeordnet werden. FDC, CoFID oder andere Quellen liefern dazu getrennte
+Nährwertprofile und Zustände.
+
+Kleinster sinnvoller Umfang:
+
+- Konzept und externe Quellenidentität speichern
+- ein Standard-Nährwertprofil zuordnen
+- bestehende `foods` rückwärtskompatibel anbinden
+- ungeklärte Konzepte einmalig statt pro Rezept prüfen
+
+### Offenen Rezeptbestand anbinden
+
+Wikibooks Cookbook ist der bevorzugte erste Kandidat. Der erste Lauf bleibt ein
+begrenzter Dry Run und prüft Portionen, Zutaten, Anleitung, Lizenzmetadaten und
+kanonische Zutatenlinks. Nur vollständige Kandidaten gelangen in die bestehende
+Rezept-Inbox.
+
+USDA Team Nutrition kann später einen kleinen hochwertigen Zusatzbestand
+liefern. Historische Public-Domain-Archive bleiben wegen fehlender Portionen und
+uneinheitlicher Qualität zunächst in Quarantäne.
+
+### Nutzerinitiierter URL-Import
+
+Ein späterer Nutzer kann ein einzelnes Rezept aus einer URL in seine private
+Sammlung übernehmen. Schema.org/JSON-LD und `recipe-scrapers` sind dafür
+technisch geeignet. Diese Funktion ist von einem Bulk-Katalogimport zu trennen
+und muss Quellrechte, Attribution und Bilder gesondert behandeln.
+
+### Importbetrieb
+
+Noch zu entscheiden ist, ob wiederholte Importläufe als Kommando, Hintergrundjob
+oder kleine Admin-Oberfläche gestartet werden. Temporäre interne HTTP-Endpunkte
+sollen dafür nicht erneut entstehen.
 
 ## Produktvalidierung
 
-### MVP mit geeigneten Zielnutzern testen
+Der technische MVP soll mit geeigneten Personen aus der Zielgruppe geprüft
+werden. Erfolgskriterien und Ablauf werden festgelegt, sobald eine passende
+Testgruppe verfügbar ist.
 
-Sobald tatsächlich geeignete Personen aus der Zielgruppe verfügbar sind, soll
-geprüft werden, ob sie ohne Erklärung einen Wochenplan samt Einkaufsliste
-erstellen und das Ergebnis als praktisch einschätzen. Zahl, Ablauf und
-Erfolgskriterien werden erst dann passend zur erreichbaren Testgruppe
-festgelegt. Für den technischen MVP werden keine beliebigen Personen als
-stellvertretende Testnutzer verpflichtet.
-
-## Katalog und Datenimport
-
-### Lebensmittel aus FoodData Central importieren
-
-**Status:** kontrollierter Detailimport per FDC-ID als Phase 6E und erster
-kuratierter 29er-Datenbatch als Phase 6F abgeschlossen; Suche, automatische
-Massenergänzung und Open Food Facts bleiben im Backlog
-
-Der erste Adapter hält FoodData-Central-Rohdaten und abgeleitete Kandidaten in
-einer getrennten Inbox. Nur vollständige, ausdrücklich bestätigte Kandidaten
-gelangen in `foods`; importierte Einträge bleiben bei einem Katalog-Seed
-erhalten. Als Folgeschritt kann die freie Suche Vorschläge liefern, darf aber
-keinen Treffer automatisch auswählen oder freigeben.
-
-### Import-Inbox und Zutaten-Normalisierung
-
-**Status:** als Phase 6A in `docs/roadmap.md` abgeschlossen
-
-Der abgeschlossene erste Abschnitt nimmt Rezepte in einem getrennten
-PostgreSQL-Bereich auf, normalisiert Zutaten deterministisch und stellt
-unvollständige Ergebnisse mit konkreten Gründen zur internen Prüfung bereit.
-Er enthält weder eine Live-Anbindung an einen Rezeptanbieter noch die
-Veröffentlichung im produktiven Katalog.
-
-### Normalisierte Rezepte in den produktiven Katalog übernehmen
-
-**Status:** als Phase 6B in `docs/roadmap.md` abgeschlossen
-
-Ein eigener Folgeabschnitt soll vollständig normalisierte Kandidaten fachlich
-prüfen und anschließend kontrolliert als Mahlzeiten veröffentlichen. Vorher
-müssen insbesondere Mahlzeitenrolle, Grundportion, erlaubte Portionsfaktoren,
-Zubereitungszeit und Anleitung festgelegt werden.
-
-Dabei muss auch die bisherige Seed-Strategie angepasst werden: Der
-reproduzierbare versionierte Arbeitskatalog darf veröffentlichte Importdaten
-nicht löschen oder unkontrolliert überschreiben. Der genaue Freigabe- und
-Aktualisierungsprozess wird erst vor diesem Abschnitt beschlossen.
-
-### Live-Rezeptquellen und weitere Adapter
-
-**Status:** erster TheMealDB-Adapter als Phase 6C, praktische Härtung mit acht
-realen Rezepten als Phase 6D und Ausbau der Inbox auf 20 Rezepte als Phase 6F
-abgeschlossen; weitere Adapter und automatisierte Abrufe bleiben im Backlog
-
-Nach der Import-Inbox kann ein konkreter Rezeptanbieter anhand von
-Datenqualität, strukturierten Zutatenmengen, Nutzungsrechten, Kosten,
-Rate-Limits und stabilen externen Kennungen ausgewählt werden. Quellenadapter
-übersetzen ausschließlich in das interne Rohimportformat; anbieterspezifische
-Felder gelangen nicht in den Planer.
-
-FoodData Central bleibt die bevorzugte Recherchequelle für generische
-Lebensmittel, Nährwerte und mögliche Portionsstandards. Open Food Facts kann
-später getrennt für konkrete Markenprodukte bewertet werden. Externe APIs
-bleiben Import- oder Recherchequellen und werden keine Laufzeitvoraussetzung
-der Planung.
-
-### Rezepte durch Nutzer importieren
-
-Nutzer könnten eigene Rezeptquellen angeben und daraus Mahlzeiten samt
-angenäherten Nährwerten anlegen. Diese Funktion baut auf der getrennten
-Importpipeline und Prüfwarteschlange auf und gehört nicht zum MVP.
-
-### KI-unterstützte Katalogpflege
-
-Ein LLM könnte in der Prüfwarteschlange Zutatenzuordnungen, passende
-FoodData-Central-Portionen oder plausible Standardgewichte vorschlagen und die
-Vorschläge begründen. Deterministische Validierung und die Freigabegrenze zum
-produktiven Katalog bleiben davon getrennt; ein LLM-Vorschlag darf ein
-unvollständiges Rezept nicht selbstständig freigeben.
-
-## Flexiblere Planung
+## Spätere Produktfunktionen
 
 - unterschiedliche Tagespläne innerhalb einer Woche
-- steuerbare Wiederholung und Abwechslung
-- einzelne Mahlzeiten austauschen
-- flexible Mahlzeiten- oder Snack-Slots
-- Nutzungshistorie bei neuen Vorschlägen berücksichtigen
-- Einkaufsliste für gemischte Wochenpläne aktualisieren
-
-## Personalisierung
-
+- Mahlzeiten austauschen und Wiederholungen steuern
 - Ernährungsformen, Ausschlüsse und Favoriten
-- eigene Mahlzeiten, Vorlagen und gespeicherte Pläne
+- eigene Mahlzeiten und gespeicherte Pläne
 - Benutzerkonten und geräteübergreifende Nutzung
-
-## Weitere Produktdaten
-
-- Zucker, Ballaststoffe und Salz
-- Allergendaten und darauf aufbauende Filter
-- Preise, Packungsgrößen und Budget
+- Zucker, Ballaststoffe, Salz und Allergene
+- Preise, Packungsgrößen, Budgets und Vorräte
 - Produkt- und Mahlzeitenbilder
-
-## Einkauf und Vorräte
-
-- vorhandene Vorräte berücksichtigen
-- Einkaufsmengen auf Packungsgrößen aufrunden
-- Einkaufskosten schätzen und Budgets berücksichtigen
+- KI-gestützte, aber niemals selbstständig freigebende Review-Vorschläge

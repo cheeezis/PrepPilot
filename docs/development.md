@@ -22,8 +22,9 @@ Katalog im Ordner `backend`:
 .\.venv\Scripts\python.exe -m preppilot_api.catalog_seed
 ```
 
-Der Seed ersetzt den freigegebenen Datenbankkatalog reproduzierbar durch den
-Inhalt der versionierten `catalog.json`.
+Der Seed synchronisiert den kuratierten Grundbestand reproduzierbar mit der
+versionierten `catalog.json`. Kontrolliert importierte Lebensmittel und
+Mahlzeiten werden dabei nicht überschrieben.
 
 ## Anwendung starten
 

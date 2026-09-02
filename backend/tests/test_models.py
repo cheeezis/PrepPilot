@@ -12,6 +12,7 @@ def test_schema_contains_catalog_and_import_inbox_tables() -> None:
         "recipe_import_ingredients",
         "food_aliases",
         "food_imports",
+        "food_reference_items",
         "food_measure_defaults",
         "import_review_decisions",
     }

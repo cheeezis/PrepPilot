@@ -148,6 +148,20 @@ def list_food_imports(session: Session) -> tuple[FoodImport, ...]:
     return tuple(session.scalars(select(FoodImport).order_by(FoodImport.id)))
 
 
+def find_latest_food_import(
+    session: Session, source_name: str, external_id: str
+) -> FoodImport | None:
+    return session.scalar(
+        select(FoodImport)
+        .where(
+            FoodImport.source_name == source_name.strip(),
+            FoodImport.external_id == external_id.strip(),
+        )
+        .order_by(FoodImport.id.desc())
+        .limit(1)
+    )
+
+
 def _content_hash(raw_payload: dict[str, object]) -> str:
     serialized = json.dumps(
         raw_payload,
