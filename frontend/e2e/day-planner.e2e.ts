@@ -49,3 +49,22 @@ test('explains hard and soft deviations for approximations', async ({ page }) =>
     .click()
   await expect(page.getByRole('status')).toContainText('Vorschlag 1 ausgewählt')
 })
+
+test('opens the internal import review with the current database state', async ({
+  page,
+}) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Importprüfung' }).click()
+
+  await expect(
+    page.getByRole('heading', { name: 'Importprüfung' }),
+  ).toBeVisible()
+  await expect(page.getByLabel('Importstatus')).toContainText('Rezepte')
+  await expect(
+    page.getByRole('heading', { name: 'Offene Zutatenidentitäten' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Rezeptimporte' }),
+  ).toBeVisible()
+})

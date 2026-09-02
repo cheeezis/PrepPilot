@@ -6,11 +6,13 @@ import {
   type RuleEvaluation,
 } from './api/dayPlans'
 import { getHealth } from './api/health'
+import { ImportReview } from './ImportReview'
 import { buildShoppingList, weekDays } from './weeklyPlan'
 import './App.css'
 
 type SystemStatus = 'checking' | 'ready' | 'unavailable'
 type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
+type ActiveView = 'planner' | 'imports'
 
 const roleNames: Record<string, string> = {
   first_meal: 'Erste Mahlzeit',
@@ -39,6 +41,7 @@ function App() {
   const [requestStatus, setRequestStatus] = useState<RequestStatus>('idle')
   const [result, setResult] = useState<DayPlansResponse | null>(null)
   const [selectedPlanIndex, setSelectedPlanIndex] = useState<number | null>(null)
+  const [activeView, setActiveView] = useState<ActiveView>('planner')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -80,6 +83,24 @@ function App() {
           <span className="brand-mark" aria-hidden="true">P</span>
           <span className="brand-name">PrepPilot</span>
         </div>
+        <nav className="app-nav" aria-label="Bereiche">
+          <button
+            type="button"
+            className={activeView === 'planner' ? 'app-nav-button app-nav-button--active' : 'app-nav-button'}
+            aria-pressed={activeView === 'planner'}
+            onClick={() => setActiveView('planner')}
+          >
+            Planer
+          </button>
+          <button
+            type="button"
+            className={activeView === 'imports' ? 'app-nav-button app-nav-button--active' : 'app-nav-button'}
+            aria-pressed={activeView === 'imports'}
+            onClick={() => setActiveView('imports')}
+          >
+            Importprüfung
+          </button>
+        </nav>
         <span className={`system-status system-status--${systemStatus}`}>
           <span className="status-indicator" aria-hidden="true" />
           {systemStatus === 'ready'
@@ -90,6 +111,8 @@ function App() {
         </span>
       </header>
 
+      {activeView === 'imports' ? <ImportReview /> : (
+        <>
       <section className="intro">
         <p className="eyebrow">Tagesplaner</p>
         <h1>Ein Tagesplan, der zu deinen Zielen passt.</h1>
@@ -131,6 +154,8 @@ function App() {
           selectedPlanIndex={selectedPlanIndex}
           onSelect={setSelectedPlanIndex}
         />
+      )}
+        </>
       )}
     </main>
   )

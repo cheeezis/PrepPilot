@@ -46,6 +46,32 @@ header {
   font-weight: 700;
 }
 
+.app-nav {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #edf1ef;
+}
+
+.app-nav-button {
+  width: auto;
+  min-height: 34px;
+  margin: 0;
+  padding: 0 13px;
+  color: #56615d;
+  background: transparent;
+  font-size: 13px;
+}
+
+.app-nav-button:hover,
+.app-nav-button--active,
+.app-nav-button--active:hover {
+  color: #174f3e;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(35 61 51 / 10%);
+}
+
 .system-status {
   color: #5d6863;
   font-size: 14px;
@@ -183,6 +209,205 @@ button:disabled {
 
 .results {
   padding-top: 64px;
+}
+
+.import-review {
+  padding: 64px 0 0;
+}
+
+.import-review-heading {
+  max-width: 760px;
+  margin-bottom: 34px;
+}
+
+.import-review-heading h1 {
+  margin-bottom: 18px;
+}
+
+.import-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.summary-card {
+  display: grid;
+  gap: 4px;
+  padding: 20px;
+  border: 1px solid #dce2df;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.summary-card strong {
+  color: #176b52;
+  font-size: 30px;
+}
+
+.summary-card span {
+  color: #61706a;
+  font-size: 14px;
+}
+
+.summary-card--warning {
+  border-color: #e6d6ad;
+  background: #fffaf0;
+}
+
+.summary-card--warning strong {
+  color: #8a6418;
+}
+
+.review-section {
+  padding-top: 52px;
+}
+
+.review-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.review-section-heading h2 {
+  margin-bottom: 0;
+  font-size: 28px;
+}
+
+.review-section-heading > p {
+  margin-bottom: 0;
+  color: #68736e;
+  font-size: 14px;
+}
+
+.empty-state {
+  padding: 24px;
+  border: 1px dashed #cbd4d0;
+  border-radius: 13px;
+  color: #61706a;
+  background: #fbfcfb;
+  line-height: 1.55;
+}
+
+.identity-list,
+.imported-recipe-list {
+  display: grid;
+  gap: 14px;
+}
+
+.identity-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.55fr);
+  gap: 28px;
+  padding: 22px;
+  border: 1px solid #e6d6ad;
+  border-radius: 14px;
+  background: #fffaf0;
+}
+
+.identity-details small,
+.imported-recipe-title small {
+  color: #74807b;
+}
+
+.identity-details h3,
+.imported-recipe-title h3 {
+  margin: 5px 0 8px;
+  font-size: 21px;
+}
+
+.identity-details p {
+  margin-bottom: 8px;
+  color: #56615d;
+}
+
+.identity-details a {
+  color: #176b52;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.identity-action {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.identity-action button {
+  margin: 0;
+}
+
+.imported-recipe {
+  padding: 22px;
+  border: 1px solid #dce2df;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.imported-recipe-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.review-status {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #795916;
+  background: #fff3d3;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.review-status--ready_for_catalog_review {
+  color: #0e664a;
+  background: #e5f5ef;
+}
+
+.review-status--rejected {
+  color: #8d2d25;
+  background: #fbe3e1;
+}
+
+.imported-recipe ul {
+  display: grid;
+  gap: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  border-top: 1px solid #e3e7e5;
+  list-style: none;
+}
+
+.imported-recipe li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf0ee;
+}
+
+.imported-recipe li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.imported-recipe li div {
+  display: grid;
+  gap: 4px;
+}
+
+.imported-recipe li small,
+.imported-recipe li > span {
+  color: #68736e;
+  font-size: 13px;
+}
+
+.imported-recipe li > span {
+  text-align: right;
 }
 
 .results-heading {
@@ -569,6 +794,10 @@ button:disabled {
   .weekly-layout {
     grid-template-columns: 1fr;
   }
+
+  .identity-card {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 540px) {
@@ -582,6 +811,15 @@ button:disabled {
     justify-content: center;
     gap: 6px;
     padding: 14px 0;
+  }
+
+  .app-nav {
+    order: 3;
+    width: 100%;
+  }
+
+  .app-nav-button {
+    flex: 1;
   }
 
   .intro {
@@ -600,6 +838,25 @@ button:disabled {
   .results-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .import-review {
+    padding-top: 48px;
+  }
+
+  .import-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .review-section-heading,
+  .imported-recipe-title,
+  .imported-recipe li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .imported-recipe li > span {
+    text-align: left;
   }
 
   .weekly-plan {
