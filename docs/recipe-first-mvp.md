@@ -46,10 +46,12 @@ Eine Quelle ist nur geeignet, wenn sie für jedes verwendbare Rezept liefert:
 - Zutaten und Zubereitung
 - eine Nutzungserlaubnis, die das dauerhafte Speichern und Anzeigen zulässt
 
-Die USDA Child Nutrition Recipe Box ist der erste Prüfkandidat. Vor der
-Implementierung werden Datenformat, nutzbarer Umfang und Rechte noch einmal an
-einer kleinen Stichprobe bestätigt. Kommerzielle APIs mit Cache- oder
-Speicherverbot sind kein Grundbestand für diesen MVP.
+NHS Healthier Families ist nach einer Stichprobe von zehn Rezepten der erste
+Kandidat. Die Seiten liefern vollständige Makros pro Portion und verwendbare
+Erwachsenenrezepte. Der erste Lauf bleibt auf diese zehn geprüften URLs
+begrenzt. Details stehen in
+[`source-evaluation-nhs.md`](source-evaluation-nhs.md). Kommerzielle APIs mit
+Cache- oder Speicherverbot sind kein Grundbestand für diesen MVP.
 
 ## Zielmodell
 
@@ -63,6 +65,7 @@ mindestens:
 - Zutaten als quellennahe strukturierte Daten
 - Zubereitung und optionale Zubereitungszeit
 - Originaldaten, Inhalts-Hash und Importzeitpunkt
+- Lizenzname und erforderlicher Attributionstext
 
 Quelle und externe ID identifizieren ein Rezept eindeutig. Der Inhalts-Hash
 erkennt unveränderte und aktualisierte Quelldaten. Nur vollständig validierte

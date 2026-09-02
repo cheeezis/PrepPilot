@@ -2,55 +2,47 @@
 
 Stand: 2. September 2026
 
-## Nächster Produktabschnitt
+## Als Nächstes
 
-### Recipe-first-MVP
+### Rezeptqualität und Darstellung
 
-Der nächste Schnitt baut einen vollständigen, aber bewusst kleinen Ablauf aus
-genau einer Quelle. Importierte Rezepte bringen ihre Nährwerte pro Portion
-bereits mit und können deshalb ohne normalisierte Lebensmittel geplant werden.
+- lange NHS-Zubereitungstexte in lesbare Schritte trennen
+- Importablehnungen mit konkretem Grund im Frontend anzeigen
+- Rezeptübersicht mit echten Nutzern auf Verständlichkeit prüfen
 
-Der erste Prüfkandidat ist die USDA Child Nutrition Recipe Box. Zunächst wird
-eine Stichprobe von zehn geeigneten Rezepten hinsichtlich Datenformat,
-Nährwertvollständigkeit und dauerhafter Nutzbarkeit geprüft.
+### Mehr Rezepte derselben Quelle
 
-Die verbindliche Spezifikation steht in
-[`recipe-first-mvp.md`](recipe-first-mvp.md).
+Nach der Abnahme der ersten zehn Rezepte wird die feste NHS-Liste kontrolliert
+erweitert. Neue Seiten müssen dieselben Pflichtfelder, Rechte und
+Attributionsregeln erfüllen. Ziel ist zunächst bessere Vielfalt, nicht möglichst
+große Datenmenge.
+
+### Planung verbessern
+
+- passende Rezeptkategorien einführen
+- Wiederholungen und Portionspraktikabilität bewerten
+- erklären, warum ein Plan gültig oder nur eine Annäherung ist
+
+## Spätere Produktabschnitte
 
 ### Nutzerinitiierter URL-Import
 
-Ein späterer Nutzer kann ein einzelnes Rezept aus einer URL in seine private
-Sammlung übernehmen. Schema.org/JSON-LD und `recipe-scrapers` sind dafür
-technisch geeignet. Diese Funktion ist von einem Bulk-Katalogimport zu trennen
-und muss Quellrechte, Attribution und Bilder gesondert behandeln.
-
-### Importbetrieb
-
-Noch zu entscheiden ist, ob wiederholte Importläufe als Kommando, Hintergrundjob
-oder kleine Admin-Oberfläche gestartet werden. Temporäre interne HTTP-Endpunkte
-sollen dafür nicht erneut entstehen.
+Ein Nutzer kann später ein einzelnes Rezept aus einer URL in seine private
+Sammlung übernehmen. Diese Funktion braucht eine eigene Quellen- und
+Rechteprüfung und ist nicht Teil des aktuellen NHS-Bestandsimports.
 
 ### Zutaten und Lebensmittel
 
-Normalisierte Zutaten, Lebensmittelkonzepte und eigene Nährwertprofile werden
-erst nach dem Recipe-first-MVP wieder aufgenommen. Sie dienen dann konkreten
-Funktionen wie Einkaufslisten, Allergenen, Ausschlüssen und Ersetzungen, nicht
-der grundlegenden Freigabe eines importierten Rezepts.
+Normalisierte Zutaten und Lebensmittelprofile werden erst für konkrete
+Funktionen wie Filter, Allergene, Einkaufslisten oder eigene Rezepte ergänzt.
+Sie sind keine Voraussetzung für den aktuellen Planer.
 
-## Produktvalidierung
-
-Der technische MVP soll mit geeigneten Personen aus der Zielgruppe geprüft
-werden. Erfolgskriterien und Ablauf werden festgelegt, sobald eine passende
-Testgruppe verfügbar ist.
-
-## Spätere Produktfunktionen
+### Weitere Funktionen
 
 - unterschiedliche Tagespläne innerhalb einer Woche
-- Mahlzeiten austauschen und Wiederholungen steuern
-- Ernährungsformen, Ausschlüsse und Favoriten
-- eigene Mahlzeiten und gespeicherte Pläne
+- Mahlzeiten austauschen und Favoriten speichern
+- Ernährungsformen und Ausschlüsse
 - Benutzerkonten und geräteübergreifende Nutzung
 - Zucker, Ballaststoffe, Salz und Allergene
 - Preise, Packungsgrößen, Budgets und Vorräte
-- Produkt- und Mahlzeitenbilder
-- KI-gestützte, aber niemals selbstständig freigebende Review-Vorschläge
+- Produkt- und Rezeptbilder mit geklärten Nutzungsrechten
