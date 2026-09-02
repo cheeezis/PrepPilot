@@ -42,12 +42,6 @@ class RecipeImportStatus(StrEnum):
     REJECTED = "rejected"
 
 
-class FoodImportStatus(StrEnum):
-    READY_FOR_CATALOG_REVIEW = "ready_for_catalog_review"
-    NEEDS_REVIEW = "needs_review"
-    REJECTED = "rejected"
-
-
 class ImportedIngredientStatus(StrEnum):
     NORMALIZED = "normalized"
     NEEDS_REVIEW = "needs_review"
@@ -82,50 +76,6 @@ class MealOrigin(StrEnum):
 class FoodOrigin(StrEnum):
     CURATED_SEED = "curated_seed"
     FOOD_IMPORT = "food_import"
-
-
-class FoodImport(Base):
-    __tablename__ = "food_imports"
-    __table_args__ = (
-        CheckConstraint(
-            "length(trim(source_name)) > 0",
-            name="ck_food_imports_source_name_not_blank",
-        ),
-        CheckConstraint(
-            "length(trim(external_id)) > 0",
-            name="ck_food_imports_external_id_not_blank",
-        ),
-        CheckConstraint(
-            "length(content_hash) = 64",
-            name="ck_food_imports_content_hash_sha256",
-        ),
-        UniqueConstraint(
-            "source_name",
-            "external_id",
-            "content_hash",
-            name="uq_food_imports_source_external_content",
-        ),
-    )
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    source_name: Mapped[str] = mapped_column(String(100))
-    external_id: Mapped[str] = mapped_column(String(200))
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    raw_payload: Mapped[dict[str, object]] = mapped_column(JSON)
-    content_hash: Mapped[str] = mapped_column(String(64))
-    status: Mapped[FoodImportStatus] = mapped_column(
-        SqlEnum(
-            FoodImportStatus,
-            name="food_import_status",
-            values_callable=lambda enum_class: [member.value for member in enum_class],
-        )
-    )
-    candidate_name: Mapped[str | None] = mapped_column(String(300))
-    calories_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
-    protein_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
-    carbs_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
-    fat_per_100: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
-    review_reasons: Mapped[list[str]] = mapped_column(JSON)
 
 
 class FoodReferenceItem(Base):
@@ -173,6 +123,50 @@ class FoodReferenceItem(Base):
     imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
+class FoodConcept(Base):
+    __tablename__ = "food_concepts"
+    __table_args__ = (
+        CheckConstraint(
+            "length(trim(key)) > 0", name="ck_food_concepts_key_not_blank"
+        ),
+        CheckConstraint(
+            "length(trim(name)) > 0", name="ck_food_concepts_name_not_blank"
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    key: Mapped[str] = mapped_column(String(100), unique=True)
+    name: Mapped[str] = mapped_column(String(200))
+
+
+class FoodSourceIdentifier(Base):
+    __tablename__ = "food_source_identifiers"
+    __table_args__ = (
+        CheckConstraint(
+            "length(trim(source_name)) > 0",
+            name="ck_food_source_identifiers_source_not_blank",
+        ),
+        CheckConstraint(
+            "length(trim(external_id)) > 0",
+            name="ck_food_source_identifiers_external_id_not_blank",
+        ),
+        UniqueConstraint(
+            "source_name",
+            "external_id",
+            name="uq_food_source_identifiers_source_external",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    concept_id: Mapped[int | None] = mapped_column(
+        ForeignKey("food_concepts.id", ondelete="SET NULL")
+    )
+    source_name: Mapped[str] = mapped_column(String(100))
+    external_id: Mapped[str] = mapped_column(String(300))
+    source_label: Mapped[str | None] = mapped_column(String(300))
+    source_url: Mapped[str | None] = mapped_column(Text)
+
+
 class Food(Base):
     __tablename__ = "foods"
     __table_args__ = (
@@ -188,15 +182,12 @@ class Food(Base):
         CheckConstraint("protein_per_100 >= 0", name="ck_foods_protein_nonnegative"),
         CheckConstraint("carbs_per_100 >= 0", name="ck_foods_carbs_nonnegative"),
         CheckConstraint("fat_per_100 >= 0", name="ck_foods_fat_nonnegative"),
-        CheckConstraint(
-            "(origin = 'curated_seed' AND source_food_import_id IS NULL) OR "
-            "(origin = 'food_import' AND source_food_import_id IS NOT NULL)",
-            name="ck_foods_origin_source",
-        ),
-        UniqueConstraint("source_food_import_id", name="uq_foods_source_food_import"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    concept_id: Mapped[int] = mapped_column(
+        ForeignKey("food_concepts.id", ondelete="RESTRICT")
+    )
     catalog_key: Mapped[str] = mapped_column(String(100), unique=True)
     name: Mapped[str] = mapped_column(String(200))
     brand: Mapped[str | None] = mapped_column(String(200))
@@ -220,11 +211,6 @@ class Food(Base):
             values_callable=lambda enum_class: [member.value for member in enum_class],
         )
     )
-    source_food_import_id: Mapped[int | None] = mapped_column(
-        ForeignKey("food_imports.id", ondelete="RESTRICT")
-    )
-
-
 class Meal(Base):
     __tablename__ = "meals"
     __table_args__ = (
@@ -412,6 +398,12 @@ class RecipeImportIngredient(Base):
     )
     manual_food_id: Mapped[int | None] = mapped_column(
         ForeignKey("foods.id", ondelete="SET NULL")
+    )
+    concept_id: Mapped[int | None] = mapped_column(
+        ForeignKey("food_concepts.id", ondelete="SET NULL")
+    )
+    source_identifier_id: Mapped[int | None] = mapped_column(
+        ForeignKey("food_source_identifiers.id", ondelete="SET NULL")
     )
     normalized_amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 3))
     manual_amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 3))

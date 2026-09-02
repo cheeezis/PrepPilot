@@ -6,6 +6,7 @@ from preppilot_api.database import engine
 from preppilot_api.models import (
     Food,
     FoodAlias,
+    FoodConcept,
     FoodMeasureDefault,
     FoodOrigin,
     Meal,
@@ -42,8 +43,20 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
         )
 
     existing_foods = {food.catalog_key: food for food in session.scalars(select(Food))}
+    concepts = {
+        concept.key: concept for concept in session.scalars(select(FoodConcept))
+    }
     foods: dict[str, Food] = {}
     for food_definition in catalog.foods:
+        concept = concepts.get(food_definition.key)
+        if concept is None:
+            concept = FoodConcept(key=food_definition.key, name=food_definition.name)
+            session.add(concept)
+            session.flush()
+            concepts[food_definition.key] = concept
+        else:
+            concept.name = food_definition.name
+
         food = existing_foods.pop(food_definition.key, None)
         if food is not None and food.origin != FoodOrigin.CURATED_SEED:
             raise ValueError(
@@ -52,10 +65,11 @@ def replace_catalog(session: Session, catalog: Catalog) -> None:
         if food is None:
             food = Food(
                 catalog_key=food_definition.key,
+                concept_id=concept.id,
                 origin=FoodOrigin.CURATED_SEED,
-                source_food_import_id=None,
             )
             session.add(food)
+        food.concept_id = concept.id
         food.name = food_definition.name
         food.brand = food_definition.brand
         food.unit = food_definition.unit

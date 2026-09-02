@@ -12,6 +12,7 @@ from preppilot_api.models import (
     Base,
     Food,
     FoodAlias,
+    FoodConcept,
     FoodMeasureDefault,
     Meal,
     MealIngredient,
@@ -52,6 +53,10 @@ def test_replaces_database_catalog_reproducibly() -> None:
         assert session.scalar(
             select(func.count()).select_from(FoodMeasureDefault)
         ) == sum(len(food.measure_defaults) for food in catalog.foods)
+        assert session.scalar(select(func.count()).select_from(FoodConcept)) == len(
+            catalog.foods
+        )
+        assert all(food.concept_id is not None for food in session.scalars(select(Food)))
 
 
 def test_seed_keeps_normalized_ingredient_amounts() -> None:

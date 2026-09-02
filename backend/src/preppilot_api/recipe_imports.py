@@ -9,10 +9,16 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from preppilot_api.food_concepts import (
+    ObserveFoodSourceIdentifierCommand,
+    observe_food_source_identifier,
+    resolve_food_source_identifier,
+)
 from preppilot_api.models import (
     Food,
     FoodAlias,
     FoodMeasureDefault,
+    FoodSourceIdentifier,
     ImportedIngredientStatus,
     ImportReviewDecision,
     ImportReviewReason,
@@ -28,11 +34,19 @@ class ImportModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class ExternalIngredientIdentityPayload(ImportModel):
+    source_name: str = Field(min_length=1, max_length=100)
+    external_id: str = Field(min_length=1, max_length=300)
+    source_label: str | None = Field(default=None, max_length=300)
+    source_url: str | None = None
+
+
 class ExternalIngredientPayload(ImportModel):
     line: str = Field(min_length=1)
     name: str = Field(min_length=1)
     amount: str | None = None
     unit: str | None = None
+    identity: ExternalIngredientIdentityPayload | None = None
 
 
 class ExternalRecipePayload(ImportModel):
@@ -154,24 +168,40 @@ def create_recipe_import(
     )
     session.add(recipe_import)
     session.flush()
-    session.add_all(
-        RecipeImportIngredient(
-            recipe_import_id=recipe_import.id,
-            position=position,
-            raw_line=ingredient.line,
-            raw_name=ingredient.name,
-            raw_amount=ingredient.amount,
-            raw_unit=ingredient.unit,
-            status=ImportedIngredientStatus.NEEDS_REVIEW,
-            review_reason=None,
-            food_id=None,
-            manual_food_id=None,
-            normalized_amount=None,
-            manual_amount=None,
-            excluded=False,
+    imported_ingredients: list[RecipeImportIngredient] = []
+    for position, ingredient in enumerate(command.payload.ingredients):
+        source_identifier_id: int | None = None
+        if ingredient.identity is not None:
+            source_identifier, _ = observe_food_source_identifier(
+                session,
+                ObserveFoodSourceIdentifierCommand(
+                    source_name=ingredient.identity.source_name,
+                    external_id=ingredient.identity.external_id,
+                    source_label=ingredient.identity.source_label,
+                    source_url=ingredient.identity.source_url,
+                ),
+            )
+            source_identifier_id = source_identifier.id
+        imported_ingredients.append(
+            RecipeImportIngredient(
+                recipe_import_id=recipe_import.id,
+                position=position,
+                raw_line=ingredient.line,
+                raw_name=ingredient.name,
+                raw_amount=ingredient.amount,
+                raw_unit=ingredient.unit,
+                status=ImportedIngredientStatus.NEEDS_REVIEW,
+                review_reason=None,
+                food_id=None,
+                manual_food_id=None,
+                concept_id=None,
+                source_identifier_id=source_identifier_id,
+                normalized_amount=None,
+                manual_amount=None,
+                excluded=False,
+            )
         )
-        for position, ingredient in enumerate(command.payload.ingredients)
-    )
+    session.add_all(imported_ingredients)
     session.flush()
     process_recipe_import(session, recipe_import.id)
     return recipe_import, True
@@ -190,6 +220,13 @@ def process_recipe_import(session: Session, recipe_import_id: int) -> RecipeImpo
     )
     foods = tuple(session.scalars(select(Food).order_by(Food.id)))
     foods_by_id = {food.id: food for food in foods}
+    foods_by_concept: dict[int, list[Food]] = {}
+    for food in foods:
+        foods_by_concept.setdefault(food.concept_id, []).append(food)
+    source_identifiers_by_id = {
+        identifier.id: identifier
+        for identifier in session.scalars(select(FoodSourceIdentifier))
+    }
     food_matches: dict[str, list[Food]] = {}
     for food in foods:
         for candidate in (food.name, food.catalog_key):
@@ -209,6 +246,8 @@ def process_recipe_import(session: Session, recipe_import_id: int) -> RecipeImpo
             ingredient,
             servings,
             foods_by_id,
+            foods_by_concept,
+            source_identifiers_by_id,
             food_matches,
             measure_defaults,
         )
@@ -229,6 +268,30 @@ def process_recipe_import(session: Session, recipe_import_id: int) -> RecipeImpo
     )
     session.flush()
     return recipe_import
+
+
+def resolve_recipe_ingredient_identity(
+    session: Session,
+    *,
+    identifier_id: int,
+    concept_key: str,
+) -> tuple[FoodSourceIdentifier, bool]:
+    identifier, changed = resolve_food_source_identifier(
+        session,
+        identifier_id=identifier_id,
+        concept_key=concept_key,
+    )
+    recipe_import_ids = tuple(
+        session.scalars(
+            select(RecipeImportIngredient.recipe_import_id)
+            .where(RecipeImportIngredient.source_identifier_id == identifier.id)
+            .distinct()
+            .order_by(RecipeImportIngredient.recipe_import_id)
+        )
+    )
+    for recipe_import_id in recipe_import_ids:
+        process_recipe_import(session, recipe_import_id)
+    return identifier, changed
 
 
 def apply_review_decision(
@@ -453,10 +516,13 @@ def _process_ingredient(
     ingredient: RecipeImportIngredient,
     servings: Decimal | None,
     foods_by_id: dict[int, Food],
+    foods_by_concept: dict[int, list[Food]],
+    source_identifiers_by_id: dict[int, FoodSourceIdentifier],
     food_matches: dict[str, list[Food]],
     measure_defaults: dict[tuple[int, str], Decimal],
 ) -> None:
     ingredient.food_id = None
+    ingredient.concept_id = None
     ingredient.normalized_amount = None
     ingredient.review_reason = None
     if ingredient.excluded:
@@ -466,6 +532,20 @@ def _process_ingredient(
     food: Food | None = None
     if ingredient.manual_food_id is not None:
         food = foods_by_id.get(ingredient.manual_food_id)
+    elif ingredient.source_identifier_id is not None:
+        source_identifier = source_identifiers_by_id.get(
+            ingredient.source_identifier_id
+        )
+        if source_identifier is None or source_identifier.concept_id is None:
+            _mark_review(ingredient, ImportReviewReason.UNKNOWN_FOOD)
+            return
+        ingredient.concept_id = source_identifier.concept_id
+        concept_foods = foods_by_concept.get(source_identifier.concept_id, [])
+        if len(concept_foods) > 1:
+            _mark_review(ingredient, ImportReviewReason.AMBIGUOUS_FOOD)
+            return
+        if concept_foods:
+            food = concept_foods[0]
     else:
         matches = {
             candidate.id: candidate
@@ -481,6 +561,7 @@ def _process_ingredient(
         return
 
     ingredient.food_id = food.id
+    ingredient.concept_id = food.concept_id
     if servings is None:
         _mark_review(ingredient, ImportReviewReason.MISSING_SERVING_COUNT)
         return

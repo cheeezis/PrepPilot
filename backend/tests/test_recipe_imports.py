@@ -13,6 +13,7 @@ from preppilot_api.models import (
     Base,
     FoodAlias,
     FoodMeasureDefault,
+    FoodSourceIdentifier,
     ImportReviewDecision,
     Meal,
     RecipeImport,
@@ -25,6 +26,7 @@ from preppilot_api.recipe_imports import (
     apply_review_decision,
     create_recipe_import,
     ingredients_for_import,
+    resolve_recipe_ingredient_identity,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "recipe_imports"
@@ -171,6 +173,74 @@ def test_measure_default_reprocesses_piece_quantity(session: Session) -> None:
         )
         == 1
     )
+
+
+def test_one_source_identity_resolution_reprocesses_multiple_recipes(
+    session: Session,
+) -> None:
+    identity = {
+        "source_name": "wikibooks",
+        "external_id": "12345",
+        "source_label": "Cookbook:Tomato",
+        "source_url": "https://en.wikibooks.org/wiki/Cookbook:Tomato",
+    }
+    first = CreateRecipeImportCommand.model_validate(
+        _identity_recipe("wikibooks-recipe-1", identity)
+    )
+    second = CreateRecipeImportCommand.model_validate(
+        _identity_recipe("wikibooks-recipe-2", identity)
+    )
+
+    first_import, _ = create_recipe_import(session, first)
+    second_import, _ = create_recipe_import(session, second)
+    first_ingredient = ingredients_for_import(session, first_import.id)[0]
+    second_ingredient = ingredients_for_import(session, second_import.id)[0]
+
+    assert first_import.status == RecipeImportStatus.NEEDS_REVIEW
+    assert second_import.status == RecipeImportStatus.NEEDS_REVIEW
+    assert first_ingredient.source_identifier_id == second_ingredient.source_identifier_id
+    assert session.scalar(select(func.count()).select_from(FoodSourceIdentifier)) == 1
+
+    identifier_id = first_ingredient.source_identifier_id
+    assert identifier_id is not None
+    _, changed = resolve_recipe_ingredient_identity(
+        session,
+        identifier_id=identifier_id,
+        concept_key="tomato",
+    )
+    reprocessed_first = session.get(RecipeImport, first_import.id)
+    reprocessed_second = session.get(RecipeImport, second_import.id)
+
+    assert changed
+    assert reprocessed_first is not None
+    assert reprocessed_second is not None
+    assert reprocessed_first.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
+    assert reprocessed_second.status == RecipeImportStatus.READY_FOR_CATALOG_REVIEW
+    assert first_ingredient.concept_id == second_ingredient.concept_id
+    assert first_ingredient.food_id == second_ingredient.food_id
+
+
+def _identity_recipe(
+    external_id: str, identity: dict[str, str]
+) -> dict[str, object]:
+    return {
+        "source_name": "wikibooks",
+        "external_id": external_id,
+        "payload": {
+            "title": external_id,
+            "servings": "2",
+            "instructions": "Prepare the recipe.",
+            "ingredients": [
+                {
+                    "line": "200 g tomato",
+                    "name": "unknown source label",
+                    "amount": "200",
+                    "unit": "g",
+                    "identity": identity,
+                }
+            ],
+        },
+    }
 
 
 def _command(name: str) -> CreateRecipeImportCommand:
