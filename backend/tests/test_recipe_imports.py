@@ -4,15 +4,11 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
 
 from preppilot_api.catalog_data import load_catalog
 from preppilot_api.catalog_seed import replace_catalog
-from preppilot_api.database import get_session
-from preppilot_api.main import app
 from preppilot_api.models import (
     Base,
     FoodAlias,
@@ -175,76 +171,6 @@ def test_measure_default_reprocesses_piece_quantity(session: Session) -> None:
         )
         == 1
     )
-
-
-def test_internal_api_exposes_queue_and_applies_override() -> None:
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(engine)
-    with Session(engine) as seed_session, seed_session.begin():
-        replace_catalog(seed_session, load_catalog())
-
-    def override_session() -> Iterator[Session]:
-        with Session(engine) as api_session:
-            yield api_session
-
-    app.dependency_overrides[get_session] = override_session
-    try:
-        with TestClient(app) as client:
-            created = client.post(
-                "/api/internal/recipe-imports",
-                json=_fixture_value("unknown_food.json"),
-            )
-            assert created.status_code == 201
-            value = created.json()["recipe_import"]
-            assert value["status"] == "needs_review"
-            recipe_import_id = value["id"]
-            ingredient_id = value["ingredients"][0]["id"]
-
-            queue = client.get(
-                "/api/internal/recipe-imports",
-                params={"import_status": "needs_review"},
-            )
-            assert [item["id"] for item in queue.json()] == [recipe_import_id]
-
-            resolved = client.post(
-                f"/api/internal/recipe-imports/{recipe_import_id}/decisions",
-                json={
-                    "action": "override_amount",
-                    "ingredient_id": ingredient_id,
-                    "food_key": "chicken_breast",
-                    "amount": 200,
-                },
-            )
-            assert resolved.status_code == 200
-            assert resolved.json()["status"] == "ready_for_catalog_review"
-            assert resolved.json()["ingredients"][0]["normalized_amount"] == 200
-
-            promotion = {
-                "catalog_key": "imported_chicken",
-                "name": "Imported chicken",
-                "preparation_minutes": 10,
-                "instructions": "Cook the chicken.",
-                "roles": ["main_meal"],
-                "portion_factors": [1, 1.5],
-            }
-            promoted = client.post(
-                f"/api/internal/recipe-imports/{recipe_import_id}/promote",
-                json=promotion,
-            )
-            assert promoted.status_code == 200
-            assert promoted.json()["created"]
-            repeated = client.post(
-                f"/api/internal/recipe-imports/{recipe_import_id}/promote",
-                json=promotion,
-            )
-            assert repeated.status_code == 200
-            assert not repeated.json()["created"]
-    finally:
-        app.dependency_overrides.clear()
 
 
 def _command(name: str) -> CreateRecipeImportCommand:

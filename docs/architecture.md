@@ -2,280 +2,100 @@
 
 Stand: 1. September 2026
 
-Dieses Dokument hält bestätigte technische Entscheidungen fest. Details werden
-schrittweise ergänzt, bevor das jeweilige Grundgerüst umgesetzt wird.
+## Kern
 
-## Ziele
+PrepPilot ist ein modularer Monolith:
 
-- klar verständliches Fullstack-Portfolio-Projekt
-- fachliche Planungslogik unabhängig von der Benutzeroberfläche
-- reproduzierbare Berechnungen und gut testbare Verantwortlichkeiten
-- möglichst wenig Infrastruktur- und Abstraktionsaufwand im MVP
+- React und TypeScript im Frontend
+- FastAPI und Python im Backend
+- PostgreSQL mit SQLAlchemy und Alembic
+- Docker Compose ausschließlich für die lokale Datenbank
 
-## Bestätigter Kern-Stack
+Das Frontend greift nur auf die PrepPilot-API zu. Der Planer liest ausschließlich
+vollständige, freigegebene Lebensmittel und Mahlzeiten aus PostgreSQL. Externe
+Datenquellen sind niemals eine Laufzeitabhängigkeit der Planung.
 
-- Frontend: React-SPA mit TypeScript und Vite 8
-- Frontend-Laufzeit und Paketverwaltung: Node.js 24 LTS mit npm
-- Backend: Python 3.14 mit FastAPI
-- Python-Umgebung und Paketverwaltung: `venv` aus der Standardbibliothek und pip
-- Datenbank: PostgreSQL
-- Datenbankzugriff: synchrones SQLAlchemy 2 mit psycopg 3
-- Datenbankmigrationen: Alembic
+## Produktiver Katalog
 
-Frontend-Abhängigkeiten werden über die npm-Lockdatei reproduzierbar
-festgehalten. Direkte Backend-Abhängigkeiten stehen mit fester Version in
-`pyproject.toml`; pip löst deren transitive Abhängigkeiten bei der Installation
-auf. Ergänzende Bibliotheken werden erst ausgewählt, wenn die jeweilige Phase
-sie benötigt.
+`foods`, `meals`, `meal_ingredients`, `meal_roles` und
+`meal_portion_factors` bilden die stabile Grenze zum Planer. Die versionierte
+`catalog.json` liefert den kuratierten Grundbestand. Ein Seed ersetzt nur
+Einträge mit der Herkunft `curated_seed`; kontrolliert importierte Einträge
+bleiben erhalten.
 
-## Repository-Form
+Der Planer kennt keine externen Rezeptformate, Haushaltsmaße, unsicheren
+Zutatenzuordnungen oder Nährwertsuchergebnisse.
 
-PrepPilot wird als Monorepo geführt. Frontend, Backend, Dokumentation und
-gemeinsame Infrastruktur werden zusammen versioniert.
+## Behaltener Importkern
 
-Die erste grobe Form ist:
+Externe Rezepte werden zunächst quellenneutral in `recipe_imports` und
+`recipe_import_ingredients` gespeichert. Rohdaten, Quellkennung und Inhalts-Hash
+bleiben erhalten. Die Normalisierung ist deterministisch und führt zu
+`ready_for_catalog_review`, `needs_review` oder `rejected`.
+
+Bestätigte Entscheidungen werden getrennt gespeichert:
+
+- `food_aliases` für wiederverwendbare Zutatenbezeichnungen
+- `food_measure_defaults` für belegte Stück- und Portionsgewichte
+- `import_review_decisions` als nachvollziehbare Entscheidungshistorie
+
+Nur ein vollständig normalisierter und ausdrücklich bestätigter Rezeptimport
+darf über den Promotion-Service eine Mahlzeit erzeugen. Die Importtabellen
+werden nicht direkt vom Planer gelesen.
+
+## Lebensmittel-Referenzdaten
+
+Die offiziellen FoodData-Central-Archive für Foundation Foods und SR Legacy
+können als kompakter lokaler Referenzbestand in `food_reference_items` geladen
+werden. Diese Datensätze sind Nährwertprofile und ausdrücklich keine automatisch
+freigegebenen Lebensmittel.
+
+Die frühere direkte FDC-Suche, heuristische Vorschlagslogik und automatische
+Materialisierung wurden entfernt. Ein breiter Zutatenbegriff wie „chicken“ darf
+nicht allein anhand eines ähnlich benannten Nährwertprofils zugeordnet werden.
+
+## Neue Quellengrenze
+
+Ein neuer Rezeptadapter wird als Importprozess implementiert und ruft direkt den
+quellenneutralen Import-Service auf. Für den Datenaufbau werden keine temporären
+internen HTTP-Endpunkte angelegt. Ein Adapter muss mindestens folgende Metadaten
+liefern:
+
+- stabile Quell- und Rezeptkennung
+- Rohdaten und Quellrevision
+- Titel, Zutaten, Zubereitung und belastbare Portionen
+- Lizenz, Attribution und Quell-URL
+
+Bulk-Import ist nur für ausdrücklich kompatibel lizenzierte Quellen erlaubt.
+Scraping geschützter Seiten ist kein Weg zum PrepPilot-Grundbestand.
+Nutzerinitiierte URL-Imports werden später als getrennte Produktfunktion
+bewertet.
+
+## Nächste Modellentscheidung
+
+Vor einem großen Rezeptlauf werden Zutatenidentität und Nährwertprofil getrennt:
 
 ```text
-PrepPilot/
-├── frontend/
-├── backend/
-├── docs/
-└── gemeinsame Infrastrukturdateien
+Quellenzutat
+  -> kanonisches Lebensmittelkonzept
+  -> ein oder mehrere Nährwertprofile mit Herkunft und Zustand
 ```
 
-Diese Darstellung legt noch keine detaillierte Ordnerstruktur innerhalb von
-Frontend oder Backend fest.
+Eine Quellenzutat wird einmal einem Konzept zugeordnet. Das ausgewählte
+Nährwertprofil darf davon unabhängig geändert oder ergänzt werden. Die genaue
+Migration wird erst im nächsten Umsetzungsschnitt festgelegt.
 
-## Systemgrenze und Datenfluss
+## Qualitätsgrenzen
 
-```text
-Browser
-  ↓
-React-/TypeScript-Frontend
-  ↓ HTTP/JSON
-FastAPI-Backend
-  ↓
-PostgreSQL
-```
-
-### Frontend
-
-Das Frontend stellt Daten dar, nimmt Nutzereingaben entgegen und kommuniziert
-mit dem Backend. Es greift weder direkt auf PostgreSQL noch auf externe
-Lebensmittelquellen zu. Fachliche Planungs- und Nährwertlogik gehört nicht in
-das Frontend.
-
-### Backend
-
-Das Backend ist die fachliche und technische Systemgrenze. Es validiert
-Eingaben, berechnet und bewertet Tagespläne, berechnet Nährwerte und koordiniert
-den Datenzugriff.
-
-Das Backend wird als modularer Monolith entwickelt: eine deploybare Anwendung
-mit klar getrennten Fachbereichen, nicht als Sammlung von Microservices.
-
-### Datenbank
-
-PostgreSQL speichert die internen Lebensmittel, Mahlzeiten und später erzeugte
-Pläne. Ausschließlich das Backend greift direkt auf die Datenbank zu.
-
-Die versionierte JSON-Datei ist ausschließlich die nachvollziehbare Seed-Quelle.
-Nach Migration und Seed liest der laufende Planer Lebensmittel, Mahlzeiten,
-Zutaten, Rollen und Portionsfaktoren aus PostgreSQL. Eine nicht erreichbare,
-unvollständige oder leere Datenbank macht sowohl den Systemcheck als auch die
-Planerstellung bewusst nicht verfügbar.
-
-Der Datenbankzugriff erfolgt zunächst synchron. Das passt zur ebenso synchronen
-Planungslogik und vermeidet im MVP die zusätzliche Komplexität asynchroner
-Sessions. SQLAlchemy bildet die Python-seitige Datenzugriffsschicht, psycopg
-stellt die Verbindung zu PostgreSQL her und Alembic versioniert spätere
-Schemaänderungen. Die Alembic-Umgebung wird erst mit dem ersten Datenmodell in
-Phase 3 angelegt.
-
-## Wochenplan und Einkaufsliste
-
-Im MVP wird ein ausgewählter Tagesplan unverändert für alle sieben Wochentage
-verwendet. Die Auswahl bleibt im Frontend-Zustand und wird noch nicht dauerhaft
-gespeichert.
-
-Die Einkaufsliste ist eine reine Darstellungssumme: Das Frontend multipliziert
-die bereits vom Backend gelieferten, normalisierten Zutatenmengen mit sieben
-und fasst gleiche Lebensmittel mit gleicher Einheit zusammen. Dabei finden
-weder Nährwertberechnungen noch Einheitenumrechnungen statt. Für diesen festen
-Wochenplan wäre ein zusätzlicher Backend-Endpunkt oder ein eigenes Datenmodell
-unnötige MVP-Komplexität.
-
-## Katalog- und Importgrenze
-
-Der produktive Mahlzeitenkatalog ist die dauerhafte Schnittstelle zur
-Planungslogik. Er enthält ausschließlich vollständige Zutatenzuordnungen und
-bereits normalisierte Mengen in Gramm oder Millilitern. Der Planer kennt weder
-externe Rezeptformate noch Haushaltsmaße, Portionstabellen oder unsichere
-Zuordnungen.
-
-Der MVP-Katalog wird klein gehalten, im Repository versioniert und
-reproduzierbar in PostgreSQL geladen. FoodData Central, Open Food Facts und
-Herstellerangaben dienen nur als Quellen für ausgewählte Katalogwerte; der
-laufende Planer ruft sie nicht auf.
-
-Phase 6A bildet einen getrennten Eingangsbereich in PostgreSQL. Strukturierte
-Rohrezepte werden idempotent aufgenommen, deterministisch normalisiert und über
-interne Backend-Endpunkte geprüft. Fehlende Umrechnungen führen zu einer
-Prüfwarteschlange und nicht zu einem unsicheren generischen Gewichts-Fallback.
-Bestätigte Aliase und Portionsstandards bleiben bei einem erneuten Katalog-Seed
-erhalten.
-
-Erst ein vollständig normalisiertes und anschließend fachlich freigegebenes
-Rezept darf in den produktiven Katalog übernommen werden. Phase 6A endet vorher
-bei `ready_for_catalog_review`; der Planer liest keine Importtabellen. Eine
-Live-Verbindung zu einer Rezept- oder Lebensmittel-API ist weiterhin keine
-Laufzeitvoraussetzung.
-
-Phase 6B veröffentlicht einen solchen Kandidaten transaktional als Mahlzeit.
-Die Mahlzeitenherkunft und der eindeutige Verweis zum Rezeptimport verhindern
-doppelte Freigaben. Der Seed aktualisiert und entfernt nur Mahlzeiten mit der
-Herkunft `curated_seed`; veröffentlichte Importmahlzeiten bleiben erhalten. Der
-Planer benötigt dadurch keine Importlogik und liest weiterhin ausschließlich
-den produktiven Datenbankkatalog.
-
-Phase 6C ergänzt davor genau einen TheMealDB-Adapter. Der interne Endpunkt ruft
-ein Rezept nur auf ausdrückliche Anforderung anhand seiner externen ID ab. Der
-Adapter bewahrt das empfangene Rezeptobjekt als Rohdaten und übersetzt dessen
-Zutaten-/Maßpaare in das bestehende, quellenneutrale Inbox-Format. Einfache
-Brüche werden deterministisch in Dezimalmengen überführt; unsichere Texte werden
-nicht geschätzt. Weil TheMealDB keine verlässliche Portionenzahl liefert, muss
-diese vor einer möglichen Freigabe geprüft und ergänzt werden.
-
-Netzwerk- und Anbieterdetails enden am Adapter. Weder Normalisierung noch
-Katalogfreigabe oder Planung rufen TheMealDB auf. Der Entwicklungszugang nutzt
-standardmäßig den von TheMealDB dokumentierten Testschlüssel `1`; Schlüssel,
-Basis-URL und Timeout bleiben über `PREPPILOT_`-Umgebungsvariablen
-konfigurierbar.
-
-Phase 6D macht bestätigte Normalisierungsmetadaten reproduzierbar. Der
-versionierte Katalog kann je Lebensmittel eindeutige externe Aliase und
-belegte Standardmengen für konkrete Maße enthalten. Der Seed übernimmt diese
-Einträge idempotent in `food_aliases` und `food_measure_defaults`, ohne später
-manuell geprüfte Ergänzungen zu löschen. Alias-Kollisionen zwischen
-Lebensmitteln brechen bereits die Katalogvalidierung ab.
-
-Eine Stichprobe aus acht realen Rezepten dient als bewusster Qualitätscheck und
-nicht als Katalog-Massenimport. Nur der vollständig geprüfte
-Banana-Pancakes-Kandidat wird veröffentlicht. Die Originalquelle bestätigt zwei
-Portionen und zehn Minuten Zubereitungszeit. Relevante Zutaten werden vollständig
-abgebildet; nur Backpulver und Vanille werden nach ausdrücklicher Entscheidung
-aus der Nährwert- und Einkaufsberechnung ausgeschlossen.
-
-Phase 6E führt für Lebensmittel dieselbe Sicherheitsgrenze ein. Der
-FoodData-Central-Adapter ruft genau eine bekannte FDC-ID ab und speichert die
-unveränderte Antwort zunächst in `food_imports`. Nur Foundation- und SR-Legacy-
-Datensätze werden als generische Kandidaten ausgewertet. Nährstoffkennungen
-werden explizit zugeordnet; europäische Kohlenhydrate entstehen als Differenz
-aus Gesamt-Kohlenhydraten und Ballaststoffen.
-
-Die Food-Inbox schreibt nicht direkt in `foods`. Erst ein vollständiger und
-ausdrücklich freigegebener Kandidat erzeugt ein gramm-basiertes Lebensmittel.
-`Food.origin` und der eindeutige Verweis zum Food-Import schützen vor doppelter
-Freigabe. Der Seed verwaltet ausschließlich `curated_seed`-Lebensmittel und
-erhält importierte Lebensmittel. Der FDC-Schlüssel wird nur über
-`PREPPILOT_FOOD_DATA_CENTRAL_API_KEY` konfiguriert und nicht im Repository
-gespeichert; für lokale Erkundung ist der dokumentierte `DEMO_KEY`
-voreingestellt.
-
-Phase 6G automatisiert die Verarbeitung vor der manuellen Ausnahmeprüfung. Der
-TheMealDB-Adapter kann bis zu 25 Rezepte einer Kategorie entdecken und ruft für
-jeden Treffer weiterhin den vollständigen Detaildatensatz ab. Ein Batch ist
-idempotent; ein einzelner nicht verfügbarer oder ungültiger Treffer wird im
-Ergebnis ausgewiesen und stoppt die übrigen Imports nicht.
-
-Qualität und Review-Priorität werden nicht als veränderlicher Fremdwert
-gespeichert, sondern jederzeit deterministisch aus Rohdaten, Portionen,
-Zutatenstatus und Anleitung abgeleitet. Die Inbox sortiert vollständige und mit
-wenig Aufwand prüfbare Kandidaten vor aufwendige oder quellenbedingt schwache
-Rezepte. Eine Sammel-Wiederverarbeitung wendet neue Katalogdaten auf alle offenen
-Imports an. Die Bewertung veröffentlicht und verwirft selbst keine Rezepte;
-Produktmetadaten und unsichere fachliche Entscheidungen bleiben hinter der
-bestehenden Freigabegrenze.
-
-Phase 6H verbindet offene Rezeptzutaten mit der Food-Inbox. Der Batch gruppiert
-gleiche unbekannte Zutaten über alle Rezeptimporte und durchsucht FoodData
-Central je normalisiertem Begriff nur einmal. Vor dem externen Abruf erkennt
-eine konservative lokale Prüfung sichere Varianten vorhandener Foods und legt
-den Alias als auditierte Review-Entscheidung an. Zusätze werden dabei nur für
-eine kleine Positivliste wie `leaves` und `cheese` ignoriert; `puree` oder
-ähnliche Verarbeitungsformen bleiben getrennt. Extern werden weiterhin nur
-Foundation- und SR-Legacy-Datensätze berücksichtigt.
-
-Nur ein Kandidat mit mindestens 90 Punkten und zehn Punkten Abstand zum zweiten
-Treffer wird automatisch per FDC-ID in `food_imports` abgelegt. Mehrdeutige
-Begriffe, fehlende Treffer und Quellenfehler bleiben im Batchresultat sichtbar.
-Der Vorgang legt niemals selbst ein produktives `Food` oder einen Alias an;
-damit bleiben Katalogschlüssel, fachlich unsichere Zuordnung und Freigabe unter
-Kontrolle. Wiederholte Vorschlagsläufe nutzen die bestehende Inhalts-
-Idempotenz der Food-Inbox. Ein zusätzlicher Negativtest verhindert insbesondere
-die Verwechslung von `Plum Tomatoes` mit `Plums`.
-
-Phase 6I ersetzt die wiederholte FDC-Suche im Normalbetrieb durch einen lokalen
-Referenzbestand. Die offiziellen CSV-Archive für Foundation Foods und SR Legacy
-werden anhand ihrer jeweiligen Mitgliedschaftstabelle gefiltert und idempotent
-in `food_reference_items` übernommen. Gespeichert werden nur stabile FDC-
-Kennung, Beschreibung, Datentyp, Kategorie, relevante Nährwerte und verfügbare
-Portionsgewichte; die Referenztabelle ist weder Food-Inbox noch produktiver
-Katalog.
-
-Zutatenvorschläge durchsuchen nach einem erfolgreichen Bulk-Import zuerst den
-lokalen Bestand und erzeugen für einen eindeutigen Treffer weiterhin nur einen
-Eintrag in `food_imports`. Ein vorhandener Food-Import derselben Quelle und
-FDC-ID wird wiederverwendet. Zustandswörter wie `dried`, `ground` oder `cooked`
-werden bei externen Kandidaten nicht pauschal entfernt, weil sie Nährwerte und
-Bedeutung verändern können. Ohne lokale Referenzdaten bleibt die bisherige
-FDC-API-Suche als Fallback erhalten.
-
-Phase 6J schließt für streng eindeutige und vollständige Referenzen den
-automatischen Weg bis zum produktiven Lebensmittel. Ein Dry-Run zeigt alle
-geplanten Entscheidungen. Der echte Lauf erzeugt einen deterministischen
-Katalogschlüssel, veröffentlicht den zugehörigen Food-Import, legt den exakten
-Rezeptbegriff als auditierte Alias-Entscheidung ab und verarbeitet sämtliche
-offenen Rezepte erneut. Bereits veröffentlichte Foods derselben FDC-ID werden
-wiederverwendet; Schlüssel- und Alias-Kollisionen sowie unvollständige oder
-mehrdeutige Kandidaten bleiben unverändert. Der Ablauf veröffentlicht keine
-Rezepte und setzt keine fehlenden Portionen oder Maßeinheiten.
-
-## Lokale Entwicklungsumgebung
-
-PostgreSQL läuft lokal über Docker Compose. Die PostgreSQL-Version und die
-notwendige Entwicklungskonfiguration werden dadurch im Repository festgehalten
-und lassen sich auf einem neuen Rechner reproduzieren.
-
-Die Entwicklungsumgebung verwendet das offizielle
-`postgres:18.6-bookworm`-Image. Daten liegen in einem benannten Docker-Volume
-und bleiben beim Stoppen oder Ersetzen des Containers erhalten.
-
-Frontend und Backend laufen während der lokalen Entwicklung zunächst direkt
-auf dem Host. Sie werden im MVP nicht allein aus Gründen der Einheitlichkeit
-containerisiert. Damit bleibt schnelles Neuladen und Debugging unkompliziert,
-während nur die zustandsbehaftete Infrastruktur isoliert betrieben wird.
-
-## Qualitäts- und Testwerkzeuge
-
-Das Frontend verwendet Oxlint für statische Codeprüfungen, den
-TypeScript-Compiler für die Typprüfung und Vitest für schnelle automatisierte
-Tests. Vitest nutzt dieselbe Transformationsgrundlage wie Vite. Playwright
-prüft vollständige Nutzerflüsse im Browser und startet dafür Frontend und
-Backend selbst. Der Tagesplaner-End-to-End-Test verwendet den laufenden,
-befüllten PostgreSQL-Katalog und wird im Frontend mit `npm run test:e2e`
-ausgeführt.
-
-Das Backend verwendet Ruff für Linting und Formatierung, mypy für die statische
-Typprüfung und pytest für automatisierte Tests.
-
-Die schnellen Unit- und API-Tests benötigen keine gestarteten Server oder
-externe Infrastruktur. PostgreSQL wird darin gezielt ersetzt. Der
-End-to-End-Test ist zugleich der Integrationstest für den vollständigen Weg vom
-Browser über das Backend bis zum Datenbankkatalog.
+- Keine Schätzung fehlender Portionen im automatischen Import.
+- Keine automatische Freigabe mehrdeutiger Zutaten.
+- Keine Veröffentlichung unvollständiger Nährwerte.
+- Idempotente Imports anhand Quelle, externer Kennung und Inhalt.
+- Pytest, Ruff und Mypy müssen vor einem Commit vollständig bestehen.
 
 ## Noch zu entscheiden
 
-- genaue API-Gestaltung
-- interne Backend-Module und Abhängigkeitsrichtung
+- genaue Tabellen für Lebensmittelkonzepte und Nährwertprofile
+- Betriebsform für Importläufe: Kommando, Job oder Admin-Oberfläche
+- Umgang mit CC-BY-SA-abgeleiteten Rezepttexten im Produkt
 - CI/CD und Deployment-Ziel

@@ -14,11 +14,10 @@ from urllib.request import Request, urlopen
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from preppilot_api.food_imports import CreateFoodImportCommand
-from preppilot_api.food_sources import FOODDATA_CENTRAL_SOURCE_NAME
 from preppilot_api.models import FoodReferenceItem
 from preppilot_api.recipe_imports import normalize_text
 
+FOODDATA_CENTRAL_SOURCE_NAME = "fooddata_central"
 _NUTRIENT_IDS = {
     "calories": "1008",
     "protein": "1003",
@@ -276,38 +275,6 @@ def import_food_references(
         updated=updated,
         unchanged=unchanged,
         complete=complete,
-    )
-
-
-def reference_to_food_import(item: FoodReferenceItem) -> CreateFoodImportCommand:
-    reasons: list[str] = []
-    for name, value in (
-        ("calories", item.calories_per_100),
-        ("protein", item.protein_per_100),
-        ("total_carbs", item.total_carbs_per_100),
-        ("fiber", item.fiber_per_100),
-        ("fat", item.fat_per_100),
-    ):
-        if value is None:
-            reasons.append(f"missing_{name}")
-    return CreateFoodImportCommand(
-        source_name=item.source_name,
-        external_id=item.external_id,
-        raw_payload={
-            "fdcId": int(item.external_id),
-            "description": item.description,
-            "dataType": item.data_type,
-            "foodCategory": item.food_category,
-            "publicationDate": item.publication_date,
-            "datasetRelease": item.dataset_release,
-            "foodPortions": item.portions,
-        },
-        candidate_name=item.description,
-        calories_per_100=item.calories_per_100,
-        protein_per_100=item.protein_per_100,
-        carbs_per_100=item.carbs_per_100,
-        fat_per_100=item.fat_per_100,
-        review_reasons=tuple(reasons),
     )
 
 
