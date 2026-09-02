@@ -143,3 +143,22 @@ def test_identical_second_import_is_idempotent(monkeypatch) -> None:
         assert import_nhs_recipes(session)[0].status == "created"
         assert import_nhs_recipes(session)[0].status == "unchanged"
         assert session.scalar(select(func.count()).select_from(Recipe)) == 1
+
+
+def test_import_keeps_rejections_out_of_the_recipe_inventory(monkeypatch) -> None:
+    urls = ("https://example.test/complete", "https://example.test/incomplete")
+    monkeypatch.setattr(import_module, "NHS_RECIPE_URLS", urls)
+    monkeypatch.setattr(
+        import_module,
+        "fetch_recipe_page",
+        lambda url: PAGE if url == urls[0] else PAGE.replace("22g protein", ""),
+    )
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        items = import_nhs_recipes(session)
+
+        assert [item.status for item in items] == ["created", "rejected"]
+        assert items[1].reason == "protein missing"
+        assert session.scalar(select(func.count()).select_from(Recipe)) == 1

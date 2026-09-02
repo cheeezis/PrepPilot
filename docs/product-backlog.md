@@ -14,9 +14,8 @@ Die technische Qualitätsprüfung der ersten zehn Rezepte ist in
 ### Mehr Rezepte derselben Quelle
 
 Die feste NHS-Liste wurde nach der Abnahme kontrolliert von 10 auf 20 Rezepte
-erweitert. Weitere geprüfte Kandidaten stehen zur Verfügung, werden wegen der
-vollständigen Kombinationssuche des aktuellen Planers aber erst nach Kategorien
-oder einer anderen Suchraumbegrenzung aufgenommen.
+erweitert. Weitere geprüfte Kandidaten stehen zur Verfügung. Vor ihrem Import
+sollen Kategorien für eine gezieltere Planvielfalt ergänzt werden.
 
 ### Planung verbessern
 

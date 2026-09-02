@@ -2,6 +2,7 @@ import hashlib
 import html as html_module
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -68,14 +69,23 @@ class ImportItem:
 
 def import_nhs_recipes(session: Session) -> tuple[ImportItem, ...]:
     results: list[ImportItem] = []
-    for url in NHS_RECIPE_URLS:
-        try:
-            parsed = parse_recipe_page(url, fetch_recipe_page(url))
-            results.append(_store_recipe(session, parsed))
-        except (OSError, ValueError, json.JSONDecodeError) as error:
-            results.append(ImportItem(url, "rejected", reason=str(error)))
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        candidates = executor.map(_fetch_candidate, NHS_RECIPE_URLS)
+        for candidate in candidates:
+            if isinstance(candidate, ImportItem):
+                results.append(candidate)
+            else:
+                parsed = candidate
+                results.append(_store_recipe(session, parsed))
     session.commit()
     return tuple(results)
+
+
+def _fetch_candidate(url: str) -> ParsedRecipe | ImportItem:
+    try:
+        return parse_recipe_page(url, fetch_recipe_page(url))
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        return ImportItem(url, "rejected", reason=str(error))
 
 
 def fetch_recipe_page(url: str) -> str:

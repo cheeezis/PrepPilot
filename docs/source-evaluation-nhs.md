@@ -120,7 +120,9 @@ Methodenschritte. Ein zweiter Prüflauf vermeidet weiterhin Duplikate.
 kcal und gleichzeitig 79 g Fett pro Portion. Diese Angaben sind energetisch
 widersprüchlich. Der Importer lehnt solche Fälle künftig automatisch ab.
 
-Die Begrenzung auf 20 ist außerdem eine Planergrenze: Bei fünf Mahlzeiten prüft
-der aktuelle Algorithmus knapp 500.000 Kombinationen. Vor einer weiteren
-Vergrößerung wird der Suchraum durch Kategorien oder eine andere Vorauswahl
-begrenzt.
+Bei fünf Mahlzeiten entstehen mit 20 Rezepten rechnerisch knapp 500.000
+Rezept-Portions-Kombinationen. Der Planer verwirft Rezeptgruppen vor der
+Portionssuche, wenn sie die äußeren Nährwertgrenzen nachweislich nicht erreichen
+können, und hält nur die drei besten Treffer im Speicher. Vor einer weiteren
+Katalogvergrößerung sollen Kategorien zusätzlich die Planvielfalt steuerbar
+machen.

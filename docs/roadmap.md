@@ -26,7 +26,7 @@ Der aktuelle Ablauf und seine Grenzen stehen in
 
 1. Rezeptübersicht mit weiteren Nutzern auf Verständlichkeit prüfen
 2. Kategorien und bessere Planvielfalt ergänzen
-3. nach der Planerbegrenzung weitere geeignete NHS-Rezepte aufnehmen
+3. danach weitere geeignete NHS-Rezepte aufnehmen
 
 ## Später
 

@@ -1,7 +1,11 @@
 from decimal import Decimal
 
 from preppilot_api.nutrition import Nutrients
-from preppilot_api.planner import PlanTargets, generate_day_plans
+from preppilot_api.planner import (
+    PlanTargets,
+    _combination_can_reach_outer_limits,
+    generate_day_plans,
+)
 from preppilot_api.recipe_repository import RecipeDefinition
 
 
@@ -49,6 +53,22 @@ def test_plan_generation_is_reproducible() -> None:
     assert generate_day_plans(targets(), RECIPES) == generate_day_plans(
         targets(), RECIPES
     )
+
+
+def test_skips_recipe_combinations_that_cannot_reach_outer_limits() -> None:
+    recipes = tuple(
+        recipe(recipe_id, ("100", "5", "10", "2"))
+        for recipe_id in range(1, 4)
+    )
+    high_targets = PlanTargets(
+        calories=Decimal("2500"),
+        protein_minimum=Decimal("220"),
+        fat_maximum=Decimal("71"),
+        carbs=Decimal("233"),
+        meal_count=3,
+    )
+
+    assert not _combination_can_reach_outer_limits(recipes, high_targets)
 
 
 def test_api_serializes_recipe_source_data(monkeypatch) -> None:

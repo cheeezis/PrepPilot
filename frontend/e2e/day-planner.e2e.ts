@@ -1,9 +1,13 @@
 import { expect, test } from '@playwright/test'
 
+test.beforeAll(async ({ request }, testInfo) => {
+  testInfo.setTimeout(120_000)
+  const response = await request.post('/api/imports/nhs', { timeout: 120_000 })
+  expect(response.ok()).toBeTruthy()
+})
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: '20 NHS-Rezepte importieren' }).click()
-  await expect(page.getByRole('status')).toContainText(/neu|unverändert/)
   await expect(page.getByText('System bereit')).toBeVisible()
 })
 
@@ -50,7 +54,7 @@ test('creates and selects a valid day plan', async ({ page }) => {
 
 test('explains hard and soft deviations for approximations', async ({ page }) => {
   await page.getByRole('spinbutton', { name: 'Kalorien kcal' }).fill('1800')
-  await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('160')
+  await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('200')
   await page.getByRole('combobox', { name: 'Mahlzeiten' }).selectOption('3')
   await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
 

@@ -266,16 +266,16 @@ function RecipeInventory({
                 <div>
                   <h3>Zutaten für {recipe.servings} Portionen</h3>
                   <ul>
-                    {recipe.ingredients.map((ingredient) => (
-                      <li key={ingredient}>{ingredient}</li>
+                    {recipe.ingredients.map((ingredient, index) => (
+                      <li key={`${index}:${ingredient}`}>{ingredient}</li>
                     ))}
                   </ul>
                 </div>
                 <div>
                   <h3>Zubereitung</h3>
                   <ol>
-                    {recipe.instructions.map((instruction) => (
-                      <li key={instruction}>{instruction}</li>
+                    {recipe.instructions.map((instruction, index) => (
+                      <li key={`${index}:${instruction}`}>{instruction}</li>
                     ))}
                   </ol>
                 </div>
@@ -449,8 +449,8 @@ function PlanCard({
               auf die eingeplante Portionszahl um.
             </p>
             <ul>
-              {recipe.ingredients.map((ingredient) => (
-                <li key={ingredient}><span>{ingredient}</span></li>
+              {recipe.ingredients.map((ingredient, index) => (
+                <li key={`${index}:${ingredient}`}><span>{ingredient}</span></li>
               ))}
             </ul>
             <a href={recipe.source_url} target="_blank" rel="noreferrer">
