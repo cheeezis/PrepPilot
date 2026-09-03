@@ -25,6 +25,10 @@ class Recipe(Base):
         CheckConstraint("length(trim(external_id)) > 0", name="ck_recipes_external_id"),
         CheckConstraint("length(trim(source_url)) > 0", name="ck_recipes_source_url"),
         CheckConstraint("length(trim(title)) > 0", name="ck_recipes_title"),
+        CheckConstraint(
+            "category in ('breakfast', 'lunch', 'dinner')",
+            name="ck_recipes_category",
+        ),
         CheckConstraint("servings > 0", name="ck_recipes_servings_positive"),
         CheckConstraint(
             "calories_per_serving > 0", name="ck_recipes_calories_positive"
@@ -45,6 +49,7 @@ class Recipe(Base):
     external_id: Mapped[str] = mapped_column(String(300))
     source_url: Mapped[str] = mapped_column(Text)
     title: Mapped[str] = mapped_column(String(300))
+    category: Mapped[str] = mapped_column(String(20))
     servings: Mapped[int] = mapped_column(Integer)
     calories_per_serving: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     protein_per_serving: Mapped[Decimal] = mapped_column(Numeric(10, 2))

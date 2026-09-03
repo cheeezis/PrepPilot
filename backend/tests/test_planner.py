@@ -13,6 +13,7 @@ def recipe(recipe_id: int, values: tuple[str, str, str, str]) -> RecipeDefinitio
     return RecipeDefinition(
         id=recipe_id,
         title=f"Recipe {recipe_id}",
+        category="dinner",
         servings=4,
         source_url=f"https://example.test/{recipe_id}",
         license_name="Open Government Licence v3.0",
@@ -90,6 +91,7 @@ def test_api_serializes_recipe_source_data(monkeypatch) -> None:
         )
     assert response.status_code == 200
     planned = response.json()["plans"][0]["recipes"][0]
+    assert planned["category"] == "dinner"
     assert planned["source_url"].startswith("https://")
     assert planned["ingredients"] == ["ingredient"]
     assert planned["portions"] in (1, 2)
@@ -108,3 +110,4 @@ def test_recipe_api_exposes_the_stored_inventory(monkeypatch) -> None:
     assert response.json()[0]["ingredients"] == ["ingredient"]
     assert response.json()[0]["instructions"] == ["instruction"]
     assert response.json()[0]["servings"] == 4
+    assert response.json()[0]["category"] == "dinner"

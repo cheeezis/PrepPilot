@@ -21,6 +21,10 @@ Datenbankspeicherung erfolgen anschließend geordnet. Quelle plus URL
 identifizieren ein Rezept; ein Inhalts-Hash erkennt unveränderte Wiederholungen
 und Aktualisierungen.
 
+Die Kategorie wird aus den offiziellen NHS-Sammlungen Frühstück, Mittagessen
+und Abendessen übernommen. Sie ist im Rezeptbestand sichtbar und filterbar,
+beeinflusst die Planberechnung aber noch nicht automatisch.
+
 Der Planer fragt keine externe Quelle ab. Er arbeitet nur mit vollständigen
 Rezepten aus PostgreSQL und skaliert sie mit einer oder zwei ganzen Portionen.
 Rezeptgruppen, die selbst mit zwei Portionen die äußeren Zielgrenzen nicht

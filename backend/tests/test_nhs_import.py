@@ -23,12 +23,22 @@ PAGE = """
 def test_parses_complete_nhs_recipe_page() -> None:
     recipe = parse_recipe_page("https://example.test/recipe", PAGE)
     assert recipe.title == "Test curry"
+    assert recipe.category == "dinner"
     assert recipe.servings == 4
     assert recipe.ingredients == ["1 onion", "2 tomatoes"]
     assert recipe.instructions == ["Chop vegetables.", "Cook everything."]
     assert recipe.preparation_minutes == 10
     assert recipe.cooking_minutes == 25
     assert len(recipe.content_hash) == 64
+
+
+def test_assigns_category_from_the_approved_nhs_collection() -> None:
+    recipe = parse_recipe_page(
+        "https://www.nhs.uk/healthier-families/recipes/super-scrambled-eggs/",
+        PAGE,
+    )
+
+    assert recipe.category == "breakfast"
 
 
 def test_rejects_page_without_complete_macros() -> None:

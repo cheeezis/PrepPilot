@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Literal, cast
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -12,10 +13,14 @@ class RecipeCatalogUnavailableError(RuntimeError):
     pass
 
 
+RecipeCategory = Literal["breakfast", "lunch", "dinner"]
+
+
 @dataclass(frozen=True)
 class RecipeDefinition:
     id: int
     title: str
+    category: RecipeCategory
     servings: int
     source_url: str
     license_name: str
@@ -33,6 +38,7 @@ def load_recipes(session: Session) -> tuple[RecipeDefinition, ...]:
         RecipeDefinition(
             id=row.id,
             title=row.title,
+            category=cast(RecipeCategory, row.category),
             servings=row.servings,
             source_url=row.source_url,
             license_name=row.license_name,

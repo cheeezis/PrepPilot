@@ -15,6 +15,8 @@ from sqlalchemy.orm import Session
 
 from preppilot_api.models import Recipe
 
+RecipeCategory = Literal["breakfast", "lunch", "dinner"]
+
 NHS_RECIPE_URLS = (
     "https://www.nhs.uk/healthier-families/recipes/roast-dinner/",
     "https://www.nhs.uk/healthier-families/recipes/pasta-carbonara/",
@@ -37,6 +39,11 @@ NHS_RECIPE_URLS = (
     "https://www.nhs.uk/healthier-families/recipes/meat-free-cottage-pie/",
     "https://www.nhs.uk/healthier-families/recipes/prawn-jambalaya/",
 )
+NHS_RECIPE_CATEGORIES: dict[str, RecipeCategory] = {
+    "https://www.nhs.uk/healthier-families/recipes/super-scrambled-eggs/": "breakfast",
+    "https://www.nhs.uk/healthier-families/recipes/falafels/": "lunch",
+    "https://www.nhs.uk/healthier-families/recipes/healthier-full-english-breakfast/": "breakfast",
+}
 SOURCE_NAME = "nhs-healthier-families"
 LICENSE_NAME = "Open Government Licence v3.0"
 ATTRIBUTION_TEXT = "Information from the NHS website"
@@ -46,6 +53,7 @@ ATTRIBUTION_TEXT = "Information from the NHS website"
 class ParsedRecipe:
     source_url: str
     title: str
+    category: RecipeCategory
     servings: int
     calories: Decimal
     protein: Decimal
@@ -104,6 +112,7 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
         if value.strip()
     )
     title = _required_string(recipe_data.get("name"), "title")
+    category = NHS_RECIPE_CATEGORIES.get(source_url, "dinner")
     ingredients = _string_list(recipe_data.get("recipeIngredient"), "ingredients")
     instructions = _method_instructions(page) or _instructions(
         recipe_data.get("recipeInstructions")
@@ -118,6 +127,7 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     cooking = _optional_minutes(visible_text, "Cook")
     payload: dict[str, object] = {
         "title": title,
+        "category": category,
         "servings": servings,
         "calories_per_serving": str(calories),
         "protein_per_serving": str(protein),
@@ -130,19 +140,20 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     }
     encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()
     return ParsedRecipe(
-        source_url,
-        title,
-        servings,
-        calories,
-        protein,
-        carbs,
-        fat,
-        ingredients,
-        instructions,
-        preparation,
-        cooking,
-        payload,
-        hashlib.sha256(encoded).hexdigest(),
+        source_url=source_url,
+        title=title,
+        category=category,
+        servings=servings,
+        calories=calories,
+        protein=protein,
+        carbs=carbs,
+        fat=fat,
+        ingredients=ingredients,
+        instructions=instructions,
+        preparation_minutes=preparation,
+        cooking_minutes=cooking,
+        raw_payload=payload,
+        content_hash=hashlib.sha256(encoded).hexdigest(),
     )
 
 
@@ -161,6 +172,7 @@ def _store_recipe(session: Session, parsed: ParsedRecipe) -> ImportItem:
         session.add(recipe)
     recipe.source_url = parsed.source_url
     recipe.title = parsed.title
+    recipe.category = parsed.category
     recipe.servings = parsed.servings
     recipe.calories_per_serving = parsed.calories
     recipe.protein_per_serving = parsed.protein

@@ -7,7 +7,7 @@ import {
 } from './api/dayPlans'
 import { getHealth } from './api/health'
 import { importNhsRecipes, type ImportRun } from './api/imports'
-import { getRecipes, type Recipe } from './api/recipes'
+import { getRecipes, type Recipe, type RecipeCategory } from './api/recipes'
 import './App.css'
 
 type SystemStatus = 'checking' | 'ready' | 'unavailable'
@@ -38,6 +38,12 @@ const importFieldNames: Record<string, string> = {
   fat: 'Fett',
   ingredients: 'Zutaten',
   instructions: 'Zubereitung',
+}
+
+const categoryNames: Record<RecipeCategory, string> = {
+  breakfast: 'Frühstück',
+  lunch: 'Mittagessen',
+  dinner: 'Abendessen',
 }
 
 function App() {
@@ -224,6 +230,11 @@ function RecipeInventory({
   status: RecipeStatus
   recipes: Recipe[]
 }) {
+  const [categoryFilter, setCategoryFilter] = useState<'all' | RecipeCategory>('all')
+  const visibleRecipes = categoryFilter === 'all'
+    ? recipes
+    : recipes.filter((recipe) => recipe.category === categoryFilter)
+
   return (
     <section className="recipe-inventory" aria-labelledby="recipes-heading">
       <div className="inventory-heading">
@@ -236,6 +247,29 @@ function RecipeInventory({
         )}
       </div>
 
+      {status === 'success' && recipes.length > 0 && (
+        <div className="category-filters" role="group" aria-label="Rezepte filtern">
+          <button
+            type="button"
+            aria-pressed={categoryFilter === 'all'}
+            onClick={() => setCategoryFilter('all')}
+          >
+            Alle <span>{recipes.length}</span>
+          </button>
+          {(Object.keys(categoryNames) as RecipeCategory[]).map((category) => (
+            <button
+              type="button"
+              key={category}
+              aria-pressed={categoryFilter === category}
+              onClick={() => setCategoryFilter(category)}
+            >
+              {categoryNames[category]}{' '}
+              <span>{recipes.filter((recipe) => recipe.category === category).length}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {status === 'loading' && <p>Rezeptbestand wird geladen …</p>}
       {status === 'error' && (
         <p className="notice notice--error">
@@ -247,10 +281,13 @@ function RecipeInventory({
       )}
       {recipes.length > 0 && (
         <div className="recipe-list">
-          {recipes.map((recipe) => (
+          {visibleRecipes.map((recipe) => (
             <details className="recipe-card" key={recipe.id}>
               <summary>
-                <strong>{recipe.title}</strong>
+                <div className="recipe-card-title">
+                  <strong>{recipe.title}</strong>
+                  <small>{categoryNames[recipe.category]}</small>
+                </div>
                 <span>
                   {formatNumber(recipe.nutrients.calories)} kcal pro Portion ·{' '}
                   ergibt {recipe.servings} Portionen
@@ -436,7 +473,7 @@ function PlanCard({
             <summary>
               <span>
                 <small>
-                  {recipe.portions}{' '}
+                  {categoryNames[recipe.category]} · {recipe.portions}{' '}
                   {recipe.portions === 1 ? 'Portion eingeplant' : 'Portionen eingeplant'}
                 </small>
                 <strong>{recipe.title}</strong>

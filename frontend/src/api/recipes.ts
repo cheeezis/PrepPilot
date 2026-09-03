@@ -1,8 +1,11 @@
 import type { NutrientValues } from './dayPlans'
 
+export type RecipeCategory = 'breakfast' | 'lunch' | 'dinner'
+
 export type Recipe = {
   id: number
   title: string
+  category: RecipeCategory
   servings: number
   source_url: string
   license_name: string

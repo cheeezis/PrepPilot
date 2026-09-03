@@ -25,6 +25,7 @@ test('shows the stored recipe inventory', async ({ page }) => {
   await expect(
     recipes.first().getByRole('link', { name: 'Originalrezept beim NHS' }),
   ).toBeVisible()
+
 })
 
 test('creates and selects a valid day plan', async ({ page }) => {

@@ -1,6 +1,6 @@
 # Produkt-Backlog
 
-Stand: 2. September 2026
+Stand: 3. September 2026
 
 ## Als Nächstes
 
@@ -14,12 +14,12 @@ Die technische Qualitätsprüfung der ersten zehn Rezepte ist in
 ### Mehr Rezepte derselben Quelle
 
 Die feste NHS-Liste wurde nach der Abnahme kontrolliert von 10 auf 20 Rezepte
-erweitert. Weitere geprüfte Kandidaten stehen zur Verfügung. Vor ihrem Import
-sollen Kategorien für eine gezieltere Planvielfalt ergänzt werden.
+erweitert. Die offiziellen NHS-Kategorien werden inzwischen gespeichert und
+sind im Rezeptbestand filterbar. Weitere geprüfte Kandidaten stehen zur Verfügung.
 
 ### Planung verbessern
 
-- passende Rezeptkategorien einführen
+- festlegen, wie Frühstück, Mittag- und Abendessen in Plänen verteilt werden
 - Wiederholungen und Portionspraktikabilität bewerten
 - erklären, warum ein Plan gültig oder nur eine Annäherung ist
 

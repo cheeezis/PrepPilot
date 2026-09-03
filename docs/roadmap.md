@@ -1,6 +1,6 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 2. September 2026
+Stand: 3. September 2026
 
 ## Aktueller Stand: Recipe-first-MVP
 
@@ -18,6 +18,7 @@ einen kleinen vertikalen Rezeptablauf ersetzt.
 | Abnahme | Backend-, Frontend- und Browsertests | abgeschlossen |
 | Technische Rezeptqualität | zehn Rezepte vollständig und Methodenschritte lesbar getrennt | abgeschlossen |
 | Katalogerweiterung | zehn weitere NHS-Rezepte kontrolliert geprüft | abgeschlossen |
+| Quellkategorien | NHS-Kategorien gespeichert und im Rezeptbestand filterbar | abgeschlossen |
 
 Der aktuelle Ablauf und seine Grenzen stehen in
 [`recipe-first-mvp.md`](recipe-first-mvp.md).
@@ -25,7 +26,7 @@ Der aktuelle Ablauf und seine Grenzen stehen in
 ## Nächster Produktabschnitt
 
 1. Rezeptübersicht mit weiteren Nutzern auf Verständlichkeit prüfen
-2. Kategorien und bessere Planvielfalt ergänzen
+2. festlegen, wie Kategorien die Planvielfalt steuern sollen
 3. danach weitere geeignete NHS-Rezepte aufnehmen
 
 ## Später
