@@ -9,6 +9,12 @@ from preppilot_api.recipe_repository import RecipeCategory, RecipeDefinition
 PlanStatus = Literal["valid", "approximation"]
 RuleKind = Literal["hard", "soft"]
 Metric = Literal["calories", "protein", "fat", "carbs"]
+DEFAULT_MEAL_CATEGORIES: tuple[RecipeCategory, ...] = (
+    "breakfast",
+    "lunch",
+    "dinner",
+)
+FLEXIBLE_CHOICE_LIMIT = 24
 
 
 @dataclass(frozen=True)
@@ -48,23 +54,105 @@ class DayPlan:
     recipes: tuple[PlannedRecipe, ...]
 
 
+@dataclass(frozen=True)
+class _MealChoice:
+    position: int
+    category: RecipeCategory
+    recipe: RecipeDefinition
+    portions: int
+    nutrients: Nutrients
+
+
 def generate_day_plans(
     targets: PlanTargets,
     recipes: tuple[RecipeDefinition, ...],
+    meal_categories: tuple[RecipeCategory, ...] = DEFAULT_MEAL_CATEGORIES,
     limit: int = 3,
 ) -> tuple[DayPlan, ...]:
     if limit < 1:
         raise ValueError("limit must be positive")
+    if not meal_categories:
+        raise ValueError("at least one meal category is required")
+    if len(set(meal_categories)) != len(meal_categories):
+        raise ValueError("meal categories must be unique")
+
+    if len(meal_categories) <= 3:
+        return _generate_exact_day_plans(
+            targets, recipes, meal_categories, limit
+        )
 
     candidates: list[DayPlan] = []
-    required_categories: tuple[RecipeCategory, ...] = (
-        "breakfast",
-        "lunch",
-        "dinner",
-    )
+    choice_groups = [
+        tuple(
+            _MealChoice(
+                position=position,
+                category=category,
+                recipe=recipe,
+                portions=portions,
+                nutrients=recipe.nutrients.scaled(portions),
+            )
+            for recipe in recipes
+            if category in recipe.categories
+            for portions in (1, 2)
+        )
+        for position, category in enumerate(meal_categories)
+    ]
+    if any(not group for group in choice_groups):
+        return ()
+
+    choice_groups = [
+        _shortlist_choices(group, targets, len(meal_categories))
+        for group in choice_groups
+    ]
+
+    choice_groups.sort(key=len)
+    suffix_minimum = [Nutrients() for _ in range(len(choice_groups) + 1)]
+    suffix_maximum = [Nutrients() for _ in range(len(choice_groups) + 1)]
+    for index in range(len(choice_groups) - 1, -1, -1):
+        group_minimum, group_maximum = _choice_group_bounds(choice_groups[index])
+        suffix_minimum[index] = group_minimum + suffix_minimum[index + 1]
+        suffix_maximum[index] = group_maximum + suffix_maximum[index + 1]
+
+    def search(
+        group_index: int,
+        selected: tuple[_MealChoice, ...],
+        selected_ids: frozenset[int],
+        nutrients: Nutrients,
+    ) -> None:
+        if not _nutrient_range_can_reach_outer_limits(
+            nutrients + suffix_minimum[group_index],
+            nutrients + suffix_maximum[group_index],
+            targets,
+        ):
+            return
+        if group_index == len(choice_groups):
+            _keep_plan_candidate(candidates, selected, nutrients, targets, limit)
+            return
+
+        for choice in choice_groups[group_index]:
+            if choice.recipe.id in selected_ids:
+                continue
+            search(
+                group_index + 1,
+                selected + (choice,),
+                selected_ids | {choice.recipe.id},
+                nutrients + choice.nutrients,
+            )
+
+    search(0, (), frozenset(), Nutrients())
+    return tuple(candidates)
+
+
+def _generate_exact_day_plans(
+    targets: PlanTargets,
+    recipes: tuple[RecipeDefinition, ...],
+    meal_categories: tuple[RecipeCategory, ...],
+    limit: int,
+) -> tuple[DayPlan, ...]:
+    candidates: list[DayPlan] = []
     recipes_by_category = tuple(
         tuple(recipe for recipe in recipes if category in recipe.categories)
-        for category in required_categories
+        for category in meal_categories
     )
     for selected in product(*recipes_by_category):
         if len({recipe.id for recipe in selected}) != len(selected):
@@ -85,48 +173,113 @@ def generate_day_plans(
             nutrients = minimum + additional
             if not _is_within_outer_limits(nutrients, targets):
                 continue
-            portions = tuple(
-                2 if portion_mask & (1 << index) else 1
-                for index in range(len(selected))
-            )
-            planned = tuple(
-                PlannedRecipe(
+            choices = tuple(
+                _MealChoice(
+                    position=index,
+                    category=meal_categories[index],
                     recipe=recipe,
-                    category=required_categories[index],
-                    portions=portion_count,
-                    nutrients=recipe.nutrients.scaled(portion_count),
+                    portions=(2 if portion_mask & (1 << index) else 1),
+                    nutrients=recipe.nutrients.scaled(
+                        2 if portion_mask & (1 << index) else 1
+                    ),
                 )
-                for index, (recipe, portion_count) in enumerate(
-                    zip(selected, portions, strict=True)
-                )
+                for index, recipe in enumerate(selected)
             )
-            evaluations = _evaluate_rules(nutrients, targets)
-            status: PlanStatus = (
-                "valid"
-                if all(
-                    evaluation.satisfied
-                    for evaluation in evaluations
-                    if evaluation.kind == "hard"
-                )
-                else "approximation"
-            )
-            stable_key = "|".join(
-                f"{item.recipe.id}:{item.portions}" for item in planned
-            )
-            candidates.append(
-                DayPlan(
-                    status=status,
-                    score=_calculate_score(nutrients, targets),
-                    stable_key=stable_key,
-                    nutrients=nutrients,
-                    evaluations=evaluations,
-                    recipes=planned,
-                )
-            )
-            candidates.sort(key=_plan_sort_key)
-            del candidates[limit:]
-
+            _keep_plan_candidate(candidates, choices, nutrients, targets, limit)
     return tuple(candidates)
+
+
+def _shortlist_choices(
+    choices: tuple[_MealChoice, ...],
+    targets: PlanTargets,
+    meal_count: int,
+) -> tuple[_MealChoice, ...]:
+    snack_selected = any(choice.category == "snack" for choice in choices)
+    if snack_selected and meal_count > 1:
+        share = (
+            Decimal("0.15")
+            if choices[0].category == "snack"
+            else Decimal("0.85") / Decimal(meal_count - 1)
+        )
+    else:
+        share = Decimal(1) / Decimal(meal_count)
+
+    def suitability(choice: _MealChoice) -> tuple[Decimal, int, int]:
+        nutrients = choice.nutrients
+        score = (
+            abs(nutrients.calories - targets.calories * share) / targets.calories
+            + abs(nutrients.protein - targets.protein_minimum * share)
+            / targets.protein_minimum
+            + abs(nutrients.fat - targets.fat_maximum * share) / targets.fat_maximum
+            + abs(nutrients.carbs - targets.carbs * share) / targets.carbs
+        )
+        return score, choice.recipe.id, choice.portions
+
+    return tuple(sorted(choices, key=suitability)[:FLEXIBLE_CHOICE_LIMIT])
+
+
+def _choice_group_bounds(
+    choices: tuple[_MealChoice, ...],
+) -> tuple[Nutrients, Nutrients]:
+    return (
+        Nutrients(
+            calories=min(choice.nutrients.calories for choice in choices),
+            protein=min(choice.nutrients.protein for choice in choices),
+            carbs=min(choice.nutrients.carbs for choice in choices),
+            fat=min(choice.nutrients.fat for choice in choices),
+        ),
+        Nutrients(
+            calories=max(choice.nutrients.calories for choice in choices),
+            protein=max(choice.nutrients.protein for choice in choices),
+            carbs=max(choice.nutrients.carbs for choice in choices),
+            fat=max(choice.nutrients.fat for choice in choices),
+        ),
+    )
+
+
+def _keep_plan_candidate(
+    candidates: list[DayPlan],
+    selected: tuple[_MealChoice, ...],
+    nutrients: Nutrients,
+    targets: PlanTargets,
+    limit: int,
+) -> None:
+    if not _is_within_outer_limits(nutrients, targets):
+        return
+    planned = tuple(
+        PlannedRecipe(
+            recipe=choice.recipe,
+            category=choice.category,
+            portions=choice.portions,
+            nutrients=choice.nutrients,
+        )
+        for choice in sorted(selected, key=lambda item: item.position)
+    )
+    evaluations = _evaluate_rules(nutrients, targets)
+    status: PlanStatus = (
+        "valid"
+        if all(
+            evaluation.satisfied
+            for evaluation in evaluations
+            if evaluation.kind == "hard"
+        )
+        else "approximation"
+    )
+    stable_key = "|".join(
+        f"{item.category}:{item.recipe.id}:{item.portions}" for item in planned
+    )
+    candidates.append(
+        DayPlan(
+            status=status,
+            score=_calculate_score(nutrients, targets),
+            stable_key=stable_key,
+            nutrients=nutrients,
+            evaluations=evaluations,
+            recipes=planned,
+        )
+    )
+    candidates.sort(key=_plan_sort_key)
+    del candidates[limit:]
 
 
 def _combination_can_reach_outer_limits(

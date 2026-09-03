@@ -72,6 +72,46 @@ def test_requires_one_recipe_from_each_main_meal_category() -> None:
     assert generate_day_plans(targets(), recipes_without_lunch) == ()
 
 
+def test_can_add_an_optional_snack_slot() -> None:
+    recipes = RECIPES + (
+        recipe(11, "snack", ("250", "20", "25", "7")),
+    )
+
+    plans = generate_day_plans(
+        targets(),
+        recipes,
+        ("breakfast", "lunch", "dinner", "snack"),
+    )
+
+    assert plans
+    assert [item.category for item in plans[0].recipes] == [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack",
+    ]
+
+
+def test_does_not_use_a_multi_category_recipe_twice() -> None:
+    shared = RecipeDefinition(
+        **{
+            **recipe(11, "breakfast", ("600", "50", "60", "15")).__dict__,
+            "categories": ("breakfast", "snack"),
+        }
+    )
+
+    plans = generate_day_plans(
+        targets(),
+        RECIPES + (shared,),
+        ("breakfast", "snack"),
+    )
+
+    assert all(
+        len({item.recipe.id for item in plan.recipes}) == len(plan.recipes)
+        for plan in plans
+    )
+
+
 def test_skips_recipe_combinations_that_cannot_reach_outer_limits() -> None:
     recipes = tuple(
         recipe(recipe_id, "dinner", ("100", "5", "10", "2"))
@@ -88,6 +128,27 @@ def test_skips_recipe_combinations_that_cannot_reach_outer_limits() -> None:
 
 
 def test_api_serializes_recipe_source_data(monkeypatch) -> None:
+    from fastapi.testclient import TestClient
+
+    import preppilot_api.main as main_module
+
+    monkeypatch.setattr(main_module, "load_recipes", lambda session: RECIPES)
+    with TestClient(main_module.app) as client:
+        response = client.post(
+            "/api/day-plans",
+            json={
+                "calories": 2500,
+                "protein_minimum": 220,
+                "fat_maximum": 71,
+                "carbs": 233,
+                "meal_categories": ["breakfast", "lunch", "dinner", "snack"],
+            },
+        )
+    assert response.status_code == 200
+    assert response.json()["plans"] == []
+
+
+def test_api_returns_no_plan_when_a_selected_category_is_missing(monkeypatch) -> None:
     from fastapi.testclient import TestClient
 
     import preppilot_api.main as main_module
