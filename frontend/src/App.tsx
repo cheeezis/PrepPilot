@@ -348,10 +348,10 @@ function RecipeInventory({
                 <span><strong>{formatNumber(recipe.nutrients.protein)} g</strong> Protein</span>
                 <span><strong>{formatNumber(recipe.nutrients.carbs)} g</strong> Kohlenhydrate</span>
                 <span><strong>{formatNumber(recipe.nutrients.fat)} g</strong> Fett</span>
-                <span><strong>{formatNumber(recipe.nutrients.sugar)} g</strong> Zucker</span>
-                <span><strong>{formatNumber(recipe.nutrients.saturated_fat)} g</strong> gesättigte Fettsäuren</span>
-                <span><strong>{formatNumber(recipe.nutrients.fiber)} g</strong> Ballaststoffe</span>
-                <span><strong>{formatNumber(recipe.nutrients.salt)} g</strong> Salz</span>
+                <span><strong>{formatOptionalGrams(recipe.nutrients.sugar)}</strong> Zucker</span>
+                <span><strong>{formatOptionalGrams(recipe.nutrients.saturated_fat)}</strong> gesättigte Fettsäuren</span>
+                <span><strong>{formatOptionalGrams(recipe.nutrients.fiber)}</strong> Ballaststoffe</span>
+                <span><strong>{formatOptionalGrams(recipe.nutrients.salt)}</strong> Salz</span>
               </div>
               <div className="recipe-details">
                 <div>
@@ -642,6 +642,10 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('de-DE', {
     maximumFractionDigits: 1,
   }).format(value)
+}
+
+function formatOptionalGrams(value: number | null) {
+  return value === null ? 'keine Angabe' : `${formatNumber(value)} g`
 }
 
 function pageFromPath(): AppPage {

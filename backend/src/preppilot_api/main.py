@@ -36,10 +36,10 @@ class NutrientValuesResponse(BaseModel):
     protein: float
     carbs: float
     fat: float
-    sugar: float
-    saturated_fat: float
-    fiber: float
-    salt: float
+    sugar: float | None
+    saturated_fat: float | None
+    fiber: float | None
+    salt: float | None
 
 
 class PlannedRecipeResponse(BaseModel):
@@ -255,10 +255,10 @@ def _serialize_nutrients(nutrients: Nutrients) -> NutrientValuesResponse:
         protein=float(nutrients.protein),
         carbs=float(nutrients.carbs),
         fat=float(nutrients.fat),
-        sugar=float(nutrients.sugar),
-        saturated_fat=float(nutrients.saturated_fat),
-        fiber=float(nutrients.fiber),
-        salt=float(nutrients.salt),
+        sugar=_optional_float(nutrients.sugar),
+        saturated_fat=_optional_float(nutrients.saturated_fat),
+        fiber=_optional_float(nutrients.fiber),
+        salt=_optional_float(nutrients.salt),
     )
 
 

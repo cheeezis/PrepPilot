@@ -30,8 +30,7 @@ def upgrade() -> None:
             sa.Column(
                 column_name,
                 sa.Numeric(10, 2),
-                nullable=False,
-                server_default="0",
+                nullable=True,
             ),
         )
         op.create_check_constraint(
@@ -39,7 +38,6 @@ def upgrade() -> None:
             "recipes",
             f"{column_name} >= 0",
         )
-        op.alter_column("recipes", column_name, server_default=None)
 
 
 def downgrade() -> None:

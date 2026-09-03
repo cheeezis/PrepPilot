@@ -50,11 +50,15 @@ def load_recipes(session: Session) -> tuple[RecipeDefinition, ...]:
                 protein=Decimal(row.protein_per_serving),
                 carbs=Decimal(row.carbs_per_serving),
                 fat=Decimal(row.fat_per_serving),
-                sugar=Decimal(row.sugar_per_serving),
-                saturated_fat=Decimal(row.saturated_fat_per_serving),
-                fiber=Decimal(row.fiber_per_serving),
-                salt=Decimal(row.salt_per_serving),
+                sugar=_optional_decimal(row.sugar_per_serving),
+                saturated_fat=_optional_decimal(row.saturated_fat_per_serving),
+                fiber=_optional_decimal(row.fiber_per_serving),
+                salt=_optional_decimal(row.salt_per_serving),
             ),
         )
         for row in rows
     )
+
+
+def _optional_decimal(value: Decimal | None) -> Decimal | None:
+    return None if value is None else Decimal(value)

@@ -59,6 +59,15 @@ def test_rejects_page_without_complete_macros() -> None:
         raise AssertionError("incomplete recipe was accepted")
 
 
+def test_accepts_page_with_missing_optional_nutrient() -> None:
+    recipe = parse_recipe_page(
+        "https://example.test/recipe",
+        PAGE.replace("<li>6.2g fibre</li>", ""),
+    )
+
+    assert recipe.fiber is None
+
+
 def test_rejects_energetically_impossible_macros() -> None:
     inconsistent = PAGE.replace("3.5g fat", "79g fat")
 

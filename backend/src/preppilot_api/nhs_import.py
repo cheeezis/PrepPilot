@@ -59,10 +59,10 @@ class ParsedRecipe:
     protein: Decimal
     carbs: Decimal
     fat: Decimal
-    sugar: Decimal
-    saturated_fat: Decimal
-    fiber: Decimal
-    salt: Decimal
+    sugar: Decimal | None
+    saturated_fat: Decimal | None
+    fiber: Decimal | None
+    salt: Decimal | None
     ingredients: list[str]
     instructions: list[str]
     preparation_minutes: int | None
@@ -126,18 +126,16 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     protein = _decimal_match(visible_text, r"([\d.]+)\s*g protein", "protein")
     carbs = _decimal_match(visible_text, r"([\d.]+)\s*g carbohydrate", "carbs")
     fat = _decimal_match(visible_text, r"([\d.]+)\s*g fat", "fat")
-    sugar = _decimal_match(
+    sugar = _optional_decimal_match(
         visible_text,
         r"carbohydrate,?\s+of which\s+([\d.]+)\s*g sugars",
-        "sugar",
     )
-    saturated_fat = _decimal_match(
+    saturated_fat = _optional_decimal_match(
         visible_text,
         r"fat,?\s+of which\s+([\d.]+)\s*g saturates",
-        "saturated_fat",
     )
-    fiber = _decimal_match(visible_text, r"([\d.]+)\s*g fibre", "fiber")
-    salt = _decimal_match(visible_text, r"([\d.]+)\s*g salt", "salt")
+    fiber = _optional_decimal_match(visible_text, r"([\d.]+)\s*g fibre")
+    salt = _optional_decimal_match(visible_text, r"([\d.]+)\s*g salt")
     _validate_nutrients(calories, protein, carbs, fat)
     preparation = _optional_minutes(visible_text, "Prep")
     cooking = _optional_minutes(visible_text, "Cook")
@@ -149,10 +147,10 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
         "protein_per_serving": str(protein),
         "carbs_per_serving": str(carbs),
         "fat_per_serving": str(fat),
-        "sugar_per_serving": str(sugar),
-        "saturated_fat_per_serving": str(saturated_fat),
-        "fiber_per_serving": str(fiber),
-        "salt_per_serving": str(salt),
+        "sugar_per_serving": _optional_decimal_string(sugar),
+        "saturated_fat_per_serving": _optional_decimal_string(saturated_fat),
+        "fiber_per_serving": _optional_decimal_string(fiber),
+        "salt_per_serving": _optional_decimal_string(salt),
         "ingredients": ingredients,
         "instructions": instructions,
         "preparation_minutes": preparation,
@@ -360,6 +358,15 @@ def _required_match(text: str, pattern: str, field: str) -> str:
 
 def _decimal_match(text: str, pattern: str, field: str) -> Decimal:
     return Decimal(_required_match(text, pattern, field))
+
+
+def _optional_decimal_match(text: str, pattern: str) -> Decimal | None:
+    match = re.search(pattern, text, re.IGNORECASE)
+    return None if match is None else Decimal(match.group(1))
+
+
+def _optional_decimal_string(value: Decimal | None) -> str | None:
+    return None if value is None else str(value)
 
 
 def _optional_minutes(text: str, label: str) -> int | None:
