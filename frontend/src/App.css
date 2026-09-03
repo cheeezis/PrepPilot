@@ -206,11 +206,33 @@ h1 {
   font-size: 14px;
 }
 
+.recipe-filters {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.recipe-search {
+  display: grid;
+  gap: 6px;
+  max-width: 420px;
+  color: #41504a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.recipe-search input {
+  padding: 10px 12px;
+  border: 1px solid #cfd8d4;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 400;
+}
+
 .category-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
 .category-filters button {

@@ -49,6 +49,7 @@ const categoryNames: Record<RecipeCategory, string> = {
   breakfast: 'Frühstück',
   lunch: 'Mittagessen',
   dinner: 'Abendessen',
+  snack: 'Snack',
 }
 
 function App() {
@@ -222,11 +223,14 @@ function App() {
           <section className="import-control" aria-labelledby="import-heading">
             <div>
               <p className="eyebrow">NHS-Import</p>
-              <h2 id="import-heading">Geprüfte NHS-Rezepte laden</h2>
-              <p>Der Lauf verarbeitet ausschließlich die 33 fest freigegebenen Seiten.</p>
+              <h2 id="import-heading">NHS-Rezeptkatalog synchronisieren</h2>
+              <p>
+                PrepPilot findet Hauptgerichte, Snacks und Getränke automatisch.
+                Nachtisch wird ausgeschlossen.
+              </p>
             </div>
             <button type="button" onClick={handleImport} disabled={importStatus === 'loading'}>
-              {importStatus === 'loading' ? 'Rezepte werden importiert …' : '33 NHS-Rezepte importieren'}
+              {importStatus === 'loading' ? 'Rezepte werden importiert …' : 'NHS-Katalog synchronisieren'}
             </button>
             {importResult && (
               <div className="import-result" role="status">
@@ -273,9 +277,12 @@ function RecipeInventory({
   recipes: Recipe[]
 }) {
   const [categoryFilter, setCategoryFilter] = useState<'all' | RecipeCategory>('all')
-  const visibleRecipes = categoryFilter === 'all'
-    ? recipes
-    : recipes.filter((recipe) => recipe.category === categoryFilter)
+  const [searchTerm, setSearchTerm] = useState('')
+  const normalizedSearch = searchTerm.trim().toLocaleLowerCase('de')
+  const visibleRecipes = recipes.filter((recipe) => (
+    (categoryFilter === 'all' || recipe.categories.includes(categoryFilter))
+    && (normalizedSearch === '' || recipe.title.toLocaleLowerCase('de').includes(normalizedSearch))
+  ))
 
   return (
     <section className="recipe-inventory" aria-labelledby="recipes-heading">
@@ -290,7 +297,17 @@ function RecipeInventory({
       </div>
 
       {status === 'success' && recipes.length > 0 && (
-        <div className="category-filters" role="group" aria-label="Rezepte filtern">
+        <div className="recipe-filters">
+          <label className="recipe-search">
+            <span>Rezepte durchsuchen</span>
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="z. B. Curry"
+            />
+          </label>
+          <div className="category-filters" role="group" aria-label="Rezepte filtern">
           <button
             type="button"
             aria-pressed={categoryFilter === 'all'}
@@ -306,9 +323,10 @@ function RecipeInventory({
               onClick={() => setCategoryFilter(category)}
             >
               {categoryNames[category]}{' '}
-              <span>{recipes.filter((recipe) => recipe.category === category).length}</span>
+              <span>{recipes.filter((recipe) => recipe.categories.includes(category)).length}</span>
             </button>
           ))}
+          </div>
         </div>
       )}
 
@@ -328,7 +346,9 @@ function RecipeInventory({
               <summary>
                 <div className="recipe-card-title">
                   <strong>{recipe.title}</strong>
-                  <small>{categoryNames[recipe.category]}</small>
+                  <small>
+                    {recipe.categories.map((category) => categoryNames[category]).join(' · ')}
+                  </small>
                 </div>
                 <span>
                   {formatNumber(recipe.nutrients.calories)} kcal pro Portion ·{' '}

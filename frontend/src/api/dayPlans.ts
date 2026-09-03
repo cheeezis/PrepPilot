@@ -29,7 +29,7 @@ export type RuleEvaluation = {
 export type PlannedRecipe = {
   id: number
   title: string
-  category: 'breakfast' | 'lunch' | 'dinner'
+  category: 'breakfast' | 'lunch' | 'dinner' | 'snack'
   portions: number
   recipe_servings: number
   source_url: string
