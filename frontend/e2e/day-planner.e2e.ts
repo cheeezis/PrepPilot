@@ -61,6 +61,18 @@ test('creates and selects a valid day plan', async ({ page }) => {
   ).toHaveAttribute('aria-pressed', 'true')
 })
 
+test('adds a snack when it is selected', async ({ page }) => {
+  await page.getByRole('checkbox', { name: 'Snack' }).check()
+  await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
+
+  await expect(page.getByRole('heading', { name: '3 Tagespläne' })).toBeVisible({
+    timeout: 30_000,
+  })
+  const firstPlan = page.getByRole('article').first()
+  await expect(firstPlan.getByText(/Snack ·/)).toBeVisible()
+  await expect(firstPlan.locator('.meal')).toHaveCount(4)
+})
+
 test('explains hard and soft deviations for approximations', async ({ page }) => {
   await page.getByRole('spinbutton', { name: 'Kalorien kcal' }).fill('1800')
   await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('200')

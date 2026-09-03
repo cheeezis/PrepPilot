@@ -52,6 +52,8 @@ const categoryNames: Record<RecipeCategory, string> = {
   snack: 'Snack',
 }
 
+const mealCategories = Object.keys(categoryNames) as RecipeCategory[]
+
 function App() {
   const [page, setPage] = useState<AppPage>(() => pageFromPath())
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking')
@@ -62,6 +64,11 @@ function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [result, setResult] = useState<DayPlansResponse | null>(null)
   const [selectedPlanIndex, setSelectedPlanIndex] = useState<number | null>(null)
+  const [selectedMeals, setSelectedMeals] = useState<RecipeCategory[]>([
+    'breakfast',
+    'lunch',
+    'dinner',
+  ])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -109,12 +116,28 @@ function App() {
         protein_minimum: Number(form.get('protein')),
         fat_maximum: Number(form.get('fat')),
         carbs: Number(form.get('carbs')),
+        meal_categories: selectedMeals,
       })
       setResult(nextResult)
       setRequestStatus('success')
     } catch {
       setRequestStatus('error')
     }
+  }
+
+  function toggleMeal(category: RecipeCategory) {
+    setSelectedMeals((current) => {
+      if (current.includes(category)) {
+        return current.length === 1
+          ? current
+          : current.filter((item) => item !== category)
+      }
+      return mealCategories.filter((item) => (
+        current.includes(item) || item === category
+      ))
+    })
+    setResult(null)
+    setSelectedPlanIndex(null)
   }
 
   async function handleImport() {
@@ -177,9 +200,8 @@ function App() {
             <p className="eyebrow">Tagesplaner</p>
             <h1>Ein Tagesplan, der zu deinen Zielen passt.</h1>
             <p className="intro-copy">
-              Gib deine Tagesziele ein. PrepPilot kombiniert daraus ein
-              Frühstück, ein Mittagessen und ein Abendessen und zeigt
-              Abweichungen offen an.
+              Gib deine Tagesziele ein und wähle deine Mahlzeiten. PrepPilot
+              kombiniert passende Rezepte und zeigt Abweichungen offen an.
             </p>
           </section>
 
@@ -188,6 +210,23 @@ function App() {
             <NumberField name="protein" label="Protein mindestens" unit="g" value={120} />
             <NumberField name="fat" label="Fett höchstens" unit="g" value={70} />
             <NumberField name="carbs" label="Kohlenhydrate" unit="g" value={220} />
+            <fieldset className="meal-selector">
+              <legend>Mahlzeiten im Tagesplan</legend>
+              <div>
+                {mealCategories.map((category) => (
+                  <label key={category}>
+                    <input
+                      type="checkbox"
+                      checked={selectedMeals.includes(category)}
+                      onChange={() => toggleMeal(category)}
+                      disabled={selectedMeals.length === 1 && selectedMeals[0] === category}
+                    />
+                    <span>{categoryNames[category]}</span>
+                  </label>
+                ))}
+              </div>
+              <small>Mindestens eine Mahlzeit bleibt ausgewählt.</small>
+            </fieldset>
             <button type="submit" disabled={requestStatus === 'loading'}>
               {requestStatus === 'loading'
                 ? 'Pläne werden berechnet …'
