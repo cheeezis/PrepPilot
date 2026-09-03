@@ -73,6 +73,20 @@ test('adds a snack when it is selected', async ({ page }) => {
   await expect(firstPlan.locator('.meal')).toHaveCount(4)
 })
 
+test('creates a meal-prep plan for consecutive days', async ({ page }) => {
+  await page.getByRole('radio', { name: 'Mehrere Tage' }).check()
+  await page.getByLabel('Anzahl der Tage').selectOption('3')
+  await page.getByRole('button', { name: 'Wochenplan erstellen' }).click()
+
+  await expect(page.getByRole('heading', { name: '3-Tage-Plan' })).toBeVisible({
+    timeout: 30_000,
+  })
+  const days = page.getByRole('article')
+  await expect(days).toHaveCount(3)
+  await expect(days.nth(1).getByText('Gemeinsam mit Tag 1 vorbereiten')).toBeVisible()
+  await expect(days.nth(2).getByText('Gemeinsam mit Tag 2 vorbereiten')).toHaveCount(0)
+})
+
 test('explains hard and soft deviations for approximations', async ({ page }) => {
   await page.getByRole('spinbutton', { name: 'Kalorien kcal' }).fill('1800')
   await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('200')

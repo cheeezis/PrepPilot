@@ -8,6 +8,10 @@ import {
 import { getHealth } from './api/health'
 import { importNhsRecipes, type ImportRun } from './api/imports'
 import { getRecipes, type Recipe, type RecipeCategory } from './api/recipes'
+import {
+  createWeekPlan,
+  type WeekPlanResponse,
+} from './api/weekPlans'
 import './App.css'
 
 type SystemStatus = 'checking' | 'ready' | 'unavailable'
@@ -15,6 +19,7 @@ type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
 type ImportStatus = 'idle' | 'loading' | 'success' | 'error'
 type RecipeStatus = 'loading' | 'success' | 'error'
 type AppPage = 'planner' | 'recipes'
+type PlanningMode = 'day' | 'week'
 
 const metricNames: Record<RuleEvaluation['metric'], string> = {
   calories: 'Kalorien',
@@ -62,7 +67,9 @@ function App() {
   const [importResult, setImportResult] = useState<ImportRun | null>(null)
   const [recipeStatus, setRecipeStatus] = useState<RecipeStatus>('loading')
   const [recipes, setRecipes] = useState<Recipe[]>([])
-  const [result, setResult] = useState<DayPlansResponse | null>(null)
+  const [planningMode, setPlanningMode] = useState<PlanningMode>('day')
+  const [dayResult, setDayResult] = useState<DayPlansResponse | null>(null)
+  const [weekResult, setWeekResult] = useState<WeekPlanResponse | null>(null)
   const [selectedPlanIndex, setSelectedPlanIndex] = useState<number | null>(null)
   const [selectedMeals, setSelectedMeals] = useState<RecipeCategory[]>([
     'breakfast',
@@ -107,18 +114,26 @@ function App() {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     setRequestStatus('loading')
-    setResult(null)
+    setDayResult(null)
+    setWeekResult(null)
     setSelectedPlanIndex(null)
 
     try {
-      const nextResult = await createDayPlans({
+      const request = {
         calories: Number(form.get('calories')),
         protein_minimum: Number(form.get('protein')),
         fat_maximum: Number(form.get('fat')),
         carbs: Number(form.get('carbs')),
         meal_categories: selectedMeals,
-      })
-      setResult(nextResult)
+      }
+      if (planningMode === 'day') {
+        setDayResult(await createDayPlans(request))
+      } else {
+        setWeekResult(await createWeekPlan({
+          ...request,
+          days: Number(form.get('days')),
+        }))
+      }
       setRequestStatus('success')
     } catch {
       setRequestStatus('error')
@@ -136,8 +151,17 @@ function App() {
         current.includes(item) || item === category
       ))
     })
-    setResult(null)
+    setDayResult(null)
+    setWeekResult(null)
     setSelectedPlanIndex(null)
+  }
+
+  function changePlanningMode(mode: PlanningMode) {
+    setPlanningMode(mode)
+    setDayResult(null)
+    setWeekResult(null)
+    setSelectedPlanIndex(null)
+    setRequestStatus('idle')
   }
 
   async function handleImport() {
@@ -197,21 +221,61 @@ function App() {
       {page === 'planner' ? (
         <>
           <section className="intro">
-            <p className="eyebrow">Tagesplaner</p>
-            <h1>Ein Tagesplan, der zu deinen Zielen passt.</h1>
+            <p className="eyebrow">
+              {planningMode === 'day' ? 'Tagesplaner' : 'Wochenplaner'}
+            </p>
+            <h1>
+              {planningMode === 'day'
+                ? 'Ein Tagesplan, der zu deinen Zielen passt.'
+                : 'Meal Prep für mehrere Tage.'}
+            </h1>
             <p className="intro-copy">
-              Gib deine Tagesziele ein und wähle deine Mahlzeiten. PrepPilot
-              kombiniert passende Rezepte und zeigt Abweichungen offen an.
+              {planningMode === 'day'
+                ? 'Gib deine Tagesziele ein und wähle deine Mahlzeiten. PrepPilot kombiniert passende Rezepte und zeigt Abweichungen offen an.'
+                : 'PrepPilot plant mehrere Tage und legt gleiche Gerichte bewusst auf aufeinanderfolgende Tage, damit du sie gemeinsam vorbereiten kannst.'}
             </p>
           </section>
 
           <form className="target-form" onSubmit={handleSubmit}>
+            <fieldset className="planning-mode">
+              <legend>Planungszeitraum</legend>
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    name="planning-mode"
+                    checked={planningMode === 'day'}
+                    onChange={() => changePlanningMode('day')}
+                  />
+                  <span>Ein Tag</span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="planning-mode"
+                    checked={planningMode === 'week'}
+                    onChange={() => changePlanningMode('week')}
+                  />
+                  <span>Mehrere Tage</span>
+                </label>
+              </div>
+            </fieldset>
             <NumberField name="calories" label="Kalorien" unit="kcal" value={2000} />
             <NumberField name="protein" label="Protein mindestens" unit="g" value={120} />
             <NumberField name="fat" label="Fett höchstens" unit="g" value={70} />
             <NumberField name="carbs" label="Kohlenhydrate" unit="g" value={220} />
+            {planningMode === 'week' && (
+              <label className="field week-days">
+                <span>Anzahl der Tage</span>
+                <select name="days" defaultValue="5">
+                  {[3, 4, 5, 6, 7].map((days) => (
+                    <option key={days} value={days}>{days} Tage</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <fieldset className="meal-selector">
-              <legend>Mahlzeiten im Tagesplan</legend>
+              <legend>Mahlzeiten pro Tag</legend>
               <div>
                 {mealCategories.map((category) => (
                   <label key={category}>
@@ -230,23 +294,28 @@ function App() {
             <button type="submit" disabled={requestStatus === 'loading'}>
               {requestStatus === 'loading'
                 ? 'Pläne werden berechnet …'
-                : 'Tagespläne erstellen'}
+                : planningMode === 'day'
+                  ? 'Tagespläne erstellen'
+                  : 'Wochenplan erstellen'}
             </button>
           </form>
 
           {requestStatus === 'error' && (
             <p className="notice notice--error">
-              Die Tagespläne konnten nicht erstellt werden.
+              {planningMode === 'day'
+                ? 'Die Tagespläne konnten nicht erstellt werden.'
+                : 'Der Wochenplan konnte nicht erstellt werden.'}
             </p>
           )}
 
-          {result && (
+          {dayResult && (
             <PlanResults
-              result={result}
+              result={dayResult}
               selectedPlanIndex={selectedPlanIndex}
               onSelect={setSelectedPlanIndex}
             />
           )}
+          {weekResult && <WeekPlanResults result={weekResult} />}
         </>
       ) : (
         <>
@@ -521,7 +590,7 @@ function PlanResults({
           <PlanCard
             key={`${index}-${plan.score}`}
             plan={plan}
-            index={index}
+            label={`Vorschlag ${index + 1}`}
             selected={selectedPlanIndex === index}
             onSelect={() => onSelect(index)}
           />
@@ -531,22 +600,69 @@ function PlanResults({
   )
 }
 
+function WeekPlanResults({ result }: { result: WeekPlanResponse }) {
+  if (result.outcome === 'no_usable_plan') {
+    return (
+      <section className="results">
+        <p className="notice">
+          Für diese Ziele konnte noch kein zusammenhängender Wochenplan erstellt
+          werden. Wähle weniger Tage oder passe eines deiner Nährwertziele an.
+        </p>
+      </section>
+    )
+  }
+
+  return (
+    <section className="results week-results">
+      <div className="results-heading">
+        <div>
+          <p className="eyebrow">Meal-Prep-Plan</p>
+          <h2>{result.days.length}-Tage-Plan</h2>
+        </div>
+        {result.outcome === 'approximation' && (
+          <p className="notice">
+            Mindestens ein Tag enthält eine transparente Annäherung an deine Ziele.
+          </p>
+        )}
+      </div>
+      <p className="week-summary">
+        Gleiche Gerichte liegen bewusst auf aufeinanderfolgenden Tagen. So kannst
+        du sie gemeinsam vorbereiten. Kein Rezept wird öfter als zweimal eingeplant.
+      </p>
+      <div className="plan-list">
+        {result.days.map((day) => (
+          <PlanCard
+            key={day.day}
+            plan={day.plan}
+            label={`Tag ${day.day}`}
+            prepNote={day.prep_with_previous
+              ? `Gemeinsam mit Tag ${day.day - 1} vorbereiten`
+              : undefined}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function PlanCard({
   plan,
-  index,
-  selected,
+  label,
+  selected = false,
   onSelect,
+  prepNote,
 }: {
   plan: DayPlan
-  index: number
-  selected: boolean
-  onSelect: () => void
+  label: string
+  selected?: boolean
+  onSelect?: () => void
+  prepNote?: string
 }) {
   return (
     <article className={`plan-card${selected ? ' plan-card--selected' : ''}`}>
       <div className="plan-title-row">
         <div>
-          <p className="plan-number">Vorschlag {index + 1}</p>
+          <p className="plan-number">{label}</p>
           <h3>{plan.status === 'valid' ? 'Plan verwendbar' : 'Annäherung'}</h3>
         </div>
         <span className={`plan-badge plan-badge--${plan.status}`}>
@@ -563,14 +679,18 @@ function PlanCard({
         ))}
       </div>
 
-      <button
-        type="button"
-        className={`select-plan-button${selected ? ' select-plan-button--selected' : ''}`}
-        aria-pressed={selected}
-        onClick={onSelect}
-      >
-        {selected ? 'Ausgewählt' : 'Diesen Plan auswählen'}
-      </button>
+      {prepNote && <p className="prep-note">{prepNote}</p>}
+
+      {onSelect && (
+        <button
+          type="button"
+          className={`select-plan-button${selected ? ' select-plan-button--selected' : ''}`}
+          aria-pressed={selected}
+          onClick={onSelect}
+        >
+          {selected ? 'Ausgewählt' : 'Diesen Plan auswählen'}
+        </button>
+      )}
 
       <div className="meal-list">
         {plan.recipes.map((recipe) => (
