@@ -35,9 +35,7 @@ export type PlannedRecipe = {
   category: 'breakfast' | 'lunch' | 'dinner' | 'snack'
   portions: number
   recipe_servings: number
-  source_url: string
-  license_name: string
-  attribution_text: string
+  source_url: string | null
   nutrients: NutrientValues
   ingredients: string[]
   instructions: string[]
