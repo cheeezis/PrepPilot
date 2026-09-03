@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Annotated, Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Response, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -12,6 +12,7 @@ from preppilot_api.nutrition import Nutrients
 from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
 from preppilot_api.recipe_repository import (
     RecipeCatalogUnavailableError,
+    RecipeCategory,
     RecipeDefinition,
     load_recipes,
 )
@@ -23,11 +24,29 @@ class HealthResponse(BaseModel):
     recipes: Literal["ok", "unavailable"]
 
 
+def _default_meal_categories() -> list[RecipeCategory]:
+    return ["breakfast", "lunch", "dinner"]
+
+
 class DayPlanRequest(BaseModel):
     calories: Decimal = Field(gt=0)
     protein_minimum: Decimal = Field(gt=0)
     fat_maximum: Decimal = Field(gt=0)
     carbs: Decimal = Field(gt=0)
+    meal_categories: list[RecipeCategory] = Field(
+        default_factory=_default_meal_categories,
+        min_length=1,
+        max_length=4,
+    )
+
+    @field_validator("meal_categories")
+    @classmethod
+    def meal_categories_must_be_unique(
+        cls, value: list[RecipeCategory]
+    ) -> list[RecipeCategory]:
+        if len(set(value)) != len(value):
+            raise ValueError("meal categories must be unique")
+        return value
 
 
 class NutrientValuesResponse(BaseModel):
@@ -173,6 +192,7 @@ def create_day_plans(
             carbs=request.carbs,
         ),
         recipes,
+        tuple(request.meal_categories),
     )
     return DayPlansResponse(
         outcome=(

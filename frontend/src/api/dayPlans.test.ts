@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createDayPlans } from './dayPlans'
+import { createDayPlans, type DayPlanRequest } from './dayPlans'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -15,11 +15,12 @@ describe('createDayPlans', () => {
       }),
     )
     vi.stubGlobal('fetch', fetchMock)
-    const request = {
+    const request: DayPlanRequest = {
       calories: 2500,
       protein_minimum: 220,
       fat_maximum: 71,
       carbs: 233,
+      meal_categories: ['breakfast', 'lunch', 'dinner'],
     }
 
     await expect(createDayPlans(request)).resolves.toEqual(result)
@@ -43,6 +44,7 @@ describe('createDayPlans', () => {
         protein_minimum: 220,
         fat_maximum: 71,
         carbs: 233,
+        meal_categories: ['breakfast', 'lunch', 'dinner'],
       }),
     ).rejects.toThrow('Tagespläne konnten nicht erstellt werden.')
   })

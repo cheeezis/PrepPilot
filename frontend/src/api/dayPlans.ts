@@ -1,8 +1,11 @@
+import type { RecipeCategory } from './recipes'
+
 export type DayPlanRequest = {
   calories: number
   protein_minimum: number
   fat_maximum: number
   carbs: number
+  meal_categories: RecipeCategory[]
 }
 
 export type NutrientValues = {

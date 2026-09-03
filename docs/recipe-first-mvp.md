@@ -80,7 +80,8 @@ aber nicht im produktiven Bestand.
 - Maßgeblich sind ausschließlich die gespeicherten Quellenwerte pro Portion.
 - Ein Rezept kann über ganzzahlige Portionen skaliert werden.
 - Der Nutzer gibt Zielwerte für einen Tag an.
-- Der Plan enthält genau ein Frühstück, ein Mittagessen und ein Abendessen.
+- Der Plan enthält genau ein Rezept pro ausgewählter Mahlzeitenrolle; Frühstück,
+  Mittagessen und Abendessen sind voreingestellt, Snack ist optional.
 - Der Planer liefert passende Kombinationen oder kennzeichnet die beste
   Annäherung transparent.
 - Die Herkunft jedes geplanten Rezepts bleibt im Frontend sichtbar.

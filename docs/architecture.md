@@ -26,14 +26,18 @@ und Aktualisierungen.
 
 Die Kategorien werden aus den offiziellen NHS-Sammlungen übernommen. Ein Rezept
 kann mehreren Sammlungen angehören; deshalb speichert PrepPilot eine Liste. Sie
-ist im Rezeptbestand sichtbar, durchsuchbar und filterbar. Der aktuelle Planer
-kombiniert weiterhin genau ein Rezept aus jeder Hauptmahlzeit. Snacks sind
-bereits im Katalog sichtbar, aber noch nicht Teil des Plans.
+ist im Rezeptbestand sichtbar, durchsuchbar und filterbar. Im Planer wählt der
+Nutzer die gewünschten Mahlzeiten aus. Frühstück, Mittagessen und Abendessen
+sind voreingestellt; ein Snack kann ergänzt oder eine Hauptmahlzeit abgewählt
+werden.
 
 Der Planer fragt keine externe Quelle ab. Er arbeitet nur mit vollständigen
 Rezepten aus PostgreSQL und skaliert sie mit einer oder zwei ganzen Portionen.
 Rezeptgruppen, die selbst mit zwei Portionen die äußeren Zielgrenzen nicht
 erreichen können, werden vor der Portionssuche sicher verworfen. Aus den
 verbleibenden Kombinationen hält der Planer nur die drei aktuell besten im
-Speicher. Die bestehenden Zielbereiche und das nachvollziehbare Scoring bleiben
-erhalten; es werden keine potenziell gültigen Pläne ausgeblendet.
+Speicher. Bis zu drei ausgewählte Mahlzeiten werden vollständig durchsucht. Bei
+vier Mahlzeiten begrenzt eine reproduzierbare, nährwertbasierte Vorauswahl den
+Rechenraum, bevor die Kombinationen vollständig bewertet werden. Der gesamte
+Rezeptkatalog bleibt dabei gespeichert und sichtbar. Die bestehenden
+Zielbereiche und das nachvollziehbare Scoring bleiben erhalten.

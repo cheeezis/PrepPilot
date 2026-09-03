@@ -19,6 +19,7 @@ einen kleinen vertikalen Rezeptablauf ersetzt.
 | Technische Rezeptqualität | zehn Rezepte vollständig und Methodenschritte lesbar getrennt | abgeschlossen |
 | Katalogsynchronisation | 169 relevante NHS-Seiten erkannt, 149 gespeichert | abgeschlossen |
 | Quellkategorien | Mehrfachkategorien samt Snacks gespeichert und filterbar | abgeschlossen |
+| Flexible Tagesstruktur | Mahlzeiten samt optionalem Snack auswählbar | abgeschlossen |
 
 Der aktuelle Ablauf und seine Grenzen stehen in
 [`recipe-first-mvp.md`](recipe-first-mvp.md).
@@ -26,15 +27,14 @@ Der aktuelle Ablauf und seine Grenzen stehen in
 ## Nächster Produktabschnitt
 
 1. Rezeptübersicht mit weiteren Nutzern auf Verständlichkeit prüfen
-2. feste Tagesstruktur aus Frühstück, Mittagessen und Abendessen bewerten
-3. Laufzeit und Planvielfalt mit dem vollständigen NHS-Bestand bewerten
+2. flexible Mahlzeitenstruktur mit Nutzern bewerten
+3. Wiederholungen und Portionspraktikabilität bewerten
 
 ## Später
 
 - zweite rechtlich kompatible Rezeptquelle
 - Nutzerimport einzelner Rezept-URLs
 - Ernährungsformen, Ausschlüsse und Favoriten
-- Snacks als optionale zusätzliche Mahlzeiten im Planer
 - normalisierte Zutaten für Filter und Einkaufslisten
 - Lebensmittelprofile für eigene Rezepte und Ersetzungen
 - Benutzerkonten und gespeicherte Pläne
