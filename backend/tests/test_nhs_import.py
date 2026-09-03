@@ -49,6 +49,18 @@ def test_assigns_category_from_the_approved_nhs_collection() -> None:
     assert recipe.category == "breakfast"
 
 
+def test_approved_catalog_is_balanced_by_source_category() -> None:
+    categories = [
+        import_module.NHS_RECIPE_CATEGORIES.get(url, "dinner")
+        for url in import_module.NHS_RECIPE_URLS
+    ]
+
+    assert len(categories) == 33
+    assert categories.count("breakfast") == 8
+    assert categories.count("lunch") == 8
+    assert categories.count("dinner") == 17
+
+
 def test_rejects_page_without_complete_macros() -> None:
     incomplete = PAGE.replace("22g protein", "protein unavailable")
     try:
