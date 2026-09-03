@@ -55,6 +55,11 @@ class DayPlan:
 
 
 @dataclass(frozen=True)
+class WeekPlan:
+    days: tuple[DayPlan, ...]
+
+
+@dataclass(frozen=True)
 class _MealChoice:
     position: int
     category: RecipeCategory
@@ -141,6 +146,38 @@ def generate_day_plans(
 
     search(0, (), frozenset(), Nutrients())
     return tuple(candidates)
+
+
+def generate_week_plan(
+    targets: PlanTargets,
+    recipes: tuple[RecipeDefinition, ...],
+    day_count: int,
+    meal_categories: tuple[RecipeCategory, ...] = DEFAULT_MEAL_CATEGORIES,
+) -> WeekPlan | None:
+    if not 3 <= day_count <= 7:
+        raise ValueError("day count must be between 3 and 7")
+
+    planned_days: list[DayPlan] = []
+    used_recipe_ids: set[int] = set()
+    while len(planned_days) < day_count:
+        available_recipes = tuple(
+            recipe for recipe in recipes if recipe.id not in used_recipe_ids
+        )
+        plans = generate_day_plans(
+            targets,
+            available_recipes,
+            meal_categories,
+            limit=1,
+        )
+        if not plans:
+            return None
+
+        plan = plans[0]
+        block_size = min(2, day_count - len(planned_days))
+        planned_days.extend(plan for _ in range(block_size))
+        used_recipe_ids.update(item.recipe.id for item in plan.recipes)
+
+    return WeekPlan(days=tuple(planned_days))
 
 
 def _generate_exact_day_plans(

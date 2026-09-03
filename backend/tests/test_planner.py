@@ -5,6 +5,7 @@ from preppilot_api.planner import (
     PlanTargets,
     _combination_can_reach_outer_limits,
     generate_day_plans,
+    generate_week_plan,
 )
 from preppilot_api.recipe_repository import RecipeCategory, RecipeDefinition
 
@@ -112,6 +113,37 @@ def test_does_not_use_a_multi_category_recipe_twice() -> None:
     )
 
 
+def test_week_plan_groups_meal_prep_on_consecutive_days() -> None:
+    recipes = tuple(
+        recipe(recipe_id, "breakfast", ("500", "50", "50", "18"))
+        for recipe_id in range(1, 5)
+    )
+    week = generate_week_plan(
+        PlanTargets(Decimal(500), Decimal(50), Decimal(20), Decimal(50)),
+        recipes,
+        7,
+        ("breakfast",),
+    )
+
+    assert week is not None
+    assert len(week.days) == 7
+    assert week.days[0].stable_key == week.days[1].stable_key
+    assert week.days[2].stable_key == week.days[3].stable_key
+    assert week.days[4].stable_key == week.days[5].stable_key
+    recipe_ids = [day.recipes[0].recipe.id for day in week.days]
+    assert max(recipe_ids.count(recipe_id) for recipe_id in set(recipe_ids)) == 2
+
+
+def test_week_plan_requires_between_three_and_seven_days() -> None:
+    for day_count in (2, 8):
+        try:
+            generate_week_plan(targets(), RECIPES, day_count)
+        except ValueError as error:
+            assert str(error) == "day count must be between 3 and 7"
+        else:
+            raise AssertionError("invalid day count was accepted")
+
+
 def test_skips_recipe_combinations_that_cannot_reach_outer_limits() -> None:
     recipes = tuple(
         recipe(recipe_id, "dinner", ("100", "5", "10", "2"))
@@ -186,3 +218,34 @@ def test_recipe_api_exposes_the_stored_inventory(monkeypatch) -> None:
     assert response.json()[0]["instructions"] == ["instruction"]
     assert response.json()[0]["servings"] == 4
     assert response.json()[0]["categories"] == ["breakfast"]
+
+
+def test_week_plan_api_marks_consecutive_prep_days(monkeypatch) -> None:
+    from fastapi.testclient import TestClient
+
+    import preppilot_api.main as main_module
+
+    recipes = tuple(
+        recipe(recipe_id, "breakfast", ("500", "50", "50", "18"))
+        for recipe_id in range(1, 3)
+    )
+    monkeypatch.setattr(main_module, "load_recipes", lambda session: recipes)
+    with TestClient(main_module.app) as client:
+        response = client.post(
+            "/api/week-plans",
+            json={
+                "days": 3,
+                "calories": 500,
+                "protein_minimum": 50,
+                "fat_maximum": 20,
+                "carbs": 50,
+                "meal_categories": ["breakfast"],
+            },
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["outcome"] == "plan_found"
+    assert len(payload["days"]) == 3
+    assert payload["days"][1]["prep_with_previous"] is True
+    assert payload["days"][2]["prep_with_previous"] is False

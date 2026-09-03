@@ -9,7 +9,12 @@ from sqlalchemy.orm import Session
 from preppilot_api.database import get_session
 from preppilot_api.nhs_import import ImportItem, import_nhs_recipes
 from preppilot_api.nutrition import Nutrients
-from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
+from preppilot_api.planner import (
+    DayPlan,
+    PlanTargets,
+    generate_day_plans,
+    generate_week_plan,
+)
 from preppilot_api.recipe_repository import (
     RecipeCatalogUnavailableError,
     RecipeCategory,
@@ -95,6 +100,21 @@ class DayPlanResponse(BaseModel):
 class DayPlansResponse(BaseModel):
     outcome: Literal["plans_found", "approximations_only", "no_usable_plan"]
     plans: list[DayPlanResponse]
+
+
+class WeekPlanRequest(DayPlanRequest):
+    days: int = Field(ge=3, le=7)
+
+
+class WeekPlanDayResponse(BaseModel):
+    day: int
+    prep_with_previous: bool
+    plan: DayPlanResponse
+
+
+class WeekPlanResponse(BaseModel):
+    outcome: Literal["plan_found", "approximation", "no_usable_plan"]
+    days: list[WeekPlanDayResponse]
 
 
 class RecipeResponse(BaseModel):
@@ -203,6 +223,51 @@ def create_day_plans(
             else "approximations_only"
         ),
         plans=[_serialize_day_plan(plan) for plan in plans],
+    )
+
+
+@app.post("/api/week-plans", tags=["planning"], response_model=WeekPlanResponse)
+def create_week_plan(
+    request: WeekPlanRequest, session: DatabaseSession
+) -> WeekPlanResponse:
+    try:
+        recipes = load_recipes(session)
+    except (SQLAlchemyError, RecipeCatalogUnavailableError) as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Rezeptbestand nicht verfügbar",
+        ) from error
+    week = generate_week_plan(
+        PlanTargets(
+            calories=request.calories,
+            protein_minimum=request.protein_minimum,
+            fat_maximum=request.fat_maximum,
+            carbs=request.carbs,
+        ),
+        recipes,
+        request.days,
+        tuple(request.meal_categories),
+    )
+    if week is None:
+        return WeekPlanResponse(outcome="no_usable_plan", days=[])
+
+    return WeekPlanResponse(
+        outcome=(
+            "plan_found"
+            if all(day.status == "valid" for day in week.days)
+            else "approximation"
+        ),
+        days=[
+            WeekPlanDayResponse(
+                day=index + 1,
+                prep_with_previous=(
+                    index > 0
+                    and day.stable_key == week.days[index - 1].stable_key
+                ),
+                plan=_serialize_day_plan(day),
+            )
+            for index, day in enumerate(week.days)
+        ],
     )
 
 
