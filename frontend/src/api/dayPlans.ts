@@ -11,6 +11,10 @@ export type NutrientValues = {
   protein: number
   carbs: number
   fat: number
+  sugar: number
+  saturated_fat: number
+  fiber: number
+  salt: number
 }
 
 export type RuleEvaluation = {

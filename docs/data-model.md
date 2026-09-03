@@ -6,7 +6,8 @@ Sie speichert:
 
 - Quellenname, externe ID und Original-URL
 - Titel, NHS-Mahlzeitenkategorie und ursprüngliche Portionszahl
-- Kalorien, Protein, Kohlenhydrate und Fett pro Portion
+- Kalorien, Protein, Kohlenhydrate, Zucker, Fett, gesättigte Fettsäuren,
+  Ballaststoffe und Salz pro Portion
 - originale Zutaten- und Zubereitungslisten
 - optionale Vorbereitungs- und Kochzeit
 - validierte Importdaten, Inhalts-Hash und Importzeitpunkt

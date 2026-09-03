@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session
 
@@ -15,7 +17,9 @@ PAGE = """
 "recipeInstructions":[{"text":"Chop vegetables.\\nCook everything."}]}
 </script></head><body>
 <p>Prep: 10 mins</p><p>Cook: 25 mins</p><p>Serves 4</p>
-<ul><li>384kcal</li><li>22g protein</li><li>67g carbohydrate</li><li>3.5g fat</li></ul>
+<ul><li>384kcal</li><li>22g protein</li>
+<li>67g carbohydrate, of which 8g sugars</li>
+<li>3.5g fat, of which 1g saturates</li><li>6.2g fibre</li><li>0.7g salt</li></ul>
 </body></html>
 """
 
@@ -29,6 +33,10 @@ def test_parses_complete_nhs_recipe_page() -> None:
     assert recipe.instructions == ["Chop vegetables.", "Cook everything."]
     assert recipe.preparation_minutes == 10
     assert recipe.cooking_minutes == 25
+    assert recipe.sugar == 8
+    assert recipe.saturated_fat == 1
+    assert recipe.fiber == Decimal("6.2")
+    assert recipe.salt == Decimal("0.7")
     assert len(recipe.content_hash) == 64
 
 

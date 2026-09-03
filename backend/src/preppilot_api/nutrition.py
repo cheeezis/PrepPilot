@@ -8,6 +8,10 @@ class Nutrients:
     protein: Decimal = Decimal(0)
     carbs: Decimal = Decimal(0)
     fat: Decimal = Decimal(0)
+    sugar: Decimal = Decimal(0)
+    saturated_fat: Decimal = Decimal(0)
+    fiber: Decimal = Decimal(0)
+    salt: Decimal = Decimal(0)
 
     def __add__(self, other: "Nutrients") -> "Nutrients":
         return Nutrients(
@@ -15,6 +19,10 @@ class Nutrients:
             protein=self.protein + other.protein,
             carbs=self.carbs + other.carbs,
             fat=self.fat + other.fat,
+            sugar=self.sugar + other.sugar,
+            saturated_fat=self.saturated_fat + other.saturated_fat,
+            fiber=self.fiber + other.fiber,
+            salt=self.salt + other.salt,
         )
 
     def scaled(self, factor: int) -> "Nutrients":
@@ -24,4 +32,8 @@ class Nutrients:
             protein=self.protein * scale,
             carbs=self.carbs * scale,
             fat=self.fat * scale,
+            sugar=self.sugar * scale,
+            saturated_fat=self.saturated_fat * scale,
+            fiber=self.fiber * scale,
+            salt=self.salt * scale,
         )

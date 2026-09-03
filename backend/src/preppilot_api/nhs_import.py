@@ -59,6 +59,10 @@ class ParsedRecipe:
     protein: Decimal
     carbs: Decimal
     fat: Decimal
+    sugar: Decimal
+    saturated_fat: Decimal
+    fiber: Decimal
+    salt: Decimal
     ingredients: list[str]
     instructions: list[str]
     preparation_minutes: int | None
@@ -122,6 +126,18 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     protein = _decimal_match(visible_text, r"([\d.]+)\s*g protein", "protein")
     carbs = _decimal_match(visible_text, r"([\d.]+)\s*g carbohydrate", "carbs")
     fat = _decimal_match(visible_text, r"([\d.]+)\s*g fat", "fat")
+    sugar = _decimal_match(
+        visible_text,
+        r"carbohydrate,?\s+of which\s+([\d.]+)\s*g sugars",
+        "sugar",
+    )
+    saturated_fat = _decimal_match(
+        visible_text,
+        r"fat,?\s+of which\s+([\d.]+)\s*g saturates",
+        "saturated_fat",
+    )
+    fiber = _decimal_match(visible_text, r"([\d.]+)\s*g fibre", "fiber")
+    salt = _decimal_match(visible_text, r"([\d.]+)\s*g salt", "salt")
     _validate_nutrients(calories, protein, carbs, fat)
     preparation = _optional_minutes(visible_text, "Prep")
     cooking = _optional_minutes(visible_text, "Cook")
@@ -133,6 +149,10 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
         "protein_per_serving": str(protein),
         "carbs_per_serving": str(carbs),
         "fat_per_serving": str(fat),
+        "sugar_per_serving": str(sugar),
+        "saturated_fat_per_serving": str(saturated_fat),
+        "fiber_per_serving": str(fiber),
+        "salt_per_serving": str(salt),
         "ingredients": ingredients,
         "instructions": instructions,
         "preparation_minutes": preparation,
@@ -148,6 +168,10 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
         protein=protein,
         carbs=carbs,
         fat=fat,
+        sugar=sugar,
+        saturated_fat=saturated_fat,
+        fiber=fiber,
+        salt=salt,
         ingredients=ingredients,
         instructions=instructions,
         preparation_minutes=preparation,
@@ -178,6 +202,10 @@ def _store_recipe(session: Session, parsed: ParsedRecipe) -> ImportItem:
     recipe.protein_per_serving = parsed.protein
     recipe.carbs_per_serving = parsed.carbs
     recipe.fat_per_serving = parsed.fat
+    recipe.sugar_per_serving = parsed.sugar
+    recipe.saturated_fat_per_serving = parsed.saturated_fat
+    recipe.fiber_per_serving = parsed.fiber
+    recipe.salt_per_serving = parsed.salt
     recipe.ingredients = parsed.ingredients
     recipe.instructions = parsed.instructions
     recipe.preparation_minutes = parsed.preparation_minutes
