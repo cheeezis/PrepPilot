@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent, type MouseEvent } from 'react'
 import {
   createDayPlans,
   type DayPlan,
@@ -14,6 +14,7 @@ type SystemStatus = 'checking' | 'ready' | 'unavailable'
 type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
 type ImportStatus = 'idle' | 'loading' | 'success' | 'error'
 type RecipeStatus = 'loading' | 'success' | 'error'
+type AppPage = 'planner' | 'recipes'
 
 const metricNames: Record<RuleEvaluation['metric'], string> = {
   calories: 'Kalorien',
@@ -36,6 +37,10 @@ const importFieldNames: Record<string, string> = {
   protein: 'Protein',
   carbs: 'Kohlenhydrate',
   fat: 'Fett',
+  sugar: 'Zucker',
+  saturated_fat: 'Gesättigte Fettsäuren',
+  fiber: 'Ballaststoffe',
+  salt: 'Salz',
   ingredients: 'Zutaten',
   instructions: 'Zubereitung',
 }
@@ -47,6 +52,7 @@ const categoryNames: Record<RecipeCategory, string> = {
 }
 
 function App() {
+  const [page, setPage] = useState<AppPage>(() => pageFromPath())
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking')
   const [requestStatus, setRequestStatus] = useState<RequestStatus>('idle')
   const [importStatus, setImportStatus] = useState<ImportStatus>('idle')
@@ -75,6 +81,19 @@ function App() {
       })
     return () => controller.abort()
   }, [])
+
+  useEffect(() => {
+    const handleHistoryChange = () => setPage(pageFromPath())
+    window.addEventListener('popstate', handleHistoryChange)
+    return () => window.removeEventListener('popstate', handleHistoryChange)
+  }, [])
+
+  function navigate(event: MouseEvent<HTMLAnchorElement>, nextPage: AppPage) {
+    event.preventDefault()
+    const path = nextPage === 'planner' ? '/' : '/recipes'
+    window.history.pushState({}, '', path)
+    setPage(nextPage)
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -126,6 +145,22 @@ function App() {
           <span className="brand-mark" aria-hidden="true">P</span>
           <span className="brand-name">PrepPilot</span>
         </div>
+        <nav className="app-navigation" aria-label="Hauptnavigation">
+          <a
+            href="/"
+            aria-current={page === 'planner' ? 'page' : undefined}
+            onClick={(event) => navigate(event, 'planner')}
+          >
+            Planer
+          </a>
+          <a
+            href="/recipes"
+            aria-current={page === 'recipes' ? 'page' : undefined}
+            onClick={(event) => navigate(event, 'recipes')}
+          >
+            Rezepte
+          </a>
+        </nav>
         <span className={`system-status system-status--${systemStatus}`}>
           <span className="status-indicator" aria-hidden="true" />
           {systemStatus === 'ready'
@@ -136,88 +171,103 @@ function App() {
         </span>
       </header>
 
-      <section className="intro">
-        <p className="eyebrow">Tagesplaner</p>
-        <h1>Ein Tagesplan, der zu deinen Zielen passt.</h1>
-        <p className="intro-copy">
-          Gib deine Tagesziele ein. PrepPilot kombiniert daraus passende
-          Mahlzeiten und zeigt Abweichungen offen an.
-        </p>
-      </section>
-
-      <section className="import-control" aria-labelledby="import-heading">
-        <div>
-          <p className="eyebrow">Rezeptbestand</p>
-          <h2 id="import-heading">Geprüfte NHS-Rezepte laden</h2>
-          <p>Der Lauf verarbeitet ausschließlich die 20 fest freigegebenen Seiten.</p>
-        </div>
-        <button type="button" onClick={handleImport} disabled={importStatus === 'loading'}>
-          {importStatus === 'loading' ? 'Rezepte werden importiert …' : '20 NHS-Rezepte importieren'}
-        </button>
-        {importResult && (
-          <div className="import-result" role="status">
-            <p className="notice">
-              {importResult.created} neu · {importResult.updated} aktualisiert ·{' '}
-              {importResult.unchanged} unverändert · {importResult.rejected} abgelehnt
+      {page === 'planner' ? (
+        <>
+          <section className="intro">
+            <p className="eyebrow">Tagesplaner</p>
+            <h1>Ein Tagesplan, der zu deinen Zielen passt.</h1>
+            <p className="intro-copy">
+              Gib deine Tagesziele ein. PrepPilot kombiniert daraus passende
+              Mahlzeiten und zeigt Abweichungen offen an.
             </p>
-            {importResult.rejected > 0 && (
-              <div className="import-rejections">
-                <strong>Nicht importiert</strong>
-                <ul>
-                  {importResult.items
-                    .filter((item) => item.status === 'rejected')
-                    .map((item) => (
-                      <li key={item.source_url}>
-                        <a href={item.source_url} target="_blank" rel="noreferrer">
-                          {recipeNameFromUrl(item.source_url)}
-                        </a>
-                        <span>{describeImportReason(item.reason)}</span>
-                      </li>
-                    ))}
-                </ul>
+          </section>
+
+          <form className="target-form" onSubmit={handleSubmit}>
+            <NumberField name="calories" label="Kalorien" unit="kcal" value={2500} />
+            <NumberField name="protein" label="Protein mindestens" unit="g" value={220} />
+            <NumberField name="fat" label="Fett höchstens" unit="g" value={71} />
+            <NumberField name="carbs" label="Kohlenhydrate" unit="g" value={233} />
+            <label className="field">
+              <span>Mahlzeiten</span>
+              <select name="mealCount" defaultValue="5">
+                {[3, 4, 5, 6].map((count) => (
+                  <option key={count} value={count}>{count}</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" disabled={requestStatus === 'loading'}>
+              {requestStatus === 'loading'
+                ? 'Pläne werden berechnet …'
+                : 'Tagespläne erstellen'}
+            </button>
+          </form>
+
+          {requestStatus === 'error' && (
+            <p className="notice notice--error">
+              Die Tagespläne konnten nicht erstellt werden.
+            </p>
+          )}
+
+          {result && (
+            <PlanResults
+              result={result}
+              selectedPlanIndex={selectedPlanIndex}
+              onSelect={setSelectedPlanIndex}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <section className="intro">
+            <p className="eyebrow">Rezeptbestand</p>
+            <h1>Die Grundlage deiner Tagespläne.</h1>
+            <p className="intro-copy">
+              Hier siehst du alle gespeicherten Quellenrezepte und ihre
+              Nährwerte pro Portion.
+            </p>
+          </section>
+
+          <section className="import-control" aria-labelledby="import-heading">
+            <div>
+              <p className="eyebrow">NHS-Import</p>
+              <h2 id="import-heading">Geprüfte NHS-Rezepte laden</h2>
+              <p>Der Lauf verarbeitet ausschließlich die 20 fest freigegebenen Seiten.</p>
+            </div>
+            <button type="button" onClick={handleImport} disabled={importStatus === 'loading'}>
+              {importStatus === 'loading' ? 'Rezepte werden importiert …' : '20 NHS-Rezepte importieren'}
+            </button>
+            {importResult && (
+              <div className="import-result" role="status">
+                <p className="notice">
+                  {importResult.created} neu · {importResult.updated} aktualisiert ·{' '}
+                  {importResult.unchanged} unverändert · {importResult.rejected} abgelehnt
+                </p>
+                {importResult.rejected > 0 && (
+                  <div className="import-rejections">
+                    <strong>Nicht importiert</strong>
+                    <ul>
+                      {importResult.items
+                        .filter((item) => item.status === 'rejected')
+                        .map((item) => (
+                          <li key={item.source_url}>
+                            <a href={item.source_url} target="_blank" rel="noreferrer">
+                              {recipeNameFromUrl(item.source_url)}
+                            </a>
+                            <span>{describeImportReason(item.reason)}</span>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
-        {importStatus === 'error' && (
-          <p className="notice notice--error">Der Rezeptimport ist fehlgeschlagen.</p>
-        )}
-      </section>
+            {importStatus === 'error' && (
+              <p className="notice notice--error">Der Rezeptimport ist fehlgeschlagen.</p>
+            )}
+          </section>
 
-      <RecipeInventory status={recipeStatus} recipes={recipes} />
-
-      <form className="target-form" onSubmit={handleSubmit}>
-        <NumberField name="calories" label="Kalorien" unit="kcal" value={2500} />
-        <NumberField name="protein" label="Protein mindestens" unit="g" value={220} />
-        <NumberField name="fat" label="Fett höchstens" unit="g" value={71} />
-        <NumberField name="carbs" label="Kohlenhydrate" unit="g" value={233} />
-        <label className="field">
-          <span>Mahlzeiten</span>
-          <select name="mealCount" defaultValue="5">
-            {[3, 4, 5, 6].map((count) => (
-              <option key={count} value={count}>{count}</option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" disabled={requestStatus === 'loading'}>
-          {requestStatus === 'loading'
-            ? 'Pläne werden berechnet …'
-            : 'Tagespläne erstellen'}
-        </button>
-      </form>
-
-      {requestStatus === 'error' && (
-        <p className="notice notice--error">
-          Die Tagespläne konnten nicht erstellt werden.
-        </p>
-      )}
-
-      {result && (
-        <PlanResults
-          result={result}
-          selectedPlanIndex={selectedPlanIndex}
-          onSelect={setSelectedPlanIndex}
-        />
+          <RecipeInventory status={recipeStatus} recipes={recipes} />
+        </>
       )}
     </main>
   )
@@ -298,6 +348,10 @@ function RecipeInventory({
                 <span><strong>{formatNumber(recipe.nutrients.protein)} g</strong> Protein</span>
                 <span><strong>{formatNumber(recipe.nutrients.carbs)} g</strong> Kohlenhydrate</span>
                 <span><strong>{formatNumber(recipe.nutrients.fat)} g</strong> Fett</span>
+                <span><strong>{formatNumber(recipe.nutrients.sugar)} g</strong> Zucker</span>
+                <span><strong>{formatNumber(recipe.nutrients.saturated_fat)} g</strong> gesättigte Fettsäuren</span>
+                <span><strong>{formatNumber(recipe.nutrients.fiber)} g</strong> Ballaststoffe</span>
+                <span><strong>{formatNumber(recipe.nutrients.salt)} g</strong> Salz</span>
               </div>
               <div className="recipe-details">
                 <div>
@@ -588,6 +642,10 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('de-DE', {
     maximumFractionDigits: 1,
   }).format(value)
+}
+
+function pageFromPath(): AppPage {
+  return window.location.pathname === '/recipes' ? 'recipes' : 'planner'
 }
 
 function recipeNameFromUrl(sourceUrl: string) {

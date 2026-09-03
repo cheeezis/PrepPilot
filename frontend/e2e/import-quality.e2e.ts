@@ -23,7 +23,7 @@ test('shows the source and concrete reason for a rejected recipe', async ({ page
     })
   })
 
-  await page.goto('/')
+  await page.goto('/recipes')
   await page.getByRole('button', { name: '20 NHS-Rezepte importieren' }).click()
 
   const status = page.getByRole('status')

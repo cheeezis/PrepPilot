@@ -125,6 +125,30 @@ h1 {
   grid-column: 1 / -1;
 }
 
+.app-navigation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #dce4e0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.app-navigation a {
+  padding: 7px 12px;
+  border-radius: 7px;
+  color: #56615d;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.app-navigation a[aria-current='page'] {
+  color: #fff;
+  background: #176b52;
+}
+
 .import-result {
   display: grid;
   gap: 12px;

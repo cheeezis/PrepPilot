@@ -12,6 +12,8 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('shows the stored recipe inventory', async ({ page }) => {
+  await page.getByRole('link', { name: 'Rezepte' }).click()
+  await expect(page).toHaveURL(/\/recipes$/)
   await expect(page.getByRole('heading', { name: 'Gespeicherte Rezepte' })).toBeVisible()
   await expect(page.getByText('20 Rezepte')).toBeVisible()
   const recipes = page.locator('.recipe-card')
@@ -21,11 +23,11 @@ test('shows the stored recipe inventory', async ({ page }) => {
   await expect(
     recipes.first().getByRole('heading', { name: 'Zutaten für 6 Portionen' }),
   ).toBeVisible()
+  await expect(recipes.first().getByText('Ballaststoffe')).toBeVisible()
   await expect(recipes.first().getByRole('heading', { name: 'Zubereitung' })).toBeVisible()
   await expect(
     recipes.first().getByRole('link', { name: 'Originalrezept beim NHS' }),
   ).toBeVisible()
-
 })
 
 test('creates and selects a valid day plan', async ({ page }) => {
