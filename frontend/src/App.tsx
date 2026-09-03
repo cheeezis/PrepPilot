@@ -108,7 +108,6 @@ function App() {
         protein_minimum: Number(form.get('protein')),
         fat_maximum: Number(form.get('fat')),
         carbs: Number(form.get('carbs')),
-        meal_count: Number(form.get('mealCount')),
       })
       setResult(nextResult)
       setRequestStatus('success')
@@ -177,24 +176,17 @@ function App() {
             <p className="eyebrow">Tagesplaner</p>
             <h1>Ein Tagesplan, der zu deinen Zielen passt.</h1>
             <p className="intro-copy">
-              Gib deine Tagesziele ein. PrepPilot kombiniert daraus passende
-              Mahlzeiten und zeigt Abweichungen offen an.
+              Gib deine Tagesziele ein. PrepPilot kombiniert daraus ein
+              Frühstück, ein Mittagessen und ein Abendessen und zeigt
+              Abweichungen offen an.
             </p>
           </section>
 
           <form className="target-form" onSubmit={handleSubmit}>
-            <NumberField name="calories" label="Kalorien" unit="kcal" value={2500} />
-            <NumberField name="protein" label="Protein mindestens" unit="g" value={220} />
-            <NumberField name="fat" label="Fett höchstens" unit="g" value={71} />
-            <NumberField name="carbs" label="Kohlenhydrate" unit="g" value={233} />
-            <label className="field">
-              <span>Mahlzeiten</span>
-              <select name="mealCount" defaultValue="5">
-                {[3, 4, 5, 6].map((count) => (
-                  <option key={count} value={count}>{count}</option>
-                ))}
-              </select>
-            </label>
+            <NumberField name="calories" label="Kalorien" unit="kcal" value={2000} />
+            <NumberField name="protein" label="Protein mindestens" unit="g" value={120} />
+            <NumberField name="fat" label="Fett höchstens" unit="g" value={70} />
+            <NumberField name="carbs" label="Kohlenhydrate" unit="g" value={220} />
             <button type="submit" disabled={requestStatus === 'loading'}>
               {requestStatus === 'loading'
                 ? 'Pläne werden berechnet …'
@@ -231,10 +223,10 @@ function App() {
             <div>
               <p className="eyebrow">NHS-Import</p>
               <h2 id="import-heading">Geprüfte NHS-Rezepte laden</h2>
-              <p>Der Lauf verarbeitet ausschließlich die 20 fest freigegebenen Seiten.</p>
+              <p>Der Lauf verarbeitet ausschließlich die 33 fest freigegebenen Seiten.</p>
             </div>
             <button type="button" onClick={handleImport} disabled={importStatus === 'loading'}>
-              {importStatus === 'loading' ? 'Rezepte werden importiert …' : '20 NHS-Rezepte importieren'}
+              {importStatus === 'loading' ? 'Rezepte werden importiert …' : '33 NHS-Rezepte importieren'}
             </button>
             {importResult && (
               <div className="import-result" role="status">
@@ -428,7 +420,7 @@ function PlanResults({
       <section className="results">
         <p className="notice">
           Für diese Ziele liegt aktuell kein brauchbarer Plan innerhalb der
-          festgelegten Grenzen. Passe ein Ziel oder die Mahlzeitenanzahl an.
+          festgelegten Grenzen. Passe eines deiner Nährwertziele an.
         </p>
       </section>
     )

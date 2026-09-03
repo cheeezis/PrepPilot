@@ -45,5 +45,5 @@ npm test
 npm run build
 ```
 
-Im Browser startet „20 NHS-Rezepte importieren“ den begrenzten Import. Der
+Im Browser startet „33 NHS-Rezepte importieren“ den begrenzten Import. Der
 zweite Lauf muss 20 unveränderte Rezepte und keine Duplikate melden.

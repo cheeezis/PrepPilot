@@ -24,7 +24,7 @@ test('shows the source and concrete reason for a rejected recipe', async ({ page
   })
 
   await page.goto('/recipes')
-  await page.getByRole('button', { name: '20 NHS-Rezepte importieren' }).click()
+  await page.getByRole('button', { name: '33 NHS-Rezepte importieren' }).click()
 
   const status = page.getByRole('status')
   await expect(status).toContainText('1 abgelehnt')

@@ -124,5 +124,18 @@ Bei fünf Mahlzeiten entstehen mit 20 Rezepten rechnerisch knapp 500.000
 Rezept-Portions-Kombinationen. Der Planer verwirft Rezeptgruppen vor der
 Portionssuche, wenn sie die äußeren Nährwertgrenzen nachweislich nicht erreichen
 können, und hält nur die drei besten Treffer im Speicher. Vor einer weiteren
-Katalogvergrößerung sollen Kategorien zusätzlich die Planvielfalt steuerbar
+Katalogvergrößerung mussten Kategorien zusätzlich die Planvielfalt steuerbar
 machen.
+
+## Ausgewogene Erweiterung auf 33 Rezepte
+
+Der zweite kontrollierte Ausbau ergänzt sechs Frühstücks- und sieben
+Mittagsrezepte aus den offiziellen NHS-Sammlungen. Zusammen mit dem bestehenden
+Katalog stehen damit 8 Frühstücke, 8 Mittagessen und 17 Abendessen zur Verfügung.
+Alle 13 neuen Seiten wurden vor der Freigabe mit denselben Pflichtfeldern,
+Nährwertprüfungen und lesbaren Zubereitungsschritten validiert.
+
+Eine freie Kombination aller 33 Rezepte benötigte für das Referenzprofil rund
+24 Sekunden. Die feste Auswahl aus genau einem Frühstück, einem Mittagessen und
+einem Abendessen begrenzt den Suchraum fachlich nachvollziehbar. Snacks werden
+später als eigene Kategorie ergänzt.

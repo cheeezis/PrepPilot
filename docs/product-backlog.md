@@ -13,15 +13,16 @@ Die technische Qualitätsprüfung der ersten zehn Rezepte ist in
 
 ### Mehr Rezepte derselben Quelle
 
-Die feste NHS-Liste wurde nach der Abnahme kontrolliert von 10 auf 20 Rezepte
-erweitert. Die offiziellen NHS-Kategorien werden inzwischen gespeichert und
-sind im Rezeptbestand filterbar. Weitere geprüfte Kandidaten stehen zur Verfügung.
+Die feste NHS-Liste wurde nach der Abnahme kontrolliert auf 33 Rezepte erweitert:
+8 Frühstücke, 8 Mittagessen und 17 Abendessen. Die offiziellen NHS-Kategorien
+werden gespeichert und sind im Rezeptbestand filterbar.
 
 ### Planung verbessern
 
-- festlegen, wie Frühstück, Mittag- und Abendessen in Plänen verteilt werden
+- die feste Verteilung aus Frühstück, Mittag- und Abendessen mit Nutzern prüfen
 - Wiederholungen und Portionspraktikabilität bewerten
 - erklären, warum ein Plan gültig oder nur eine Annäherung ist
+- Snacks später als eigene NHS-Kategorie und zusätzliche Mahlzeitenoption ergänzen
 
 ## Spätere Produktabschnitte
 
@@ -43,6 +44,6 @@ Sie sind keine Voraussetzung für den aktuellen Planer.
 - Mahlzeiten austauschen und Favoriten speichern
 - Ernährungsformen und Ausschlüsse
 - Benutzerkonten und geräteübergreifende Nutzung
-- Zucker, Ballaststoffe, Salz und Allergene
+- Allergene
 - Preise, Packungsgrößen, Budgets und Vorräte
 - Produkt- und Rezeptbilder mit geklärten Nutzungsrechten

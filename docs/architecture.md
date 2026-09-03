@@ -12,9 +12,9 @@ React
   -> Ergebnis mit Portionen, Zutaten und Quelllink
 ```
 
-Der NHS-Adapter akzeptiert ausschließlich 20 fest hinterlegte URLs. Er liest
+Der NHS-Adapter akzeptiert ausschließlich 33 fest hinterlegte URLs. Er liest
 Titel und Zutaten aus Recipe-JSON-LD, die sichtbare Methodenliste aus dem
-Rezeptbereich sowie Portionen, Zeiten und vier Makros aus dem wiederkehrenden
+Rezeptbereich sowie Portionen, Zeiten und acht Nährwerte aus dem wiederkehrenden
 Rezeptkopf. Unvollständige oder energetisch widersprüchliche Seiten werden
 abgelehnt. Bis zu vier Seiten werden parallel abgerufen; Auswertung und
 Datenbankspeicherung erfolgen anschließend geordnet. Quelle plus URL
@@ -22,8 +22,8 @@ identifizieren ein Rezept; ein Inhalts-Hash erkennt unveränderte Wiederholungen
 und Aktualisierungen.
 
 Die Kategorie wird aus den offiziellen NHS-Sammlungen Frühstück, Mittagessen
-und Abendessen übernommen. Sie ist im Rezeptbestand sichtbar und filterbar,
-beeinflusst die Planberechnung aber noch nicht automatisch.
+und Abendessen übernommen. Sie ist im Rezeptbestand sichtbar und filterbar.
+Jeder Tagesplan kombiniert genau ein Rezept aus jeder der drei Kategorien.
 
 Der Planer fragt keine externe Quelle ab. Er arbeitet nur mit vollständigen
 Rezepten aus PostgreSQL und skaliert sie mit einer oder zwei ganzen Portionen.

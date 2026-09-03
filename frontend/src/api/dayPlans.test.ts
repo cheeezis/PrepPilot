@@ -20,7 +20,6 @@ describe('createDayPlans', () => {
       protein_minimum: 220,
       fat_maximum: 71,
       carbs: 233,
-      meal_count: 5,
     }
 
     await expect(createDayPlans(request)).resolves.toEqual(result)
@@ -44,7 +43,6 @@ describe('createDayPlans', () => {
         protein_minimum: 220,
         fat_maximum: 71,
         carbs: 233,
-        meal_count: 5,
       }),
     ).rejects.toThrow('Tagespläne konnten nicht erstellt werden.')
   })

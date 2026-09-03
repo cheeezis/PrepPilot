@@ -28,7 +28,6 @@ class DayPlanRequest(BaseModel):
     protein_minimum: Decimal = Field(gt=0)
     fat_maximum: Decimal = Field(gt=0)
     carbs: Decimal = Field(gt=0)
-    meal_count: int = Field(ge=1, le=6)
 
 
 class NutrientValuesResponse(BaseModel):
@@ -172,7 +171,6 @@ def create_day_plans(
             protein_minimum=request.protein_minimum,
             fat_maximum=request.fat_maximum,
             carbs=request.carbs,
-            meal_count=request.meal_count,
         ),
         recipes,
     )

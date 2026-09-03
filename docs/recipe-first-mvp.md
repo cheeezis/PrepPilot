@@ -79,7 +79,8 @@ aber nicht im produktiven Bestand.
 
 - Maßgeblich sind ausschließlich die gespeicherten Quellenwerte pro Portion.
 - Ein Rezept kann über ganzzahlige Portionen skaliert werden.
-- Der Nutzer gibt Zielwerte und die gewünschte Anzahl der Mahlzeiten an.
+- Der Nutzer gibt Zielwerte für einen Tag an.
+- Der Plan enthält genau ein Frühstück, ein Mittagessen und ein Abendessen.
 - Der Planer liefert passende Kombinationen oder kennzeichnet die beste
   Annäherung transparent.
 - Die Herkunft jedes geplanten Rezepts bleibt im Frontend sichtbar.
@@ -118,7 +119,7 @@ ersetzt und die lokale Datenbank kontrolliert neu erstellt werden.
 | FastAPI-Anwendung und Datenbankverbindung | beibehalten | Technische Basis bleibt passend. |
 | Health-Endpunkt | anpassen | Prüft künftig Datenbank und Rezeptbestand statt Katalog. |
 | Planbewertung und Abweichungsregeln | beibehalten | Zielbereiche und Scoring bleiben fachlich nützlich. |
-| Planeroptionen und Mahlzeitenrollen | ersetzen | Optionen kommen direkt aus `recipes`; feste Rollen entfallen zunächst. |
+| Planeroptionen und Mahlzeitenrollen | ersetzen | Kategorien kommen direkt aus `recipes`; der Tagesplan nutzt Frühstück, Mittagessen und Abendessen. |
 | API für Tagespläne | anpassen | Liefert gespeicherte Rezepte und Quellenwerte statt berechneter Food-Werte. |
 | Katalogdatei, Repository und Seed | entfernen | `catalog.json` ist nicht mehr der Produktivbestand. |
 | Rezept-Inbox und Promotion | entfernen | Import und Produktivkatalog sind im MVP nicht getrennt. |

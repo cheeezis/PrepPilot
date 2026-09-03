@@ -3,7 +3,6 @@ export type DayPlanRequest = {
   protein_minimum: number
   fat_maximum: number
   carbs: number
-  meal_count: number
 }
 
 export type NutrientValues = {
