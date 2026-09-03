@@ -17,6 +17,7 @@ NHS-Kategorien automatisch abfragen
   -> Nachtisch ausschließen
   -> Rezeptseiten validieren und idempotent importieren
   -> recipes in PostgreSQL
+  -> gewünschte Mahlzeiten auswählen
   -> Tagesplan aus ganzen Portionen
   -> Rezept, Zutaten und Quelle im Frontend anzeigen
 ```

@@ -21,10 +21,10 @@ filterbar. Der erste vollständige Lauf fand 169 relevante Seiten und speicherte
 
 ### Planung verbessern
 
-- die feste Verteilung aus Frühstück, Mittag- und Abendessen mit Nutzern prüfen
+- flexible Auswahl aus Frühstück, Mittagessen, Abendessen und Snack umgesetzt
+- flexible Mahlzeitenstruktur mit Nutzern prüfen
 - Wiederholungen und Portionspraktikabilität bewerten
 - erklären, warum ein Plan gültig oder nur eine Annäherung ist
-- Snacks später als optionale zusätzliche Mahlzeit im Planer ergänzen
 
 ## Spätere Produktabschnitte
 
