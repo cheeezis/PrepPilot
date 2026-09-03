@@ -1,7 +1,11 @@
 from decimal import Decimal
 
 from preppilot_api.nutrition import Nutrients
-from preppilot_api.planner import PlanTargets, generate_day_plans
+from preppilot_api.planner import (
+    PlanTargets,
+    _combination_can_reach_outer_limits,
+    generate_day_plans,
+)
 from preppilot_api.recipe_repository import RecipeDefinition
 
 
@@ -9,6 +13,7 @@ def recipe(recipe_id: int, values: tuple[str, str, str, str]) -> RecipeDefinitio
     return RecipeDefinition(
         id=recipe_id,
         title=f"Recipe {recipe_id}",
+        category="dinner",
         servings=4,
         source_url=f"https://example.test/{recipe_id}",
         license_name="Open Government Licence v3.0",
@@ -51,6 +56,22 @@ def test_plan_generation_is_reproducible() -> None:
     )
 
 
+def test_skips_recipe_combinations_that_cannot_reach_outer_limits() -> None:
+    recipes = tuple(
+        recipe(recipe_id, ("100", "5", "10", "2"))
+        for recipe_id in range(1, 4)
+    )
+    high_targets = PlanTargets(
+        calories=Decimal("2500"),
+        protein_minimum=Decimal("220"),
+        fat_maximum=Decimal("71"),
+        carbs=Decimal("233"),
+        meal_count=3,
+    )
+
+    assert not _combination_can_reach_outer_limits(recipes, high_targets)
+
+
 def test_api_serializes_recipe_source_data(monkeypatch) -> None:
     from fastapi.testclient import TestClient
 
@@ -70,6 +91,7 @@ def test_api_serializes_recipe_source_data(monkeypatch) -> None:
         )
     assert response.status_code == 200
     planned = response.json()["plans"][0]["recipes"][0]
+    assert planned["category"] == "dinner"
     assert planned["source_url"].startswith("https://")
     assert planned["ingredients"] == ["ingredient"]
     assert planned["portions"] in (1, 2)
@@ -88,3 +110,4 @@ def test_recipe_api_exposes_the_stored_inventory(monkeypatch) -> None:
     assert response.json()[0]["ingredients"] == ["ingredient"]
     assert response.json()[0]["instructions"] == ["instruction"]
     assert response.json()[0]["servings"] == 4
+    assert response.json()[0]["category"] == "dinner"

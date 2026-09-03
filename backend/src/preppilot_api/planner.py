@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from itertools import combinations, product
+from itertools import combinations
 from typing import Literal
 
 from preppilot_api.nutrition import Nutrients
@@ -60,7 +60,26 @@ def generate_day_plans(
 
     candidates: list[DayPlan] = []
     for selected in combinations(recipes, targets.meal_count):
-        for portions in product((1, 2), repeat=targets.meal_count):
+        minimum = sum((recipe.nutrients for recipe in selected), start=Nutrients())
+        if not _nutrient_range_can_reach_outer_limits(
+            minimum, minimum.scaled(2), targets
+        ):
+            continue
+
+        additional_nutrients: tuple[Nutrients, ...] = (Nutrients(),)
+        for recipe in selected:
+            additional_nutrients += tuple(
+                nutrients + recipe.nutrients for nutrients in additional_nutrients
+            )
+
+        for portion_mask, additional in enumerate(additional_nutrients):
+            nutrients = minimum + additional
+            if not _is_within_outer_limits(nutrients, targets):
+                continue
+            portions = tuple(
+                2 if portion_mask & (1 << index) else 1
+                for index in range(targets.meal_count)
+            )
             planned = tuple(
                 PlannedRecipe(
                     recipe=recipe,
@@ -69,9 +88,6 @@ def generate_day_plans(
                 )
                 for recipe, portion_count in zip(selected, portions, strict=True)
             )
-            nutrients = sum((item.nutrients for item in planned), start=Nutrients())
-            if not _is_within_outer_limits(nutrients, targets):
-                continue
             evaluations = _evaluate_rules(nutrients, targets)
             status: PlanStatus = (
                 "valid"
@@ -95,15 +111,41 @@ def generate_day_plans(
                     recipes=planned,
                 )
             )
+            candidates.sort(key=_plan_sort_key)
+            del candidates[limit:]
 
-    candidates.sort(
-        key=lambda candidate: (
-            0 if candidate.status == "valid" else 1,
-            candidate.score,
-            candidate.stable_key,
-        )
+    return tuple(candidates)
+
+
+def _combination_can_reach_outer_limits(
+    recipes: tuple[RecipeDefinition, ...], targets: PlanTargets
+) -> bool:
+    minimum = sum((recipe.nutrients for recipe in recipes), start=Nutrients())
+    return _nutrient_range_can_reach_outer_limits(
+        minimum, minimum.scaled(2), targets
     )
-    return tuple(candidates[:limit])
+
+
+def _nutrient_range_can_reach_outer_limits(
+    minimum: Nutrients, maximum: Nutrients, targets: PlanTargets
+) -> bool:
+    return (
+        maximum.calories >= targets.calories * Decimal("0.9")
+        and minimum.calories <= targets.calories * Decimal("1.1")
+        and maximum.protein >= targets.protein_minimum * Decimal("0.9")
+        and maximum.fat >= targets.fat_maximum * Decimal("0.7")
+        and minimum.fat <= targets.fat_maximum * Decimal("1.1")
+        and maximum.carbs >= targets.carbs * Decimal("0.5")
+        and minimum.carbs <= targets.carbs * Decimal("1.5")
+    )
+
+
+def _plan_sort_key(candidate: DayPlan) -> tuple[int, Decimal, str]:
+    return (
+        0 if candidate.status == "valid" else 1,
+        candidate.score,
+        candidate.stable_key,
+    )
 
 
 def _evaluate_rules(

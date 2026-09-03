@@ -1,25 +1,25 @@
 # Produkt-Backlog
 
-Stand: 2. September 2026
+Stand: 3. September 2026
 
 ## Als Nächstes
 
 ### Rezeptqualität und Darstellung
 
-- lange NHS-Zubereitungstexte in lesbare Schritte trennen
-- Importablehnungen mit konkretem Grund im Frontend anzeigen
 - Rezeptübersicht mit echten Nutzern auf Verständlichkeit prüfen
+
+Die technische Qualitätsprüfung der ersten zehn Rezepte ist in
+[`recipe-quality.md`](recipe-quality.md) dokumentiert.
 
 ### Mehr Rezepte derselben Quelle
 
-Nach der Abnahme der ersten zehn Rezepte wird die feste NHS-Liste kontrolliert
-erweitert. Neue Seiten müssen dieselben Pflichtfelder, Rechte und
-Attributionsregeln erfüllen. Ziel ist zunächst bessere Vielfalt, nicht möglichst
-große Datenmenge.
+Die feste NHS-Liste wurde nach der Abnahme kontrolliert von 10 auf 20 Rezepte
+erweitert. Die offiziellen NHS-Kategorien werden inzwischen gespeichert und
+sind im Rezeptbestand filterbar. Weitere geprüfte Kandidaten stehen zur Verfügung.
 
 ### Planung verbessern
 
-- passende Rezeptkategorien einführen
+- festlegen, wie Frühstück, Mittag- und Abendessen in Plänen verteilt werden
 - Wiederholungen und Portionspraktikabilität bewerten
 - erklären, warum ein Plan gültig oder nur eine Annäherung ist
 

@@ -25,6 +25,10 @@ class Recipe(Base):
         CheckConstraint("length(trim(external_id)) > 0", name="ck_recipes_external_id"),
         CheckConstraint("length(trim(source_url)) > 0", name="ck_recipes_source_url"),
         CheckConstraint("length(trim(title)) > 0", name="ck_recipes_title"),
+        CheckConstraint(
+            "category in ('breakfast', 'lunch', 'dinner')",
+            name="ck_recipes_category",
+        ),
         CheckConstraint("servings > 0", name="ck_recipes_servings_positive"),
         CheckConstraint(
             "calories_per_serving > 0", name="ck_recipes_calories_positive"
@@ -34,6 +38,13 @@ class Recipe(Base):
         ),
         CheckConstraint("carbs_per_serving >= 0", name="ck_recipes_carbs_nonnegative"),
         CheckConstraint("fat_per_serving >= 0", name="ck_recipes_fat_nonnegative"),
+        CheckConstraint("sugar_per_serving >= 0", name="ck_recipes_sugar_nonnegative"),
+        CheckConstraint(
+            "saturated_fat_per_serving >= 0",
+            name="ck_recipes_saturated_fat_nonnegative",
+        ),
+        CheckConstraint("fiber_per_serving >= 0", name="ck_recipes_fiber_nonnegative"),
+        CheckConstraint("salt_per_serving >= 0", name="ck_recipes_salt_nonnegative"),
         CheckConstraint("length(content_hash) = 64", name="ck_recipes_content_hash"),
         UniqueConstraint(
             "source_name", "external_id", name="uq_recipes_source_external"
@@ -45,11 +56,16 @@ class Recipe(Base):
     external_id: Mapped[str] = mapped_column(String(300))
     source_url: Mapped[str] = mapped_column(Text)
     title: Mapped[str] = mapped_column(String(300))
+    category: Mapped[str] = mapped_column(String(20))
     servings: Mapped[int] = mapped_column(Integer)
     calories_per_serving: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     protein_per_serving: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     carbs_per_serving: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     fat_per_serving: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    sugar_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    saturated_fat_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    fiber_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    salt_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     ingredients: Mapped[list[str]] = mapped_column(JSON)
     instructions: Mapped[list[str]] = mapped_column(JSON)
     preparation_minutes: Mapped[int | None] = mapped_column(Integer)

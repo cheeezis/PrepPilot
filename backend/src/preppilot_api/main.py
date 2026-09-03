@@ -36,11 +36,16 @@ class NutrientValuesResponse(BaseModel):
     protein: float
     carbs: float
     fat: float
+    sugar: float | None
+    saturated_fat: float | None
+    fiber: float | None
+    salt: float | None
 
 
 class PlannedRecipeResponse(BaseModel):
     id: int
     title: str
+    category: Literal["breakfast", "lunch", "dinner"]
     portions: int
     recipe_servings: int
     source_url: str
@@ -77,6 +82,7 @@ class DayPlansResponse(BaseModel):
 class RecipeResponse(BaseModel):
     id: int
     title: str
+    category: Literal["breakfast", "lunch", "dinner"]
     servings: int
     source_url: str
     license_name: str
@@ -186,6 +192,7 @@ def _serialize_recipe(recipe: RecipeDefinition) -> RecipeResponse:
     return RecipeResponse(
         id=recipe.id,
         title=recipe.title,
+        category=recipe.category,
         servings=recipe.servings,
         source_url=recipe.source_url,
         license_name=recipe.license_name,
@@ -227,6 +234,7 @@ def _serialize_day_plan(plan: DayPlan) -> DayPlanResponse:
             PlannedRecipeResponse(
                 id=item.recipe.id,
                 title=item.recipe.title,
+                category=item.recipe.category,
                 portions=item.portions,
                 recipe_servings=item.recipe.servings,
                 source_url=item.recipe.source_url,
@@ -247,6 +255,10 @@ def _serialize_nutrients(nutrients: Nutrients) -> NutrientValuesResponse:
         protein=float(nutrients.protein),
         carbs=float(nutrients.carbs),
         fat=float(nutrients.fat),
+        sugar=_optional_float(nutrients.sugar),
+        saturated_fat=_optional_float(nutrients.saturated_fat),
+        fiber=_optional_float(nutrients.fiber),
+        salt=_optional_float(nutrients.salt),
     )
 
 

@@ -1,22 +1,29 @@
 import { expect, test } from '@playwright/test'
 
+test.beforeAll(async ({ request }, testInfo) => {
+  testInfo.setTimeout(120_000)
+  const response = await request.post('/api/imports/nhs', { timeout: 120_000 })
+  expect(response.ok()).toBeTruthy()
+})
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: '10 NHS-Rezepte importieren' }).click()
-  await expect(page.getByRole('status')).toContainText(/neu|unverändert/)
   await expect(page.getByText('System bereit')).toBeVisible()
 })
 
 test('shows the stored recipe inventory', async ({ page }) => {
+  await page.getByRole('link', { name: 'Rezepte' }).click()
+  await expect(page).toHaveURL(/\/recipes$/)
   await expect(page.getByRole('heading', { name: 'Gespeicherte Rezepte' })).toBeVisible()
-  await expect(page.getByText('10 Rezepte')).toBeVisible()
+  await expect(page.getByText('20 Rezepte')).toBeVisible()
   const recipes = page.locator('.recipe-card')
-  await expect(recipes).toHaveCount(10)
+  await expect(recipes).toHaveCount(20)
   await expect(recipes.first()).toContainText('525 kcal pro Portion · ergibt 6 Portionen')
   await recipes.first().locator('summary').click()
   await expect(
     recipes.first().getByRole('heading', { name: 'Zutaten für 6 Portionen' }),
   ).toBeVisible()
+  await expect(recipes.first().getByText('Ballaststoffe')).toBeVisible()
   await expect(recipes.first().getByRole('heading', { name: 'Zubereitung' })).toBeVisible()
   await expect(
     recipes.first().getByRole('link', { name: 'Originalrezept beim NHS' }),
@@ -50,7 +57,7 @@ test('creates and selects a valid day plan', async ({ page }) => {
 
 test('explains hard and soft deviations for approximations', async ({ page }) => {
   await page.getByRole('spinbutton', { name: 'Kalorien kcal' }).fill('1800')
-  await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('160')
+  await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('200')
   await page.getByRole('combobox', { name: 'Mahlzeiten' }).selectOption('3')
   await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
 

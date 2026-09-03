@@ -11,6 +11,10 @@ export type NutrientValues = {
   protein: number
   carbs: number
   fat: number
+  sugar: number | null
+  saturated_fat: number | null
+  fiber: number | null
+  salt: number | null
 }
 
 export type RuleEvaluation = {
@@ -26,6 +30,7 @@ export type RuleEvaluation = {
 export type PlannedRecipe = {
   id: number
   title: string
+  category: 'breakfast' | 'lunch' | 'dinner'
   portions: number
   recipe_servings: number
   source_url: string
