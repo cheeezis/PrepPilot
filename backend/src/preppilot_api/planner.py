@@ -22,6 +22,7 @@ class PlanTargets:
 @dataclass(frozen=True)
 class PlannedRecipe:
     recipe: RecipeDefinition
+    category: RecipeCategory
     portions: int
     nutrients: Nutrients
 
@@ -62,10 +63,12 @@ def generate_day_plans(
         "dinner",
     )
     recipes_by_category = tuple(
-        tuple(recipe for recipe in recipes if recipe.category == category)
+        tuple(recipe for recipe in recipes if category in recipe.categories)
         for category in required_categories
     )
     for selected in product(*recipes_by_category):
+        if len({recipe.id for recipe in selected}) != len(selected):
+            continue
         minimum = sum((recipe.nutrients for recipe in selected), start=Nutrients())
         if not _nutrient_range_can_reach_outer_limits(
             minimum, minimum.scaled(2), targets
@@ -89,10 +92,13 @@ def generate_day_plans(
             planned = tuple(
                 PlannedRecipe(
                     recipe=recipe,
+                    category=required_categories[index],
                     portions=portion_count,
                     nutrients=recipe.nutrients.scaled(portion_count),
                 )
-                for recipe, portion_count in zip(selected, portions, strict=True)
+                for index, (recipe, portion_count) in enumerate(
+                    zip(selected, portions, strict=True)
+                )
             )
             evaluations = _evaluate_rules(nutrients, targets)
             status: PlanStatus = (

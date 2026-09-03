@@ -17,7 +17,7 @@ def recipe(
     return RecipeDefinition(
         id=recipe_id,
         title=f"Recipe {recipe_id}",
-        category=category,
+        categories=(category,),
         servings=4,
         source_url=f"https://example.test/{recipe_id}",
         license_name="Open Government Licence v3.0",
@@ -51,7 +51,7 @@ def test_reference_profile_returns_recipe_first_plan() -> None:
     assert plans and plans[0].status == "valid"
     assert len(plans[0].recipes) == 3
     assert all(item.portions in (1, 2) for item in plans[0].recipes)
-    assert [item.recipe.category for item in plans[0].recipes] == [
+    assert [item.category for item in plans[0].recipes] == [
         "breakfast",
         "lunch",
         "dinner",
@@ -66,7 +66,7 @@ def test_plan_generation_is_reproducible() -> None:
 
 def test_requires_one_recipe_from_each_main_meal_category() -> None:
     recipes_without_lunch = tuple(
-        recipe for recipe in RECIPES if recipe.category != "lunch"
+        candidate for candidate in RECIPES if "lunch" not in candidate.categories
     )
 
     assert generate_day_plans(targets(), recipes_without_lunch) == ()
@@ -124,4 +124,4 @@ def test_recipe_api_exposes_the_stored_inventory(monkeypatch) -> None:
     assert response.json()[0]["ingredients"] == ["ingredient"]
     assert response.json()[0]["instructions"] == ["instruction"]
     assert response.json()[0]["servings"] == 4
-    assert response.json()[0]["category"] == "breakfast"
+    assert response.json()[0]["categories"] == ["breakfast"]

@@ -7,6 +7,8 @@ import preppilot_api.nhs_import as import_module
 from preppilot_api.models import Base, Recipe
 from preppilot_api.nhs_import import (
     _instructions,
+    _recipe_links,
+    discover_nhs_recipe_categories,
     import_nhs_recipes,
     parse_recipe_page,
 )
@@ -27,7 +29,7 @@ PAGE = """
 def test_parses_complete_nhs_recipe_page() -> None:
     recipe = parse_recipe_page("https://example.test/recipe", PAGE)
     assert recipe.title == "Test curry"
-    assert recipe.category == "dinner"
+    assert recipe.categories == ("dinner",)
     assert recipe.servings == 4
     assert recipe.ingredients == ["1 onion", "2 tomatoes"]
     assert recipe.instructions == ["Chop vegetables.", "Cook everything."]
@@ -40,25 +42,56 @@ def test_parses_complete_nhs_recipe_page() -> None:
     assert len(recipe.content_hash) == 64
 
 
-def test_assigns_category_from_the_approved_nhs_collection() -> None:
+def test_keeps_all_discovered_categories() -> None:
     recipe = parse_recipe_page(
         "https://www.nhs.uk/healthier-families/recipes/super-scrambled-eggs/",
         PAGE,
+        ("breakfast", "lunch"),
     )
 
-    assert recipe.category == "breakfast"
+    assert recipe.categories == ("breakfast", "lunch")
 
 
-def test_approved_catalog_is_balanced_by_source_category() -> None:
-    categories = [
-        import_module.NHS_RECIPE_CATEGORIES.get(url, "dinner")
-        for url in import_module.NHS_RECIPE_URLS
-    ]
+def test_extracts_unique_recipe_links_from_search_result() -> None:
+    page = """
+    <a href="/healthier-families/recipes/test-recipe/">Test</a>
+    <a href="/healthier-families/recipes/test-recipe/">Duplicate</a>
+    <a href="/healthier-families/recipes/second-recipe/">Second</a>
+    <a href="/healthier-families/recipes/collections/not-a-recipe/">Ignored</a>
+    """
 
-    assert len(categories) == 33
-    assert categories.count("breakfast") == 8
-    assert categories.count("lunch") == 8
-    assert categories.count("dinner") == 17
+    assert _recipe_links(page) == (
+        "https://www.nhs.uk/healthier-families/recipes/second-recipe/",
+        "https://www.nhs.uk/healthier-families/recipes/test-recipe/",
+    )
+
+
+def test_discovers_categories_maps_drinks_and_excludes_puddings(monkeypatch) -> None:
+    def page(*slugs: str) -> str:
+        return "".join(
+            f'<a href="/healthier-families/recipes/{slug}/">Recipe</a>'
+            for slug in slugs
+        )
+
+    pages = {
+        "Breakfast": page("shared", "porridge"),
+        "Lunch": page("shared", "soup"),
+        "Dinner": page("curry", "pudding-overlap"),
+        "Snacks": page("fruit-snack"),
+        "Drinks": page("smoothie"),
+        "Puddings": page("pudding-overlap"),
+    }
+    monkeypatch.setattr(import_module, "fetch_recipe_index", pages.__getitem__)
+
+    discovered = dict(discover_nhs_recipe_categories())
+
+    assert discovered[
+        "https://www.nhs.uk/healthier-families/recipes/shared/"
+    ] == ("breakfast", "lunch")
+    assert discovered[
+        "https://www.nhs.uk/healthier-families/recipes/smoothie/"
+    ] == ("snack",)
+    assert not any("pudding-overlap" in url for url in discovered)
 
 
 def test_rejects_page_without_complete_macros() -> None:
@@ -173,7 +206,9 @@ def test_rejects_missing_instructions() -> None:
 
 def test_identical_second_import_is_idempotent(monkeypatch) -> None:
     monkeypatch.setattr(
-        import_module, "NHS_RECIPE_URLS", ("https://example.test/recipe",)
+        import_module,
+        "discover_nhs_recipe_categories",
+        lambda: (("https://example.test/recipe", ("dinner",)),),
     )
     monkeypatch.setattr(import_module, "fetch_recipe_page", lambda url: PAGE)
     engine = create_engine("sqlite://")
@@ -186,7 +221,11 @@ def test_identical_second_import_is_idempotent(monkeypatch) -> None:
 
 def test_import_keeps_rejections_out_of_the_recipe_inventory(monkeypatch) -> None:
     urls = ("https://example.test/complete", "https://example.test/incomplete")
-    monkeypatch.setattr(import_module, "NHS_RECIPE_URLS", urls)
+    monkeypatch.setattr(
+        import_module,
+        "discover_nhs_recipe_categories",
+        lambda: tuple((url, ("dinner",)) for url in urls),
+    )
     monkeypatch.setattr(
         import_module,
         "fetch_recipe_page",
