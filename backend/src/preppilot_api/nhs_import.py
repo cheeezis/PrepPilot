@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from html.parser import HTMLParser
 from typing import Literal, cast
+from urllib.parse import urlencode, urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 from sqlalchemy import select
@@ -15,35 +16,19 @@ from sqlalchemy.orm import Session
 
 from preppilot_api.models import Recipe
 
-RecipeCategory = Literal["breakfast", "lunch", "dinner"]
+RecipeCategory = Literal["breakfast", "lunch", "dinner", "snack"]
 
-NHS_RECIPE_URLS = (
-    "https://www.nhs.uk/healthier-families/recipes/roast-dinner/",
-    "https://www.nhs.uk/healthier-families/recipes/pasta-carbonara/",
-    "https://www.nhs.uk/healthier-families/recipes/roast-chicken-drumsticks/",
-    "https://www.nhs.uk/healthier-families/recipes/roast-chicken-breast-with-peppers/",
-    "https://www.nhs.uk/healthier-families/recipes/sweet-and-sour-chicken/",
-    "https://www.nhs.uk/healthier-families/recipes/brilliant-beef-curry/",
-    "https://www.nhs.uk/healthier-families/recipes/classic-cottage-pie/",
-    "https://www.nhs.uk/healthier-families/recipes/salmon-and-broccoli-pasta/",
-    "https://www.nhs.uk/healthier-families/recipes/super-scrambled-eggs/",
-    "https://www.nhs.uk/healthier-families/recipes/sausage-tomato-butter-bean-bake/",
-    "https://www.nhs.uk/healthier-families/recipes/bajan-cou-cou-with-spicy-fish/",
-    "https://www.nhs.uk/healthier-families/recipes/baked-potatoes-with-mince/",
-    "https://www.nhs.uk/healthier-families/recipes/bengali-chicken-curry/",
-    "https://www.nhs.uk/healthier-families/recipes/caribbean-tofu-and-sweet-potato-curry-with-rice-and-peas/",
-    "https://www.nhs.uk/healthier-families/recipes/chilli-con-carne/",
-    "https://www.nhs.uk/healthier-families/recipes/homemade-fish-fingers-with-sweet-potato-wedges/",
-    "https://www.nhs.uk/healthier-families/recipes/falafels/",
-    "https://www.nhs.uk/healthier-families/recipes/healthier-full-english-breakfast/",
-    "https://www.nhs.uk/healthier-families/recipes/meat-free-cottage-pie/",
-    "https://www.nhs.uk/healthier-families/recipes/prawn-jambalaya/",
+NHS_ORIGIN = "https://www.nhs.uk"
+NHS_RECIPE_SEARCH_URL = f"{NHS_ORIGIN}/healthier-families/recipe_search/"
+NHS_SOURCE_FILTERS: tuple[tuple[str, RecipeCategory], ...] = (
+    ("Breakfast", "breakfast"),
+    ("Lunch", "lunch"),
+    ("Dinner", "dinner"),
+    ("Snacks", "snack"),
+    ("Drinks", "snack"),
 )
-NHS_RECIPE_CATEGORIES: dict[str, RecipeCategory] = {
-    "https://www.nhs.uk/healthier-families/recipes/super-scrambled-eggs/": "breakfast",
-    "https://www.nhs.uk/healthier-families/recipes/falafels/": "lunch",
-    "https://www.nhs.uk/healthier-families/recipes/healthier-full-english-breakfast/": "breakfast",
-}
+NHS_EXCLUDED_FILTER = "Puddings"
+NHS_RECIPE_PATH = re.compile(r"^/healthier-families/recipes/[a-z0-9-]+/$")
 SOURCE_NAME = "nhs-healthier-families"
 LICENSE_NAME = "Open Government Licence v3.0"
 ATTRIBUTION_TEXT = "Information from the NHS website"
@@ -53,7 +38,7 @@ ATTRIBUTION_TEXT = "Information from the NHS website"
 class ParsedRecipe:
     source_url: str
     title: str
-    category: RecipeCategory
+    categories: tuple[RecipeCategory, ...]
     servings: int
     calories: Decimal
     protein: Decimal
@@ -81,8 +66,9 @@ class ImportItem:
 
 def import_nhs_recipes(session: Session) -> tuple[ImportItem, ...]:
     results: list[ImportItem] = []
+    discovered = discover_nhs_recipe_categories()
     with ThreadPoolExecutor(max_workers=4) as executor:
-        candidates = executor.map(_fetch_candidate, NHS_RECIPE_URLS)
+        candidates = executor.map(_fetch_candidate, discovered)
         for candidate in candidates:
             if isinstance(candidate, ImportItem):
                 results.append(candidate)
@@ -93,22 +79,84 @@ def import_nhs_recipes(session: Session) -> tuple[ImportItem, ...]:
     return tuple(results)
 
 
-def _fetch_candidate(url: str) -> ParsedRecipe | ImportItem:
+def discover_nhs_recipe_categories(
+) -> tuple[tuple[str, tuple[RecipeCategory, ...]], ...]:
+    categories_by_url: dict[str, set[RecipeCategory]] = {}
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        source_pages = executor.map(
+            fetch_recipe_index,
+            [source_filter for source_filter, _ in NHS_SOURCE_FILTERS],
+        )
+        for (_, category), page in zip(NHS_SOURCE_FILTERS, source_pages, strict=True):
+            for url in _recipe_links(page):
+                categories_by_url.setdefault(url, set()).add(category)
+
+    excluded_urls = set(_recipe_links(fetch_recipe_index(NHS_EXCLUDED_FILTER)))
+    category_order: tuple[RecipeCategory, ...] = (
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack",
+    )
+    return tuple(
+        (
+            url,
+            tuple(category for category in category_order if category in categories),
+        )
+        for url, categories in sorted(categories_by_url.items())
+        if url not in excluded_urls
+    )
+
+
+def fetch_recipe_index(source_filter: str) -> str:
+    query = urlencode((("Meal", "OR"), ("Meal", source_filter)))
+    request = Request(
+        f"{NHS_RECIPE_SEARCH_URL}?{query}",
+        headers={"User-Agent": "PrepPilot/0.3 recipe importer"},
+    )
+    with urlopen(request, timeout=15) as response:
+        return cast(str, response.read().decode("utf-8"))
+
+
+def _recipe_links(page: str) -> tuple[str, ...]:
+    paths = re.findall(
+        r'href=["\'](/healthier-families/recipes/[a-z0-9-]+/)["\']',
+        page,
+        re.IGNORECASE,
+    )
+    return tuple(sorted({urljoin(NHS_ORIGIN, path) for path in paths}))
+
+
+def _fetch_candidate(
+    candidate: tuple[str, tuple[RecipeCategory, ...]],
+) -> ParsedRecipe | ImportItem:
+    url, categories = candidate
     try:
-        return parse_recipe_page(url, fetch_recipe_page(url))
+        return parse_recipe_page(url, fetch_recipe_page(url), categories)
     except (OSError, ValueError, json.JSONDecodeError) as error:
         return ImportItem(url, "rejected", reason=str(error))
 
 
 def fetch_recipe_page(url: str) -> str:
-    if url not in NHS_RECIPE_URLS:
-        raise ValueError("URL is not in the approved NHS recipe list")
-    request = Request(url, headers={"User-Agent": "PrepPilot/0.2 recipe importer"})
+    parsed_url = urlsplit(url)
+    if (
+        parsed_url.scheme != "https"
+        or parsed_url.netloc != "www.nhs.uk"
+        or not NHS_RECIPE_PATH.fullmatch(parsed_url.path)
+        or parsed_url.query
+        or parsed_url.fragment
+    ):
+        raise ValueError("URL is not an approved NHS recipe URL")
+    request = Request(url, headers={"User-Agent": "PrepPilot/0.3 recipe importer"})
     with urlopen(request, timeout=15) as response:
         return cast(str, response.read().decode("utf-8"))
 
 
-def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
+def parse_recipe_page(
+    source_url: str,
+    page: str,
+    categories: tuple[RecipeCategory, ...] = ("dinner",),
+) -> ParsedRecipe:
     recipe_data = _recipe_json_ld(page)
     visible_text = " ".join(
         html_module.unescape(value).strip()
@@ -116,7 +164,6 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
         if value.strip()
     )
     title = _required_string(recipe_data.get("name"), "title")
-    category = NHS_RECIPE_CATEGORIES.get(source_url, "dinner")
     ingredients = _string_list(recipe_data.get("recipeIngredient"), "ingredients")
     instructions = _method_instructions(page) or _instructions(
         recipe_data.get("recipeInstructions")
@@ -141,7 +188,7 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     cooking = _optional_minutes(visible_text, "Cook")
     payload: dict[str, object] = {
         "title": title,
-        "category": category,
+        "categories": categories,
         "servings": servings,
         "calories_per_serving": str(calories),
         "protein_per_serving": str(protein),
@@ -160,7 +207,7 @@ def parse_recipe_page(source_url: str, page: str) -> ParsedRecipe:
     return ParsedRecipe(
         source_url=source_url,
         title=title,
-        category=category,
+        categories=categories,
         servings=servings,
         calories=calories,
         protein=protein,
@@ -194,7 +241,7 @@ def _store_recipe(session: Session, parsed: ParsedRecipe) -> ImportItem:
         session.add(recipe)
     recipe.source_url = parsed.source_url
     recipe.title = parsed.title
-    recipe.category = parsed.category
+    recipe.categories = list(parsed.categories)
     recipe.servings = parsed.servings
     recipe.calories_per_serving = parsed.calories
     recipe.protein_per_serving = parsed.protein

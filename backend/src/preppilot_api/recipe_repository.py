@@ -13,14 +13,14 @@ class RecipeCatalogUnavailableError(RuntimeError):
     pass
 
 
-RecipeCategory = Literal["breakfast", "lunch", "dinner"]
+RecipeCategory = Literal["breakfast", "lunch", "dinner", "snack"]
 
 
 @dataclass(frozen=True)
 class RecipeDefinition:
     id: int
     title: str
-    category: RecipeCategory
+    categories: tuple[RecipeCategory, ...]
     servings: int
     source_url: str
     license_name: str
@@ -38,7 +38,7 @@ def load_recipes(session: Session) -> tuple[RecipeDefinition, ...]:
         RecipeDefinition(
             id=row.id,
             title=row.title,
-            category=cast(RecipeCategory, row.category),
+            categories=tuple(cast(RecipeCategory, value) for value in row.categories),
             servings=row.servings,
             source_url=row.source_url,
             license_name=row.license_name,

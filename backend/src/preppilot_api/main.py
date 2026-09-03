@@ -28,7 +28,6 @@ class DayPlanRequest(BaseModel):
     protein_minimum: Decimal = Field(gt=0)
     fat_maximum: Decimal = Field(gt=0)
     carbs: Decimal = Field(gt=0)
-    meal_count: int = Field(ge=1, le=6)
 
 
 class NutrientValuesResponse(BaseModel):
@@ -45,7 +44,7 @@ class NutrientValuesResponse(BaseModel):
 class PlannedRecipeResponse(BaseModel):
     id: int
     title: str
-    category: Literal["breakfast", "lunch", "dinner"]
+    category: Literal["breakfast", "lunch", "dinner", "snack"]
     portions: int
     recipe_servings: int
     source_url: str
@@ -82,7 +81,7 @@ class DayPlansResponse(BaseModel):
 class RecipeResponse(BaseModel):
     id: int
     title: str
-    category: Literal["breakfast", "lunch", "dinner"]
+    categories: list[Literal["breakfast", "lunch", "dinner", "snack"]]
     servings: int
     source_url: str
     license_name: str
@@ -146,11 +145,11 @@ def list_recipes(session: DatabaseSession) -> list[RecipeResponse]:
 def run_nhs_import(session: DatabaseSession) -> ImportRunResponse:
     try:
         items = import_nhs_recipes(session)
-    except SQLAlchemyError as error:
+    except (OSError, ValueError, SQLAlchemyError) as error:
         session.rollback()
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Rezeptimport konnte nicht gespeichert werden",
+            detail="NHS-Rezeptkatalog ist derzeit nicht verfügbar",
         ) from error
     return _serialize_import_run(items)
 
@@ -172,7 +171,6 @@ def create_day_plans(
             protein_minimum=request.protein_minimum,
             fat_maximum=request.fat_maximum,
             carbs=request.carbs,
-            meal_count=request.meal_count,
         ),
         recipes,
     )
@@ -192,7 +190,7 @@ def _serialize_recipe(recipe: RecipeDefinition) -> RecipeResponse:
     return RecipeResponse(
         id=recipe.id,
         title=recipe.title,
-        category=recipe.category,
+        categories=list(recipe.categories),
         servings=recipe.servings,
         source_url=recipe.source_url,
         license_name=recipe.license_name,
@@ -234,7 +232,7 @@ def _serialize_day_plan(plan: DayPlan) -> DayPlanResponse:
             PlannedRecipeResponse(
                 id=item.recipe.id,
                 title=item.recipe.title,
-                category=item.recipe.category,
+                category=item.category,
                 portions=item.portions,
                 recipe_servings=item.recipe.servings,
                 source_url=item.recipe.source_url,

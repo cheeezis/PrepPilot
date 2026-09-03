@@ -5,7 +5,7 @@ Der Recipe-first-MVP besitzt genau eine fachliche Tabelle: `recipes`.
 Sie speichert:
 
 - Quellenname, externe ID und Original-URL
-- Titel, NHS-Mahlzeitenkategorie und ursprüngliche Portionszahl
+- Titel, NHS-Mahlzeitenkategorien und ursprüngliche Portionszahl
 - Kalorien, Protein, Kohlenhydrate, Zucker, Fett, gesättigte Fettsäuren,
   Ballaststoffe und Salz pro Portion
 - originale Zutaten- und Zubereitungslisten
@@ -18,10 +18,11 @@ erzeugt keinen zweiten Datensatz. Zutaten sind absichtlich noch keine eigenen
 Tabellen: Für die Planung werden ausschließlich die Makros des Gesamtgerichts
 verwendet.
 
-`category` übernimmt die kleine NHS-Quelltaxonomie `breakfast`, `lunch` oder
-`dinner`. Sie wird als einfaches Feld am Rezept gespeichert, weil jedes der
-aktuell freigegebenen Rezepte genau einer dieser Sammlungen angehört. Dafür ist
-keine zusätzliche Kategorietabelle nötig.
+`categories` speichert eine kleine Liste aus `breakfast`, `lunch`, `dinner` und
+`snack`. Mehrere Werte sind nötig, weil NHS dasselbe Rezept in mehreren
+Sammlungen führen kann. NHS-Getränke werden dabei als Snack abgebildet. Für
+diese überschaubare Quellenmetadaten-Liste ist keine zusätzliche
+Kategorietabelle nötig.
 
 `alembic_version` ist eine technische Alembic-Tabelle und kein zusätzliches
 fachliches Datenmodell.

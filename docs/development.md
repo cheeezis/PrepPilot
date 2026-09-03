@@ -45,5 +45,6 @@ npm test
 npm run build
 ```
 
-Im Browser startet „20 NHS-Rezepte importieren“ den begrenzten Import. Der
-zweite Lauf muss 20 unveränderte Rezepte und keine Duplikate melden.
+Im Browser startet „NHS-Katalog synchronisieren“ die automatische Erkennung und
+den Import. Der zweite Lauf muss die bereits gespeicherten Rezepte als
+unverändert melden und darf keine Duplikate erzeugen.

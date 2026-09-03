@@ -13,12 +13,10 @@ def test_recipe_source_identity_is_unique() -> None:
     )
 
 
-def test_recipe_category_is_limited_to_the_source_taxonomy() -> None:
+def test_recipe_categories_are_stored_as_source_metadata() -> None:
     recipes = Base.metadata.tables["recipes"]
-    assert any(
-        constraint.name == "ck_recipes_category"
-        for constraint in recipes.constraints
-    )
+    assert "categories" in recipes.columns
+    assert "category" not in recipes.columns
 
 
 def test_recipe_keeps_source_macros_and_attribution() -> None:
@@ -32,7 +30,7 @@ def test_recipe_keeps_source_macros_and_attribution() -> None:
         "saturated_fat_per_serving",
         "fiber_per_serving",
         "salt_per_serving",
-        "category",
+        "categories",
         "ingredients",
         "instructions",
         "source_url",

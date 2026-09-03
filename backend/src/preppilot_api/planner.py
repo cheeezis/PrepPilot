@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from itertools import combinations
+from itertools import product
 from typing import Literal
 
 from preppilot_api.nutrition import Nutrients
-from preppilot_api.recipe_repository import RecipeDefinition
+from preppilot_api.recipe_repository import RecipeCategory, RecipeDefinition
 
 PlanStatus = Literal["valid", "approximation"]
 RuleKind = Literal["hard", "soft"]
@@ -17,12 +17,12 @@ class PlanTargets:
     protein_minimum: Decimal
     fat_maximum: Decimal
     carbs: Decimal
-    meal_count: int
 
 
 @dataclass(frozen=True)
 class PlannedRecipe:
     recipe: RecipeDefinition
+    category: RecipeCategory
     portions: int
     nutrients: Nutrients
 
@@ -53,13 +53,22 @@ def generate_day_plans(
     recipes: tuple[RecipeDefinition, ...],
     limit: int = 3,
 ) -> tuple[DayPlan, ...]:
-    if targets.meal_count < 1:
-        raise ValueError("meal_count must be positive")
     if limit < 1:
         raise ValueError("limit must be positive")
 
     candidates: list[DayPlan] = []
-    for selected in combinations(recipes, targets.meal_count):
+    required_categories: tuple[RecipeCategory, ...] = (
+        "breakfast",
+        "lunch",
+        "dinner",
+    )
+    recipes_by_category = tuple(
+        tuple(recipe for recipe in recipes if category in recipe.categories)
+        for category in required_categories
+    )
+    for selected in product(*recipes_by_category):
+        if len({recipe.id for recipe in selected}) != len(selected):
+            continue
         minimum = sum((recipe.nutrients for recipe in selected), start=Nutrients())
         if not _nutrient_range_can_reach_outer_limits(
             minimum, minimum.scaled(2), targets
@@ -78,15 +87,18 @@ def generate_day_plans(
                 continue
             portions = tuple(
                 2 if portion_mask & (1 << index) else 1
-                for index in range(targets.meal_count)
+                for index in range(len(selected))
             )
             planned = tuple(
                 PlannedRecipe(
                     recipe=recipe,
+                    category=required_categories[index],
                     portions=portion_count,
                     nutrients=recipe.nutrients.scaled(portion_count),
                 )
-                for recipe, portion_count in zip(selected, portions, strict=True)
+                for index, (recipe, portion_count) in enumerate(
+                    zip(selected, portions, strict=True)
+                )
             )
             evaluations = _evaluate_rules(nutrients, targets)
             status: PlanStatus = (

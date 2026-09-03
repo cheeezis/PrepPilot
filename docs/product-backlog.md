@@ -11,17 +11,20 @@ Stand: 3. September 2026
 Die technische Qualitätsprüfung der ersten zehn Rezepte ist in
 [`recipe-quality.md`](recipe-quality.md) dokumentiert.
 
-### Mehr Rezepte derselben Quelle
+### NHS-Katalog synchronisieren
 
-Die feste NHS-Liste wurde nach der Abnahme kontrolliert von 10 auf 20 Rezepte
-erweitert. Die offiziellen NHS-Kategorien werden inzwischen gespeichert und
-sind im Rezeptbestand filterbar. Weitere geprüfte Kandidaten stehen zur Verfügung.
+PrepPilot erkennt die relevanten NHS-Rezepte nun automatisch. Hauptmahlzeiten,
+Snacks und Getränke werden übernommen; Nachtisch bleibt ausgeschlossen.
+Mehrfachkategorien werden gespeichert und der Bestand ist durchsuchbar und
+filterbar. Der erste vollständige Lauf fand 169 relevante Seiten und speicherte
+149 davon; 20 Seiten scheiterten nachvollziehbar an der Qualitätsprüfung.
 
 ### Planung verbessern
 
-- festlegen, wie Frühstück, Mittag- und Abendessen in Plänen verteilt werden
+- die feste Verteilung aus Frühstück, Mittag- und Abendessen mit Nutzern prüfen
 - Wiederholungen und Portionspraktikabilität bewerten
 - erklären, warum ein Plan gültig oder nur eine Annäherung ist
+- Snacks später als optionale zusätzliche Mahlzeit im Planer ergänzen
 
 ## Spätere Produktabschnitte
 
@@ -43,6 +46,6 @@ Sie sind keine Voraussetzung für den aktuellen Planer.
 - Mahlzeiten austauschen und Favoriten speichern
 - Ernährungsformen und Ausschlüsse
 - Benutzerkonten und geräteübergreifende Nutzung
-- Zucker, Ballaststoffe, Salz und Allergene
+- Allergene
 - Preise, Packungsgrößen, Budgets und Vorräte
 - Produkt- und Rezeptbilder mit geklärten Nutzungsrechten

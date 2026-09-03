@@ -1,9 +1,15 @@
 import { expect, test } from '@playwright/test'
 
+let catalogSize = 0
+
 test.beforeAll(async ({ request }, testInfo) => {
   testInfo.setTimeout(120_000)
   const response = await request.post('/api/imports/nhs', { timeout: 120_000 })
   expect(response.ok()).toBeTruthy()
+  const recipesResponse = await request.get('/api/recipes')
+  expect(recipesResponse.ok()).toBeTruthy()
+  catalogSize = (await recipesResponse.json() as unknown[]).length
+  expect(catalogSize).toBeGreaterThan(100)
 })
 
 test.beforeEach(async ({ page }) => {
@@ -15,9 +21,9 @@ test('shows the stored recipe inventory', async ({ page }) => {
   await page.getByRole('link', { name: 'Rezepte' }).click()
   await expect(page).toHaveURL(/\/recipes$/)
   await expect(page.getByRole('heading', { name: 'Gespeicherte Rezepte' })).toBeVisible()
-  await expect(page.getByText('20 Rezepte')).toBeVisible()
+  await expect(page.getByText(`${catalogSize} Rezepte`)).toBeVisible()
   const recipes = page.locator('.recipe-card')
-  await expect(recipes).toHaveCount(20)
+  await expect(recipes).toHaveCount(catalogSize)
   await expect(recipes.first()).toContainText('525 kcal pro Portion · ergibt 6 Portionen')
   await recipes.first().locator('summary').click()
   await expect(
@@ -36,7 +42,7 @@ test('creates and selects a valid day plan', async ({ page }) => {
   await expect(page.getByRole('heading', { name: '3 Tagespläne' })).toBeVisible()
   const plans = page.getByRole('article')
   await expect(plans).toHaveCount(3)
-  await expect(plans.first().getByText(/Ziel 2\.500 kcal/)).toBeVisible()
+  await expect(plans.first().getByText(/Ziel 2\.000 kcal/)).toBeVisible()
 
   const secondPlan = plans.nth(1)
   await secondPlan.getByRole('button', { name: 'Diesen Plan auswählen' }).click()
@@ -58,7 +64,6 @@ test('creates and selects a valid day plan', async ({ page }) => {
 test('explains hard and soft deviations for approximations', async ({ page }) => {
   await page.getByRole('spinbutton', { name: 'Kalorien kcal' }).fill('1800')
   await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('200')
-  await page.getByRole('combobox', { name: 'Mahlzeiten' }).selectOption('3')
   await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
 
   await expect(

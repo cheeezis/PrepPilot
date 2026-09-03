@@ -124,5 +124,35 @@ Bei fünf Mahlzeiten entstehen mit 20 Rezepten rechnerisch knapp 500.000
 Rezept-Portions-Kombinationen. Der Planer verwirft Rezeptgruppen vor der
 Portionssuche, wenn sie die äußeren Nährwertgrenzen nachweislich nicht erreichen
 können, und hält nur die drei besten Treffer im Speicher. Vor einer weiteren
-Katalogvergrößerung sollen Kategorien zusätzlich die Planvielfalt steuerbar
+Katalogvergrößerung mussten Kategorien zusätzlich die Planvielfalt steuerbar
 machen.
+
+## Ausgewogene Erweiterung auf 33 Rezepte
+
+Der zweite kontrollierte Ausbau ergänzt sechs Frühstücks- und sieben
+Mittagsrezepte aus den offiziellen NHS-Sammlungen. Zusammen mit dem bestehenden
+Katalog stehen damit 8 Frühstücke, 8 Mittagessen und 17 Abendessen zur Verfügung.
+Alle 13 neuen Seiten wurden vor der Freigabe mit denselben Pflichtfeldern,
+Nährwertprüfungen und lesbaren Zubereitungsschritten validiert.
+
+Eine freie Kombination aller 33 Rezepte benötigte für das Referenzprofil rund
+24 Sekunden. Die feste Auswahl aus genau einem Frühstück, einem Mittagessen und
+einem Abendessen begrenzt den Suchraum fachlich nachvollziehbar. Dieser Stand
+war die abgesicherte Basis für die anschließende Automatisierung.
+
+## Automatische Katalogerkennung
+
+Die feste Liste wird durch die offiziellen NHS-Filterseiten ersetzt. PrepPilot
+fragt Frühstück, Mittagessen, Abendessen, Snacks und Getränke ab, vereinigt
+doppelte Treffer und bewahrt Mehrfachzuordnungen. Getränke werden als Snacks
+behandelt. Rezepte, die zugleich in der Sammlung „Puddings“ stehen, werden vor
+dem Seitenabruf ausgeschlossen. Die bestehenden Pflichtfeld- und
+Plausibilitätsprüfungen entscheiden weiterhin für jedes einzelne Rezept, ob es
+gespeichert werden darf.
+
+Der erste vollständige Lauf am 3. September 2026 erkannte 169 relevante Seiten.
+149 bestanden die Prüfung, darunter 28 Frühstücke, 62 Mittagsrezepte, 80
+Abendessen und 25 Snacks; 41 Rezepte gehören zu mehr als einer Kategorie. 20
+Seiten wurden wegen fehlender Pflichtwerte, ungültigem strukturiertem Inhalt
+oder energetisch widersprüchlichen Angaben abgelehnt. Ein identischer zweiter
+Lauf meldete 149 unveränderte Datensätze und erzeugte keine Duplikate.

@@ -9,11 +9,10 @@ Eingaben:
 - Proteinminimum
 - Fettmaximum
 - Kohlenhydratziel
-- Anzahl unterschiedlicher Rezepte
 
-Jedes gewählte Rezept wird mit einer oder zwei ganzen Portionen eingeplant. Ein
-Rezept erscheint innerhalb eines Tages höchstens einmal. Die Ausgabe ist bei
-unverändertem Rezeptbestand und denselben Eingaben reproduzierbar.
+Jeder Plan enthält genau ein Frühstück, ein Mittagessen und ein Abendessen.
+Jedes gewählte Rezept wird mit einer oder zwei ganzen Portionen eingeplant. Die
+Ausgabe ist bei unverändertem Rezeptbestand und denselben Eingaben reproduzierbar.
 
 Harte Regeln:
 
