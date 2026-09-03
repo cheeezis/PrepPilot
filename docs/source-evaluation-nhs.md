@@ -137,5 +137,22 @@ Nährwertprüfungen und lesbaren Zubereitungsschritten validiert.
 
 Eine freie Kombination aller 33 Rezepte benötigte für das Referenzprofil rund
 24 Sekunden. Die feste Auswahl aus genau einem Frühstück, einem Mittagessen und
-einem Abendessen begrenzt den Suchraum fachlich nachvollziehbar. Snacks werden
-später als eigene Kategorie ergänzt.
+einem Abendessen begrenzt den Suchraum fachlich nachvollziehbar. Dieser Stand
+war die abgesicherte Basis für die anschließende Automatisierung.
+
+## Automatische Katalogerkennung
+
+Die feste Liste wird durch die offiziellen NHS-Filterseiten ersetzt. PrepPilot
+fragt Frühstück, Mittagessen, Abendessen, Snacks und Getränke ab, vereinigt
+doppelte Treffer und bewahrt Mehrfachzuordnungen. Getränke werden als Snacks
+behandelt. Rezepte, die zugleich in der Sammlung „Puddings“ stehen, werden vor
+dem Seitenabruf ausgeschlossen. Die bestehenden Pflichtfeld- und
+Plausibilitätsprüfungen entscheiden weiterhin für jedes einzelne Rezept, ob es
+gespeichert werden darf.
+
+Der erste vollständige Lauf am 3. September 2026 erkannte 169 relevante Seiten.
+149 bestanden die Prüfung, darunter 28 Frühstücke, 62 Mittagsrezepte, 80
+Abendessen und 25 Snacks; 41 Rezepte gehören zu mehr als einer Kategorie. 20
+Seiten wurden wegen fehlender Pflichtwerte, ungültigem strukturiertem Inhalt
+oder energetisch widersprüchlichen Angaben abgelehnt. Ein identischer zweiter
+Lauf meldete 149 unveränderte Datensätze und erzeugte keine Duplikate.

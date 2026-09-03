@@ -1,15 +1,21 @@
 # PrepPilot
 
 PrepPilot baut einen kleinen, nachvollziehbaren Tagesplan aus vollständigen
-Rezepten. Der Recipe-first-MVP importiert 33 fest geprüfte Rezepte von NHS
-Healthier Families, speichert deren Nährwerte pro Portion in PostgreSQL und
-kombiniert sie passend zu Kalorien- und Makrozielen.
+Rezepten. Der Recipe-first-MVP entdeckt geeignete Rezepte im NHS-Katalog
+Healthier Families automatisch, speichert deren Nährwerte pro Portion in
+PostgreSQL und kombiniert sie passend zu Kalorien- und Makrozielen.
+
+Der aktuell erkannte NHS-Bestand umfasst 169 relevante Seiten. Davon bestehen
+149 die Qualitätsprüfung und liegen lokal als planbare oder sichtbare Rezepte
+vor; 20 unvollständige oder widersprüchliche Seiten werden transparent
+abgelehnt.
 
 Der aktuelle Ablauf:
 
 ```text
-33 freigegebene NHS-Seiten
-  -> validieren und idempotent importieren
+NHS-Kategorien automatisch abfragen
+  -> Nachtisch ausschließen
+  -> Rezeptseiten validieren und idempotent importieren
   -> recipes in PostgreSQL
   -> Tagesplan aus ganzen Portionen
   -> Rezept, Zutaten und Quelle im Frontend anzeigen
