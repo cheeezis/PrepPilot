@@ -38,13 +38,15 @@ und Kohlenhydrate mit 10 Prozent.
 
 Für den Wochenmodus wählt der Nutzer drei bis sieben Tage. Tagesziele und
 Mahlzeitenrollen gelten zunächst für jeden Tag gleich. PrepPilot erstellt einen
-einzigen reproduzierbaren Wochenvorschlag aus Zwei-Tage-Blöcken:
+einzigen reproduzierbaren Wochenvorschlag aus Blöcken von ein bis drei Tagen:
 
-- Tag 1 und Tag 2 verwenden denselben vollständigen Tagesplan.
-- Danach werden neue Rezepte für den nächsten Zwei-Tage-Block gewählt.
-- Kein Rezept erscheint öfter als zweimal innerhalb des Wochenplans.
-- Bei einer ungeraden Tageszahl bleibt der letzte Block ein einzelner Tag.
+- Innerhalb eines Blocks wird derselbe vollständige Tagesplan wiederholt.
+- Danach werden neue Rezepte für den nächsten Block gewählt.
+- Kein Rezept erscheint öfter als dreimal innerhalb des Wochenplans.
+- Unter ernährungsphysiologisch geeigneten Plänen werden Kombinationen mit
+  möglichst wenig Restportionen bevorzugt.
 
 Diese Wiederholung ist beabsichtigt: Die Gerichte eines Blocks können gemeinsam
-vorbereitet werden. Zutaten werden weiterhin nicht skaliert oder zu einer
-Einkaufsliste zusammengeführt.
+vorbereitet werden. Die Anzeige rechnet Tagesportionen, Blocklänge, vollständige
+NHS-Rezeptmengen und verbleibende Portionen zusammen. Die Zutatenliste selbst
+wird weiterhin nicht skaliert oder zu einer Einkaufsliste zusammengeführt.

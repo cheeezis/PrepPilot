@@ -626,8 +626,9 @@ function WeekPlanResults({ result }: { result: WeekPlanResponse }) {
         )}
       </div>
       <p className="week-summary">
-        Gleiche Gerichte liegen bewusst auf aufeinanderfolgenden Tagen. So kannst
-        du sie gemeinsam vorbereiten. Kein Rezept wird öfter als zweimal eingeplant.
+        PrepPilot bildet je nach Rezeptmenge Blöcke aus ein bis drei
+        aufeinanderfolgenden Tagen. So kannst du vollständige Rezeptmengen
+        möglichst sinnvoll vorbereiten und Reste direkt erkennen.
       </p>
       <div className="plan-list">
         {result.days.map((day) => (
@@ -635,8 +636,13 @@ function WeekPlanResults({ result }: { result: WeekPlanResponse }) {
             key={day.day}
             plan={day.plan}
             label={`Tag ${day.day}`}
-            prepNote={day.prep_with_previous
-              ? `Gemeinsam mit Tag ${day.day - 1} vorbereiten`
+            prepNote={day.day === day.block_start_day
+              ? day.block_start_day === day.block_end_day
+                ? 'Ein einzelner Vorbereitungstag'
+                : `Meal-Prep-Block: Tag ${day.block_start_day}–${day.block_end_day} gemeinsam vorbereiten`
+              : `An Tag ${day.block_start_day} für diesen Block vorbereitet`}
+            prepBlockDays={day.day === day.block_start_day
+              ? day.block_end_day - day.block_start_day + 1
               : undefined}
           />
         ))}
@@ -651,12 +657,14 @@ function PlanCard({
   selected = false,
   onSelect,
   prepNote,
+  prepBlockDays,
 }: {
   plan: DayPlan
   label: string
   selected?: boolean
   onSelect?: () => void
   prepNote?: string
+  prepBlockDays?: number
 }) {
   return (
     <article className={`plan-card${selected ? ' plan-card--selected' : ''}`}>
@@ -705,6 +713,9 @@ function PlanCard({
               </span>
               <span>{formatNumber(recipe.nutrients.calories)} kcal im Plan</span>
             </summary>
+            {prepBlockDays && (
+              <MealPrepPortions recipe={recipe} blockDays={prepBlockDays} />
+            )}
             <p className="ingredient-note">
               Die Zutatenmengen gehören zum vollständigen Rezept für{' '}
               {recipe.recipe_servings} Portionen. PrepPilot rechnet sie noch nicht
@@ -723,6 +734,38 @@ function PlanCard({
         ))}
       </div>
     </article>
+  )
+}
+
+function MealPrepPortions({
+  recipe,
+  blockDays,
+}: {
+  recipe: DayPlan['recipes'][number]
+  blockDays: number
+}) {
+  const requiredPortions = recipe.portions * blockDays
+  const batchCount = Math.ceil(requiredPortions / recipe.recipe_servings)
+  const preparedPortions = batchCount * recipe.recipe_servings
+  const leftoverPortions = preparedPortions - requiredPortions
+
+  return (
+    <p className="meal-prep-portions">
+      <strong>{requiredPortions} Portionen für diesen Block</strong>
+      <span>
+        {recipe.portions} {recipe.portions === 1 ? 'Portion' : 'Portionen'} pro
+        Tag × {blockDays} {blockDays === 1 ? 'Tag' : 'Tage'}.
+      </span>
+      <span>
+        {batchCount === 1
+          ? `Das NHS-Rezept ergibt ${recipe.recipe_servings} Portionen.`
+          : `${batchCount} vollständige Rezeptmengen ergeben ${preparedPortions} Portionen.`}
+        {' '}
+        {leftoverPortions === 0
+          ? 'Die Menge passt genau.'
+          : `${leftoverPortions} ${leftoverPortions === 1 ? 'Portion bleibt' : 'Portionen bleiben'} übrig.`}
+      </span>
+    </p>
   )
 }
 

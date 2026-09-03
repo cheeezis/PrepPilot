@@ -14,12 +14,13 @@ def recipe(
     recipe_id: int,
     category: RecipeCategory,
     values: tuple[str, str, str, str],
+    servings: int = 4,
 ) -> RecipeDefinition:
     return RecipeDefinition(
         id=recipe_id,
         title=f"Recipe {recipe_id}",
         categories=(category,),
-        servings=4,
+        servings=servings,
         source_url=f"https://example.test/{recipe_id}",
         license_name="Open Government Licence v3.0",
         attribution_text="NHS",
@@ -113,9 +114,14 @@ def test_does_not_use_a_multi_category_recipe_twice() -> None:
     )
 
 
-def test_week_plan_groups_meal_prep_on_consecutive_days() -> None:
+def test_week_plan_uses_up_to_three_consecutive_days() -> None:
     recipes = tuple(
-        recipe(recipe_id, "breakfast", ("500", "50", "50", "18"))
+        recipe(
+            recipe_id,
+            "breakfast",
+            ("500", "50", "50", "18"),
+            servings=3,
+        )
         for recipe_id in range(1, 5)
     )
     week = generate_week_plan(
@@ -126,12 +132,26 @@ def test_week_plan_groups_meal_prep_on_consecutive_days() -> None:
     )
 
     assert week is not None
-    assert len(week.days) == 7
-    assert week.days[0].stable_key == week.days[1].stable_key
-    assert week.days[2].stable_key == week.days[3].stable_key
-    assert week.days[4].stable_key == week.days[5].stable_key
-    recipe_ids = [day.recipes[0].recipe.id for day in week.days]
-    assert max(recipe_ids.count(recipe_id) for recipe_id in set(recipe_ids)) == 2
+    assert [block.day_count for block in week.blocks] == [3, 3, 1]
+    recipe_ids = [block.plan.recipes[0].recipe.id for block in week.blocks]
+    assert len(set(recipe_ids)) == len(recipe_ids)
+
+
+def test_week_plan_matches_four_servings_to_two_days_with_two_portions() -> None:
+    recipes = tuple(
+        recipe(recipe_id, "breakfast", ("500", "50", "50", "18"))
+        for recipe_id in range(1, 4)
+    )
+    week = generate_week_plan(
+        PlanTargets(Decimal(1000), Decimal(100), Decimal(40), Decimal(100)),
+        recipes,
+        3,
+        ("breakfast",),
+    )
+
+    assert week is not None
+    assert week.blocks[0].day_count == 2
+    assert week.blocks[0].plan.recipes[0].portions == 2
 
 
 def test_week_plan_requires_between_three_and_seven_days() -> None:
@@ -247,5 +267,7 @@ def test_week_plan_api_marks_consecutive_prep_days(monkeypatch) -> None:
     payload = response.json()
     assert payload["outcome"] == "plan_found"
     assert len(payload["days"]) == 3
+    assert payload["days"][0]["block_start_day"] == 1
+    assert payload["days"][0]["block_end_day"] == 3
     assert payload["days"][1]["prep_with_previous"] is True
-    assert payload["days"][2]["prep_with_previous"] is False
+    assert payload["days"][2]["prep_with_previous"] is True

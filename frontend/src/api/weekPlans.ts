@@ -6,6 +6,8 @@ export type WeekPlanRequest = DayPlanRequest & {
 
 export type WeekPlanDay = {
   day: number
+  block_start_day: number
+  block_end_day: number
   prep_with_previous: boolean
   plan: DayPlan
 }

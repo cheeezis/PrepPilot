@@ -20,7 +20,7 @@ einen kleinen vertikalen Rezeptablauf ersetzt.
 | Katalogsynchronisation | 169 relevante NHS-Seiten erkannt, 149 gespeichert | abgeschlossen |
 | Quellkategorien | Mehrfachkategorien samt Snacks gespeichert und filterbar | abgeschlossen |
 | Flexible Tagesstruktur | Mahlzeiten samt optionalem Snack auswählbar | abgeschlossen |
-| Meal-Prep-Woche | drei bis sieben Tage in aufeinanderfolgenden Zwei-Tage-Blöcken | abgeschlossen |
+| Meal-Prep-Woche | drei bis sieben Tage in portionsgerechten Blöcken aus ein bis drei Tagen | abgeschlossen |
 
 Der aktuelle Ablauf und seine Grenzen stehen in
 [`recipe-first-mvp.md`](recipe-first-mvp.md).

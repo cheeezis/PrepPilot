@@ -108,6 +108,8 @@ class WeekPlanRequest(DayPlanRequest):
 
 class WeekPlanDayResponse(BaseModel):
     day: int
+    block_start_day: int
+    block_end_day: int
     prep_with_previous: bool
     plan: DayPlanResponse
 
@@ -251,23 +253,30 @@ def create_week_plan(
     if week is None:
         return WeekPlanResponse(outcome="no_usable_plan", days=[])
 
+    days: list[WeekPlanDayResponse] = []
+    next_day = 1
+    for block in week.blocks:
+        block_start_day = next_day
+        block_end_day = next_day + block.day_count - 1
+        for day in range(block_start_day, block_end_day + 1):
+            days.append(
+                WeekPlanDayResponse(
+                    day=day,
+                    block_start_day=block_start_day,
+                    block_end_day=block_end_day,
+                    prep_with_previous=day > block_start_day,
+                    plan=_serialize_day_plan(block.plan),
+                )
+            )
+        next_day = block_end_day + 1
+
     return WeekPlanResponse(
         outcome=(
             "plan_found"
-            if all(day.status == "valid" for day in week.days)
+            if all(block.plan.status == "valid" for block in week.blocks)
             else "approximation"
         ),
-        days=[
-            WeekPlanDayResponse(
-                day=index + 1,
-                prep_with_previous=(
-                    index > 0
-                    and day.stable_key == week.days[index - 1].stable_key
-                ),
-                plan=_serialize_day_plan(day),
-            )
-            for index, day in enumerate(week.days)
-        ],
+        days=days,
     )
 
 

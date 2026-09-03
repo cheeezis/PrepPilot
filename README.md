@@ -19,7 +19,7 @@ NHS-Kategorien automatisch abfragen
   -> recipes in PostgreSQL
   -> gewünschte Mahlzeiten auswählen
   -> Tagesplan oder 3- bis 7-Tage-Plan aus ganzen Portionen
-  -> gleiche Rezepte an zwei aufeinanderfolgenden Meal-Prep-Tagen
+  -> gleiche Rezepte in passenden Blöcken aus ein bis drei Tagen
   -> Rezept, Zutaten und Quelle im Frontend anzeigen
 ```
 

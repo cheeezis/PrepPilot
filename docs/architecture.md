@@ -10,7 +10,7 @@ React
   -> POST /api/day-plans
        -> Recipe-Repository -> Planer
   -> POST /api/week-plans
-       -> Recipe-Repository -> Planer -> Zwei-Tage-Meal-Prep-Blöcke
+       -> Recipe-Repository -> Planer -> Meal-Prep-Blöcke aus 1–3 Tagen
   -> Ergebnis mit Portionen, Zutaten und Quelllink
 ```
 
@@ -45,8 +45,9 @@ Rezeptkatalog bleibt dabei gespeichert und sichtbar. Die bestehenden
 Zielbereiche und das nachvollziehbare Scoring bleiben erhalten.
 
 Der Wochenplaner verwendet dieselben Tagesziele und Mahlzeitenrollen für drei
-bis sieben Tage. Er erzeugt reproduzierbar einen passenden Tagesplan, übernimmt
-ihn für den direkt folgenden Tag und berechnet danach mit noch nicht verwendeten
-Rezepten den nächsten Block. So erscheint ein Rezept höchstens zweimal pro
-Woche und Wiederholungen liegen bewusst aufeinanderfolgenden Tagen. Es gibt
+bis sieben Tage. Für jeden Block bewertet er passende Tagespläne zusammen mit
+einer Blocklänge von ein bis drei Tagen. Nach den harten Nährwertregeln fließen
+die Abweichung von den Tageszielen und die bei vollständigen NHS-Rezeptmengen
+verbleibenden Portionen in die Auswahl ein. So liegen Wiederholungen bewusst
+aufeinander und ein Rezept erscheint höchstens dreimal pro Woche. Es gibt
 weiterhin keine eigene Wochentabelle; der Plan wird nur als API-Antwort erzeugt.

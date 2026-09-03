@@ -15,6 +15,8 @@ DEFAULT_MEAL_CATEGORIES: tuple[RecipeCategory, ...] = (
     "dinner",
 )
 FLEXIBLE_CHOICE_LIMIT = 24
+WEEKLY_CANDIDATE_LIMIT = 12
+MEAL_PREP_WEIGHT = Decimal("0.25")
 
 
 @dataclass(frozen=True)
@@ -55,8 +57,14 @@ class DayPlan:
 
 
 @dataclass(frozen=True)
+class WeekPlanBlock:
+    plan: DayPlan
+    day_count: int
+
+
+@dataclass(frozen=True)
 class WeekPlan:
-    days: tuple[DayPlan, ...]
+    blocks: tuple[WeekPlanBlock, ...]
 
 
 @dataclass(frozen=True)
@@ -157,9 +165,10 @@ def generate_week_plan(
     if not 3 <= day_count <= 7:
         raise ValueError("day count must be between 3 and 7")
 
-    planned_days: list[DayPlan] = []
+    blocks: list[WeekPlanBlock] = []
     used_recipe_ids: set[int] = set()
-    while len(planned_days) < day_count:
+    planned_day_count = 0
+    while planned_day_count < day_count:
         available_recipes = tuple(
             recipe for recipe in recipes if recipe.id not in used_recipe_ids
         )
@@ -167,17 +176,52 @@ def generate_week_plan(
             targets,
             available_recipes,
             meal_categories,
-            limit=1,
+            limit=WEEKLY_CANDIDATE_LIMIT,
         )
         if not plans:
             return None
 
-        plan = plans[0]
-        block_size = min(2, day_count - len(planned_days))
-        planned_days.extend(plan for _ in range(block_size))
+        maximum_block_size = min(3, day_count - planned_day_count)
+        plan, block_size = min(
+            (
+                (plan, block_size)
+                for plan in plans
+                for block_size in range(1, maximum_block_size + 1)
+            ),
+            key=lambda choice: _week_block_sort_key(*choice),
+        )
+        blocks.append(WeekPlanBlock(plan=plan, day_count=block_size))
+        planned_day_count += block_size
         used_recipe_ids.update(item.recipe.id for item in plan.recipes)
 
-    return WeekPlan(days=tuple(planned_days))
+    return WeekPlan(blocks=tuple(blocks))
+
+
+def _week_block_sort_key(
+    plan: DayPlan, block_size: int
+) -> tuple[int, Decimal, Decimal, int, str]:
+    leftover_ratio = _meal_prep_leftover_ratio(plan, block_size)
+    return (
+        0 if plan.status == "valid" else 1,
+        plan.score + leftover_ratio * MEAL_PREP_WEIGHT,
+        leftover_ratio,
+        -block_size,
+        plan.stable_key,
+    )
+
+
+def _meal_prep_leftover_ratio(plan: DayPlan, block_size: int) -> Decimal:
+    leftover_ratios: list[Decimal] = []
+    for item in plan.recipes:
+        required_portions = item.portions * block_size
+        recipe_servings = item.recipe.servings
+        batch_count = (required_portions + recipe_servings - 1) // recipe_servings
+        prepared_portions = batch_count * recipe_servings
+        leftover_ratios.append(
+            Decimal(prepared_portions - required_portions)
+            / Decimal(prepared_portions)
+        )
+    return sum(leftover_ratios, start=Decimal(0)) / Decimal(len(leftover_ratios))
 
 
 def _generate_exact_day_plans(

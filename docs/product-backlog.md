@@ -23,7 +23,7 @@ filterbar. Der erste vollständige Lauf fand 169 relevante Seiten und speicherte
 
 - flexible Auswahl aus Frühstück, Mittagessen, Abendessen und Snack umgesetzt
 - Meal-Prep-Plan für drei bis sieben Tage umgesetzt
-- gleiche Gerichte bewusst an zwei aufeinanderfolgenden Tagen eingeplant
+- gleiche Gerichte portionsgerecht an ein bis drei aufeinanderfolgenden Tagen eingeplant
 - flexible Mahlzeitenstruktur mit Nutzern prüfen
 - Meal-Prep-Blöcke und Portionspraktikabilität mit Nutzern bewerten
 - erklären, warum ein Plan gültig oder nur eine Annäherung ist

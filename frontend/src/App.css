@@ -546,6 +546,22 @@ button:disabled {
   font-weight: 750;
 }
 
+.meal-prep-portions {
+  display: grid;
+  gap: 3px;
+  margin: 0 4px 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #3f5b51;
+  background: #f1f8f5;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.meal-prep-portions strong {
+  color: #174f3e;
+}
+
 .selection-summary {
   display: flex;
   align-items: center;

@@ -83,8 +83,11 @@ test('creates a meal-prep plan for consecutive days', async ({ page }) => {
   })
   const days = page.getByRole('article')
   await expect(days).toHaveCount(3)
-  await expect(days.nth(1).getByText('Gemeinsam mit Tag 1 vorbereiten')).toBeVisible()
-  await expect(days.nth(2).getByText('Gemeinsam mit Tag 2 vorbereiten')).toHaveCount(0)
+  await expect(days.first().getByText(/Meal-Prep-Block: Tag 1–[23]/)).toBeVisible()
+  await days.first().locator('details').first().locator('summary').click()
+  await expect(
+    days.first().getByText(/Portionen für diesen Block/).first(),
+  ).toBeVisible()
 })
 
 test('explains hard and soft deviations for approximations', async ({ page }) => {
