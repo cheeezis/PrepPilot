@@ -1,6 +1,6 @@
 # PrepPilot
 
-PrepPilot baut einen kleinen, nachvollziehbaren Tagesplan aus vollständigen
+PrepPilot baut nachvollziehbare Tages- und Meal-Prep-Pläne aus vollständigen
 Rezepten. Der Recipe-first-MVP entdeckt geeignete Rezepte im NHS-Katalog
 Healthier Families automatisch, speichert deren Nährwerte pro Portion in
 PostgreSQL und kombiniert sie passend zu Kalorien- und Makrozielen.
@@ -18,12 +18,13 @@ NHS-Kategorien automatisch abfragen
   -> Rezeptseiten validieren und idempotent importieren
   -> recipes in PostgreSQL
   -> gewünschte Mahlzeiten auswählen
-  -> Tagesplan aus ganzen Portionen
+  -> Tagesplan oder 3- bis 7-Tage-Plan aus ganzen Portionen
+  -> gleiche Rezepte an zwei aufeinanderfolgenden Meal-Prep-Tagen
   -> Rezept, Zutaten und Quelle im Frontend anzeigen
 ```
 
-Lebensmittel-Normalisierung, Einkaufslisten und Wochenpläne gehören bewusst
-nicht zu diesem ersten Schnitt. Die Abgrenzung steht in
+Lebensmittel-Normalisierung, skalierte Zutaten und Einkaufslisten gehören
+bewusst noch nicht zu diesem Schnitt. Die ursprüngliche MVP-Abgrenzung steht in
 [`docs/recipe-first-mvp.md`](docs/recipe-first-mvp.md).
 
 Das Projekt befindet sich in Entwicklung und ist nicht für den produktiven

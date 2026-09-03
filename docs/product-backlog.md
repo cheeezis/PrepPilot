@@ -22,8 +22,10 @@ filterbar. Der erste vollständige Lauf fand 169 relevante Seiten und speicherte
 ### Planung verbessern
 
 - flexible Auswahl aus Frühstück, Mittagessen, Abendessen und Snack umgesetzt
+- Meal-Prep-Plan für drei bis sieben Tage umgesetzt
+- gleiche Gerichte bewusst an zwei aufeinanderfolgenden Tagen eingeplant
 - flexible Mahlzeitenstruktur mit Nutzern prüfen
-- Wiederholungen und Portionspraktikabilität bewerten
+- Meal-Prep-Blöcke und Portionspraktikabilität mit Nutzern bewerten
 - erklären, warum ein Plan gültig oder nur eine Annäherung ist
 
 ## Spätere Produktabschnitte
@@ -42,7 +44,7 @@ Sie sind keine Voraussetzung für den aktuellen Planer.
 
 ### Weitere Funktionen
 
-- unterschiedliche Tagespläne innerhalb einer Woche
+- unterschiedliche Ziele und Mahlzeiten an einzelnen Wochentagen
 - Mahlzeiten austauschen und Favoriten speichern
 - Ernährungsformen und Ausschlüsse
 - Benutzerkonten und geräteübergreifende Nutzung

@@ -33,3 +33,18 @@ Kohlenhydrate innerhalb von ±20 Prozent sind eine weiche Regel. Kandidaten in
 einem etwas weiteren äußeren Bereich können als transparente Annäherung
 erscheinen. Das Scoring gewichtet Protein mit 40, Kalorien mit 30, Fett mit 20
 und Kohlenhydrate mit 10 Prozent.
+
+## Meal-Prep-Plan
+
+Für den Wochenmodus wählt der Nutzer drei bis sieben Tage. Tagesziele und
+Mahlzeitenrollen gelten zunächst für jeden Tag gleich. PrepPilot erstellt einen
+einzigen reproduzierbaren Wochenvorschlag aus Zwei-Tage-Blöcken:
+
+- Tag 1 und Tag 2 verwenden denselben vollständigen Tagesplan.
+- Danach werden neue Rezepte für den nächsten Zwei-Tage-Block gewählt.
+- Kein Rezept erscheint öfter als zweimal innerhalb des Wochenplans.
+- Bei einer ungeraden Tageszahl bleibt der letzte Block ein einzelner Tag.
+
+Diese Wiederholung ist beabsichtigt: Die Gerichte eines Blocks können gemeinsam
+vorbereitet werden. Zutaten werden weiterhin nicht skaliert oder zu einer
+Einkaufsliste zusammengeführt.

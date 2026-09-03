@@ -9,6 +9,8 @@ React
        -> NHS-Adapter -> recipes
   -> POST /api/day-plans
        -> Recipe-Repository -> Planer
+  -> POST /api/week-plans
+       -> Recipe-Repository -> Planer -> Zwei-Tage-Meal-Prep-Blöcke
   -> Ergebnis mit Portionen, Zutaten und Quelllink
 ```
 
@@ -41,3 +43,10 @@ vier Mahlzeiten begrenzt eine reproduzierbare, nährwertbasierte Vorauswahl den
 Rechenraum, bevor die Kombinationen vollständig bewertet werden. Der gesamte
 Rezeptkatalog bleibt dabei gespeichert und sichtbar. Die bestehenden
 Zielbereiche und das nachvollziehbare Scoring bleiben erhalten.
+
+Der Wochenplaner verwendet dieselben Tagesziele und Mahlzeitenrollen für drei
+bis sieben Tage. Er erzeugt reproduzierbar einen passenden Tagesplan, übernimmt
+ihn für den direkt folgenden Tag und berechnet danach mit noch nicht verwendeten
+Rezepten den nächsten Block. So erscheint ein Rezept höchstens zweimal pro
+Woche und Wiederholungen liegen bewusst aufeinanderfolgenden Tagen. Es gibt
+weiterhin keine eigene Wochentabelle; der Plan wird nur als API-Antwort erzeugt.
