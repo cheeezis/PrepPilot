@@ -3,7 +3,6 @@ from pytest import MonkeyPatch
 from sqlalchemy.exc import SQLAlchemyError
 
 import preppilot_api.main as main_module
-from preppilot_api.recipe_repository import RecipeCatalogUnavailableError
 
 
 def test_health_reports_ready(monkeypatch: MonkeyPatch) -> None:
@@ -26,15 +25,12 @@ def test_health_distinguishes_database_from_empty_recipes(
     assert response.status_code == 503
     assert response.json()["database"] == "unavailable"
 
-    def raise_empty_error(session: object) -> None:
-        raise RecipeCatalogUnavailableError("no recipes")
-
-    monkeypatch.setattr(main_module, "load_recipes", raise_empty_error)
+    monkeypatch.setattr(main_module, "load_recipes", lambda session: ())
     with TestClient(main_module.app) as client:
         response = client.get("/api/health")
-    assert response.status_code == 503
+    assert response.status_code == 200
     assert response.json() == {
-        "status": "error",
+        "status": "ok",
         "database": "ok",
-        "recipes": "unavailable",
+        "recipes": "empty",
     }
