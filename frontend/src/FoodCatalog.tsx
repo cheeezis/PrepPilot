@@ -119,15 +119,30 @@ export function FoodCatalog() {
         {loading ? <p className="notice">Lebensmittel werden geladen …</p> : foods.length === 0 ? (
           <div className="empty-state"><div className="empty-state__icon" aria-hidden="true">100</div><div><h3>Noch keine Lebensmittel</h3><p>Lege links das erste Lebensmittel mit seinen Nährwerten an.</p></div></div>
         ) : (
-          <div className="food-list">{foods.map((food) => <article className="food-card" key={food.id}>
-            <div className="food-card__heading"><div><h3>{food.name}</h3><p>pro 100 {food.base_unit}</p></div><div className="food-actions"><button type="button" onClick={() => editFood(food)}>Bearbeiten</button><button type="button" onClick={() => void removeFood(food)}>Löschen</button></div></div>
-            <span className="food-category">{foodCategoryLabel(food.category)}</span>
-            <dl className="nutrient-list"><NutrientValue label="Kalorien" value={food.calories_kcal} unit="kcal" /><NutrientValue label="Protein" value={food.protein_g} unit="g" /><NutrientValue label="Kohlenhydrate" value={food.carbohydrates_g} unit="g" /><NutrientValue label="Fett" value={food.fat_g} unit="g" /></dl>
-          </article>)}</div>
+          <FoodCategoryList foods={foods} onEdit={editFood} onDelete={removeFood} />
         )}
       </section>
     </section>
   )
+}
+
+export function FoodCategoryList(props: {
+  foods: Food[]
+  onEdit: (food: Food) => void
+  onDelete: (food: Food) => void
+}) {
+  return <div className="food-category-list">{foodCategories.map((category) => {
+    const categoryFoods = props.foods.filter((food) => food.category === category.value)
+    if (categoryFoods.length === 0) return null
+    return <details className="food-category-group" key={category.value}>
+      <summary><span>{category.label}</span><span>{categoryFoods.length}</span></summary>
+      <div className="food-list">{categoryFoods.map((food) => <article className="food-card" key={food.id}>
+        <div className="food-card__heading"><div><h3>{food.name}</h3><p>pro 100 {food.base_unit}</p></div><div className="food-actions"><button type="button" onClick={() => props.onEdit(food)}>Bearbeiten</button><button type="button" onClick={() => void props.onDelete(food)}>Löschen</button></div></div>
+        <span className="food-category">{foodCategoryLabel(food.category)}</span>
+        <dl className="nutrient-list"><NutrientValue label="Kalorien" value={food.calories_kcal} unit="kcal" /><NutrientValue label="Protein" value={food.protein_g} unit="g" /><NutrientValue label="Kohlenhydrate" value={food.carbohydrates_g} unit="g" /><NutrientValue label="Fett" value={food.fat_g} unit="g" /></dl>
+      </article>)}</div>
+    </details>
+  })}</div>
 }
 
 function NutrientField(props: { label: string; unit: string; value: string; onChange: (value: string) => void }) {

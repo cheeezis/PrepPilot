@@ -333,6 +333,65 @@ button:disabled {
   gap: 12px;
 }
 
+.food-category-list {
+  display: grid;
+  gap: 10px;
+}
+
+.food-category-group {
+  border: 1px solid #dce6e1;
+  border-radius: 12px;
+  background: #fafcfb;
+  overflow: hidden;
+}
+
+.food-category-group > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 17px;
+  color: #24493c;
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+}
+
+.food-category-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.food-category-group > summary::before {
+  content: '›';
+  color: #247154;
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 160ms ease;
+}
+
+.food-category-group[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.food-category-group > summary > span:first-child {
+  margin-right: auto;
+}
+
+.food-category-group > summary > span:last-child {
+  display: grid;
+  min-width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  color: #176b50;
+  background: #e2f2eb;
+  font-size: 12px;
+}
+
+.food-category-group > .food-list {
+  padding: 0 12px 12px;
+}
+
 .catalog-layout--recipes {
   grid-template-columns: minmax(360px, 0.95fr) minmax(0, 1.25fr);
 }
