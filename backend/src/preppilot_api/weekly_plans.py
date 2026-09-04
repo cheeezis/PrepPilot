@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from preppilot_api.database import get_session
 from preppilot_api.models import MealAssignment, Recipe, WeeklyPlan
 from preppilot_api.nutrition import Nutrients, calculate_recipe_nutrition
+from preppilot_api.shopping_list import calculate_shopping_list
 from preppilot_api.weekly_planner import (
     NutritionTargets,
     PlanGenerationError,
@@ -20,6 +21,17 @@ from preppilot_api.weekly_planner import (
 router = APIRouter(prefix="/api/weekly-plans", tags=["weekly plans"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
 MealRole = Literal["breakfast", "lunch", "dinner", "snack"]
+FoodCategory = Literal[
+    "protein",
+    "carbohydrate",
+    "vegetable",
+    "fruit",
+    "dairy",
+    "fat",
+    "sauce",
+    "spice",
+    "other",
+]
 MEAL_ROLE_ORDER = {"breakfast": 0, "lunch": 1, "dinner": 2, "snack": 3}
 
 
@@ -75,6 +87,16 @@ class WeeklyPlanResponse(BaseModel):
     updated_at: datetime
 
 
+class ShoppingListItemResponse(BaseModel):
+    food_id: int
+    food_name: str
+    category: FoodCategory
+    amount: float
+    unit: Literal["g", "ml"]
+    equivalent_amount: int | None
+    equivalent_unit: str | None
+
+
 @router.get("", response_model=list[WeeklyPlanResponse])
 def list_weekly_plans(session: DatabaseSession) -> list[WeeklyPlanResponse]:
     try:
@@ -89,6 +111,25 @@ def list_weekly_plans(session: DatabaseSession) -> list[WeeklyPlanResponse]:
 @router.get("/{plan_id}", response_model=WeeklyPlanResponse)
 def get_weekly_plan(plan_id: int, session: DatabaseSession) -> WeeklyPlanResponse:
     return _serialize(_get_plan(plan_id, session))
+
+
+@router.get("/{plan_id}/shopping-list", response_model=list[ShoppingListItemResponse])
+def get_shopping_list(
+    plan_id: int, session: DatabaseSession
+) -> list[ShoppingListItemResponse]:
+    plan = _get_plan(plan_id, session)
+    return [
+        ShoppingListItemResponse(
+            food_id=item.food.id,
+            food_name=item.food.name,
+            category=cast(FoodCategory, item.food.category),
+            amount=float(item.amount),
+            unit=cast(Literal["g", "ml"], item.food.base_unit),
+            equivalent_amount=item.equivalent_amount,
+            equivalent_unit=item.equivalent_unit,
+        )
+        for item in calculate_shopping_list(plan)
+    ]
 
 
 @router.post(

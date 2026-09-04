@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { generateWeeklyPlan, listWeeklyPlans, WeeklyPlanApiError } from './weeklyPlans'
+import { generateWeeklyPlan, getShoppingList, listWeeklyPlans, WeeklyPlanApiError } from './weeklyPlans'
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -16,6 +16,13 @@ describe('weekly plan api', () => {
     vi.stubGlobal('fetch', fetchMock)
     await generateWeeklyPlan({ start_date: '2026-09-07', snacks_per_day: 1, calories_maximum_kcal: 2500, protein_minimum_g: 180, carbohydrates_target_g: 250, fat_maximum_g: 80, replace_existing: false })
     expect(fetchMock).toHaveBeenCalledWith('/api/weekly-plans/generate', expect.objectContaining({ method: 'POST' }))
+  })
+
+  it('loads the shopping list for a plan', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('[]'))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(getShoppingList(7)).resolves.toEqual([])
+    expect(fetchMock).toHaveBeenCalledWith('/api/weekly-plans/7/shopping-list', undefined)
   })
 
   it('preserves conflict status and detail', async () => {

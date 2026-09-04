@@ -5,6 +5,11 @@ def test_weekly_plan_is_generated_persisted_and_reloaded(
     client: TestClient,
 ) -> None:
     food_id = create_food(client)
+    portion = client.post(
+        f"/api/foods/{food_id}/portions",
+        json={"name": "Packung", "amount": 700},
+    )
+    assert portion.status_code == 201
     create_recipe(client, "Frühstück", 1, ["breakfast"], food_id)
     batch_id = create_recipe(
         client, "Sechser-Batch", 6, ["lunch", "dinner"], food_id
@@ -30,6 +35,17 @@ def test_weekly_plan_is_generated_persisted_and_reloaded(
     assert client.get(f"/api/weekly-plans/{plan['id']}").json() == plan
     assert [item["id"] for item in client.get("/api/weekly-plans").json()] == [
         plan["id"]
+    ]
+    assert client.get(f"/api/weekly-plans/{plan['id']}/shopping-list").json() == [
+        {
+            "food_id": food_id,
+            "food_name": "Testlebensmittel",
+            "category": "other",
+            "amount": 2800.0,
+            "unit": "g",
+            "equivalent_amount": 4,
+            "equivalent_unit": "Packung",
+        }
     ]
 
 
@@ -77,6 +93,10 @@ def test_generation_explains_missing_recipe(client: TestClient) -> None:
 
     assert response.status_code == 422
     assert response.json()["detail"] == "Kein Einzelrezept für Tag 1, Frühstück verfügbar"
+
+
+def test_unknown_plan_has_no_shopping_list(client: TestClient) -> None:
+    assert client.get("/api/weekly-plans/404/shopping-list").status_code == 404
 
 
 def test_generation_optimizes_targets_in_documented_priority_order(

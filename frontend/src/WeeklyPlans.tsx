@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { deleteWeeklyPlan, generateWeeklyPlan, listWeeklyPlans, WeeklyPlanApiError, type DailyNutrition, type WeeklyPlan, type WeeklyPlanInput } from './api/weeklyPlans'
+import { foodCategories } from './foodCategories'
+import { deleteWeeklyPlan, generateWeeklyPlan, getShoppingList, listWeeklyPlans, WeeklyPlanApiError, type DailyNutrition, type ShoppingListItem, type WeeklyPlan, type WeeklyPlanInput } from './api/weeklyPlans'
 
 const emptyDraft = { start_date: '', snacks_per_day: '1', calories_maximum_kcal: '', protein_minimum_g: '', carbohydrates_target_g: '', fat_maximum_g: '' }
 
@@ -75,7 +76,55 @@ function PlanCard({ plan, onDelete }: { plan: WeeklyPlan; onDelete: () => void }
         {nutrition && <DailyNutritionSummary nutrition={nutrition} />}
       </section>
     })}</div>
+    <ShoppingList planId={plan.id} />
     <button type="button" className="button-danger" onClick={onDelete}>Wochenplan löschen</button>
+  </details>
+}
+
+function ShoppingList({ planId }: { planId: number }) {
+  const [items, setItems] = useState<ShoppingListItem[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const storageKey = `preppilot.shopping-list.${planId}`
+  const [checked, setChecked] = useState<number[]>(() => loadChecked(storageKey))
+
+  async function load() {
+    if (items !== null || loading) return
+    setLoading(true)
+    setError(null)
+    try { setItems(await getShoppingList(planId)) }
+    catch (reason) { setError(message(reason)) }
+    finally { setLoading(false) }
+  }
+
+  function toggle(foodId: number) {
+    setChecked((current) => {
+      const next = current.includes(foodId)
+        ? current.filter((id) => id !== foodId)
+        : [...current, foodId]
+      window.localStorage.setItem(storageKey, JSON.stringify(next))
+      return next
+    })
+  }
+
+  return <details className="shopping-list" onToggle={(event) => { if (event.currentTarget.open) void load() }}>
+    <summary>Einkaufsliste</summary>
+    {loading && <p className="notice">Einkaufsliste wird berechnet …</p>}
+    {error && <p className="notice notice--error">{error}</p>}
+    {items?.length === 0 && <p className="notice">Keine Zutaten benötigt.</p>}
+    {items && foodCategories.map((category) => {
+      const categoryItems = items.filter((item) => item.category === category.value)
+      if (categoryItems.length === 0) return null
+      return <section key={category.value}>
+        <h3>{category.label}</h3>
+        {categoryItems.map((item) => <label className={checked.includes(item.food_id) ? 'is-checked' : ''} key={item.food_id}>
+          <input type="checkbox" checked={checked.includes(item.food_id)} onChange={() => toggle(item.food_id)} />
+          <span>{item.food_name}</span>
+          <strong>{shoppingAmount(item)}</strong>
+          {item.equivalent_amount !== null && <small>{baseShoppingAmount(item)}</small>}
+        </label>)}
+      </section>
+    })}
   </details>
 }
 
@@ -97,4 +146,17 @@ function DailyNutritionSummary({ nutrition }: { nutrition: DailyNutrition }) {
 function roleLabel(role: string, slot: number) { return role === 'breakfast' ? 'Frühstück' : role === 'lunch' ? 'Mittagessen' : role === 'dinner' ? 'Abendessen' : `Snack ${slot}` }
 function formatDate(value: string) { return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)) }
 function formatNumber(value: number) { return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(value) }
+function formatShoppingNumber(value: number) { return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 }).format(value) }
+function shoppingAmount(item: ShoppingListItem) { return item.equivalent_amount !== null ? `${formatNumber(item.equivalent_amount)} × ${item.equivalent_unit}` : baseShoppingAmount(item) }
+function baseShoppingAmount(item: ShoppingListItem) {
+  if (item.amount >= 1000) return `${formatShoppingNumber(item.amount / 1000)} ${item.unit === 'g' ? 'kg' : 'l'}`
+  return `${formatShoppingNumber(item.amount)} ${item.unit}`
+}
+function loadChecked(key: string): number[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const value: unknown = JSON.parse(window.localStorage.getItem(key) ?? '[]')
+    return Array.isArray(value) && value.every((item) => typeof item === 'number') ? value : []
+  } catch { return [] }
+}
 function message(reason: unknown) { return reason instanceof Error ? reason.message : 'Ein unbekannter Fehler ist aufgetreten' }

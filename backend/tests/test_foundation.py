@@ -31,4 +31,5 @@ def test_food_catalog_is_the_only_domain_api() -> None:
         "/api/weekly-plans",
         "/api/weekly-plans/generate",
         "/api/weekly-plans/{plan_id}",
+        "/api/weekly-plans/{plan_id}/shopping-list",
     }
