@@ -28,3 +28,7 @@ Weitere Hinweise stehen in [`docs/development.md`](docs/development.md).
 
 Das Projekt befindet sich in Entwicklung und ist nicht für den produktiven
 Einsatz gedacht.
+
+Die bisherigen Produktphasen sind in
+[`docs/project-history.md`](docs/project-history.md) dokumentiert. Der geplante
+saubere Neustart ist in [`docs/v5-plan.md`](docs/v5-plan.md) festgehalten.

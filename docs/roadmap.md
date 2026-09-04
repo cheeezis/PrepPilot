@@ -16,9 +16,11 @@ Stand: 4. September 2026
 
 ## Nächster Produktabschnitt
 
-1. persönliche Rezepte im Alltag erfassen und Darstellung bewerten
-2. Tagespläne mit realistischen Rezeptdaten prüfen
-3. Rezeptausbeute auf aufeinanderfolgende Mittag- und Abendessen verteilen
+Der nächste Abschnitt ist ein bewusster V5-Neustart innerhalb desselben
+Repositorys. Er beginnt mit einem persönlichen Lebensmittelkatalog, berechnet
+Rezeptnährwerte aus Zutaten und plant anschließend Meal-Prep-Batches für genau
+sieben Tage. Der verbindliche Umfang und die Umsetzungsreihenfolge stehen in
+[`v5-plan.md`](v5-plan.md).
 
 ## Später
 
