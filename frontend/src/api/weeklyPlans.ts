@@ -1,4 +1,5 @@
 import type { MealRole } from './recipes'
+import type { BaseUnit, FoodCategory } from './foods'
 
 export type MealAssignment = {
   id: number
@@ -23,6 +24,16 @@ export type DailyNutrition = {
   protein_shortfall_g: number
   carbohydrates_difference_g: number
   fat_over_g: number
+}
+
+export type ShoppingListItem = {
+  food_id: number
+  food_name: string
+  category: FoodCategory
+  amount: number
+  unit: BaseUnit
+  equivalent_amount: number | null
+  equivalent_unit: string | null
 }
 
 export type WeeklyPlan = {
@@ -57,6 +68,10 @@ export function listWeeklyPlans(signal?: AbortSignal): Promise<WeeklyPlan[]> {
 
 export function generateWeeklyPlan(input: WeeklyPlanInput): Promise<WeeklyPlan> {
   return request('/api/weekly-plans/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) })
+}
+
+export function getShoppingList(planId: number): Promise<ShoppingListItem[]> {
+  return request(`/api/weekly-plans/${planId}/shopping-list`)
 }
 
 export async function deleteWeeklyPlan(id: number): Promise<void> {
