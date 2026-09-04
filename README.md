@@ -18,7 +18,8 @@ Die technische Grundlage verwendet React/Vite, FastAPI, PostgreSQL und Alembic.
 Lebensmittelkatalog, Rezeptverwaltung und ein persistentes Wochenmodell bilden
 die umgesetzte fachliche Basis. Die Wochenplanung bewertet vorhandene Rezepte
 reproduzierbar anhand der festgelegten Nährwertprioritäten und weist tägliche
-Abweichungen aus. Als Nächstes folgt die MVP-Abnahme.
+Abweichungen aus. Der definierte V5-MVP ist vollständig umgesetzt und lokal
+abgenommen.
 
 Der verbindliche Umfang und die Umsetzungsreihenfolge stehen im
 [`V5-Plan`](docs/v5-plan.md). Frühere Produktphasen dokumentiert die

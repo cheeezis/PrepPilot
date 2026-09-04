@@ -17,7 +17,9 @@ Stand: 4. September 2026
   `feature/food-portions` umgesetzt und lokal geprüft.
 - Abschnitt 5 ist auf `feature/plan-optimization` mit dem persönlichen
   Rezeptbestand und den festgelegten Zielwerten umgesetzt und lokal geprüft.
-- Als Nächstes folgt Abschnitt 6, die abschließende MVP-Abnahme.
+- Abschnitt 6 ist mit automatisierten Tests, einer frischen Migration, dem
+  lokalen Windows-Start und einer vollständigen Beispielwoche abgeschlossen.
+- Der in diesem Dokument definierte V5-MVP ist damit umgesetzt.
 
 ## Ziel
 
