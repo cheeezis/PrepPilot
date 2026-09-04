@@ -59,8 +59,8 @@ zubereitete Batch soll innerhalb derselben Woche sinnvoll verteilt werden.
 V5 ist der saubere Neustart innerhalb desselben Repositorys. Die Anwendung wird
 für eine Person und genau sieben Tage entworfen. Nährwerte
 gehören zu Lebensmitteln und werden von Rezepten über ihre Zutaten bezogen.
-Meal-Prep-Rezepte erzeugen einen Batch, dessen Portionen vollständig auf
-Mittag- und Abendessen der Woche verteilt werden.
+Meal-Prep-Rezepte erzeugen einen Batch, dessen Portionen vollständig auf alle
+dafür geeigneten Mahlzeitenplätze der Woche verteilt werden.
 
 Der verbindliche fachliche und technische Plan steht in
 [`v5-plan.md`](v5-plan.md).
