@@ -7,9 +7,11 @@ Stand: 4. September 2026
 - Abschnitt 0 ist abgeschlossen; der V4-Stand ist mit `prototype-v4` markiert.
 - Abschnitt 1 ist auf `rewrite/v5-foundation` umgesetzt und automatisiert
   geprüft. Der echte lokale Start mit Docker steht noch aus.
-- Abschnitt 2 ist auf `feature/food-catalog` umgesetzt und automatisiert
-  geprüft. Der echte Migrationstest mit PostgreSQL steht noch aus.
-- Als Nächstes folgt Abschnitt 3, die Rezeptverwaltung.
+- Abschnitt 2 ist auf `feature/food-catalog` umgesetzt und automatisiert sowie
+  mit einer echten lokalen PostgreSQL-Datenbank geprüft.
+- Abschnitt 3 ist auf `feature/recipe-management` umgesetzt und automatisiert
+  sowie mit einer echten lokalen PostgreSQL-Datenbank geprüft.
+- Als Nächstes folgt Abschnitt 4, das persistente Wochenmodell.
 
 ## Ziel
 
@@ -72,6 +74,8 @@ Ein Datensatz beschreibt ein Lebensmittel und seine Nährwerte pro `100 g` oder
 - `id`
 - `name`, ohne Beachtung der Groß-/Kleinschreibung eindeutig
 - `base_unit`, im MVP `g` oder `ml`
+- `category` für eine grobe, feste Gruppierung im Katalog und in der
+  Zutatenauswahl
 - `calories_kcal`
 - `protein_g`
 - `carbohydrates_g`
@@ -228,6 +232,7 @@ Einheiten verwenden können.
 - Schema und Migration für `foods`
 - API zum Anlegen, Anzeigen, Bearbeiten und Löschen
 - Frontend mit verständlichen numerischen Nährwertfeldern
+- feste Lebensmittelkategorien für eine übersichtliche Zutatenauswahl
 - Validierung nichtnegativer Nährwerte und der Einheiten `g` und `ml`
 
 ### 3. Rezeptverwaltung

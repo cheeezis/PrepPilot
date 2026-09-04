@@ -4,8 +4,13 @@ from preppilot_api.main import app
 from preppilot_api.models import Base
 
 
-def test_v5_schema_contains_only_the_food_catalog() -> None:
-    assert set(Base.metadata.tables) == {"foods"}
+def test_v5_schema_contains_foods_and_relational_recipes() -> None:
+    assert set(Base.metadata.tables) == {
+        "foods",
+        "recipe_ingredients",
+        "recipe_meal_roles",
+        "recipes",
+    }
 
 
 def test_food_catalog_is_the_only_domain_api() -> None:
@@ -16,4 +21,6 @@ def test_food_catalog_is_the_only_domain_api() -> None:
         "/api/foods",
         "/api/foods/{food_id}",
         "/api/health",
+        "/api/recipes",
+        "/api/recipes/{recipe_id}",
     }

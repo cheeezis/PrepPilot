@@ -9,15 +9,26 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
-from preppilot_api.models import Food
+from preppilot_api.models import Food, RecipeIngredient
 
 router = APIRouter(prefix="/api/foods", tags=["foods"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
+FoodCategory = Literal[
+    "protein",
+    "carbohydrate",
+    "vegetable",
+    "dairy",
+    "fat",
+    "sauce",
+    "spice",
+    "other",
+]
 
 
 class FoodWriteRequest(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     base_unit: Literal["g", "ml"]
+    category: FoodCategory
     calories_kcal: Decimal = Field(ge=0, max_digits=10, decimal_places=2)
     protein_g: Decimal = Field(ge=0, max_digits=10, decimal_places=2)
     carbohydrates_g: Decimal = Field(ge=0, max_digits=10, decimal_places=2)
@@ -36,6 +47,7 @@ class FoodResponse(BaseModel):
     id: int
     name: str
     base_unit: Literal["g", "ml"]
+    category: FoodCategory
     calories_kcal: float
     protein_g: float
     carbohydrates_g: float
@@ -87,6 +99,13 @@ def delete_food(food_id: int, session: DatabaseSession) -> Response:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Lebensmittel nicht gefunden",
         )
+    if session.scalar(
+        select(RecipeIngredient.id).where(RecipeIngredient.food_id == food_id).limit(1)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Lebensmittel wird bereits in einem Rezept verwendet",
+        )
     session.delete(food)
     _commit(
         session,
@@ -98,6 +117,7 @@ def delete_food(food_id: int, session: DatabaseSession) -> Response:
 def _apply_request(food: Food, request: FoodWriteRequest) -> None:
     food.name = request.name
     food.base_unit = request.base_unit
+    food.category = request.category
     food.calories_kcal = request.calories_kcal
     food.protein_g = request.protein_g
     food.carbohydrates_g = request.carbohydrates_g
@@ -130,6 +150,7 @@ def _serialize(food: Food) -> FoodResponse:
         id=food.id,
         name=food.name,
         base_unit=cast(Literal["g", "ml"], food.base_unit),
+        category=cast(FoodCategory, food.category),
         calories_kcal=float(food.calories_kcal),
         protein_g=float(food.protein_g),
         carbohydrates_g=float(food.carbohydrates_g),

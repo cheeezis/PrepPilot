@@ -1,9 +1,19 @@
 export type BaseUnit = 'g' | 'ml'
+export type FoodCategory =
+  | 'protein'
+  | 'carbohydrate'
+  | 'vegetable'
+  | 'dairy'
+  | 'fat'
+  | 'sauce'
+  | 'spice'
+  | 'other'
 
 export type Food = {
   id: number
   name: string
   base_unit: BaseUnit
+  category: FoodCategory
   calories_kcal: number
   protein_g: number
   carbohydrates_g: number
@@ -16,6 +26,7 @@ export type FoodInput = Pick<
   Food,
   | 'name'
   | 'base_unit'
+  | 'category'
   | 'calories_kcal'
   | 'protein_g'
   | 'carbohydrates_g'

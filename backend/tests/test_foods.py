@@ -1,40 +1,12 @@
-from collections.abc import Iterator
-
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
-
-from preppilot_api.database import get_session
-from preppilot_api.main import app
-from preppilot_api.models import Base
-
-
-@pytest.fixture
-def client() -> Iterator[TestClient]:
-    engine = create_engine(
-        "sqlite+pysqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(engine)
-
-    def test_session() -> Iterator[Session]:
-        with Session(engine) as session:
-            yield session
-
-    app.dependency_overrides[get_session] = test_session
-    with TestClient(app) as test_client:
-        yield test_client
-    app.dependency_overrides.clear()
-    engine.dispose()
 
 
 def food_payload(name: str = "Haferflocken") -> dict[str, object]:
     return {
         "name": name,
         "base_unit": "g",
+        "category": "carbohydrate",
         "calories_kcal": 372.5,
         "protein_g": 13.5,
         "carbohydrates_g": 58.7,
@@ -53,6 +25,7 @@ def test_foods_start_empty_and_can_be_created(client: TestClient) -> None:
         "id": 1,
         "name": "Haferflocken",
         "base_unit": "g",
+        "category": "carbohydrate",
         "calories_kcal": 372.5,
         "protein_g": 13.5,
         "carbohydrates_g": 58.7,
@@ -95,6 +68,7 @@ def test_food_names_are_unique_ignoring_case(client: TestClient) -> None:
     [
         {"name": "   "},
         {"base_unit": "kg"},
+        {"category": "unknown"},
         {"calories_kcal": -1},
         {"protein_g": -1},
         {"carbohydrates_g": -1},
