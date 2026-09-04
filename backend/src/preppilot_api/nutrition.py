@@ -37,7 +37,10 @@ class RecipeNutrition:
 def calculate_recipe_nutrition(recipe: Recipe) -> RecipeNutrition:
     total = Nutrients()
     for ingredient in recipe.ingredients:
-        factor = ingredient.amount / Decimal(100)
+        base_amount = ingredient.amount
+        if ingredient.food_portion is not None:
+            base_amount *= ingredient.food_portion.amount
+        factor = base_amount / Decimal(100)
         total += Nutrients(
             calories_kcal=ingredient.food.calories_kcal * factor,
             protein_g=ingredient.food.protein_g * factor,

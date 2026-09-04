@@ -30,6 +30,7 @@ def test_foods_start_empty_and_can_be_created(client: TestClient) -> None:
         "protein_g": 13.5,
         "carbohydrates_g": 58.7,
         "fat_g": 7.0,
+        "portions": [],
         "created_at": body["created_at"],
         "updated_at": body["updated_at"],
     }
@@ -87,3 +88,32 @@ def test_invalid_food_values_are_rejected(
 def test_unknown_food_returns_not_found(client: TestClient) -> None:
     assert client.put("/api/foods/404", json=food_payload()).status_code == 404
     assert client.delete("/api/foods/404").status_code == 404
+
+
+def test_food_portions_can_be_managed(client: TestClient) -> None:
+    food_id = client.post("/api/foods", json=food_payload()).json()["id"]
+
+    created = client.post(
+        f"/api/foods/{food_id}/portions",
+        json={"name": "  Tasse  ", "amount": 80},
+    )
+    assert created.status_code == 201
+    portion_id = created.json()["id"]
+    assert created.json() == {"id": portion_id, "name": "Tasse", "amount": 80.0}
+    assert client.get("/api/foods").json()[0]["portions"] == [created.json()]
+
+    updated = client.put(
+        f"/api/foods/{food_id}/portions/{portion_id}",
+        json={"name": "Becher", "amount": 100},
+    )
+    assert updated.json() == {"id": portion_id, "name": "Becher", "amount": 100.0}
+    assert client.delete(f"/api/foods/{food_id}/portions/{portion_id}").status_code == 204
+    assert client.get("/api/foods").json()[0]["portions"] == []
+
+
+def test_food_portion_names_are_unique_per_food(client: TestClient) -> None:
+    food_id = client.post("/api/foods", json=food_payload()).json()["id"]
+    path = f"/api/foods/{food_id}/portions"
+    assert client.post(path, json={"name": "EL", "amount": 10}).status_code == 201
+    response = client.post(path, json={"name": "el", "amount": 12})
+    assert response.status_code == 409

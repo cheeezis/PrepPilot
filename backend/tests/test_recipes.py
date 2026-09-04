@@ -57,6 +57,9 @@ def test_recipe_crud_and_nutrition(client: TestClient) -> None:
             "food_name": "Haferflocken",
             "amount": 100.0,
             "unit": "g",
+            "food_portion_id": None,
+            "base_amount": 100.0,
+            "base_unit": "g",
             "position": 0,
         },
         {
@@ -64,6 +67,9 @@ def test_recipe_crud_and_nutrition(client: TestClient) -> None:
             "food_name": "Milch",
             "amount": 200.0,
             "unit": "ml",
+            "food_portion_id": None,
+            "base_amount": 200.0,
+            "base_unit": "ml",
             "position": 1,
         },
     ]
@@ -140,3 +146,49 @@ def test_unknown_recipe_returns_not_found(client: TestClient) -> None:
 
     assert client.put("/api/recipes/404", json=payload).status_code == 404
     assert client.delete("/api/recipes/404").status_code == 404
+
+
+def test_recipe_can_use_food_portion_and_keeps_nutrition_correct(client: TestClient) -> None:
+    egg_id = create_food(client, "Ei", "g", 140, 13, 1, 9)
+    portion = client.post(
+        f"/api/foods/{egg_id}/portions", json={"name": "Stück", "amount": 60}
+    ).json()
+    response = client.post(
+        "/api/recipes",
+        json={
+            "title": "Gekochte Eier",
+            "servings": 1,
+            "meal_roles": ["snack"],
+            "ingredients": [
+                {"food_id": egg_id, "amount": 2, "food_portion_id": portion["id"]}
+            ],
+            "instructions": ["Kochen."],
+        },
+    )
+    assert response.status_code == 201
+    ingredient = response.json()["ingredients"][0]
+    assert ingredient["amount"] == 2
+    assert ingredient["unit"] == "Stück"
+    assert ingredient["base_amount"] == 120
+    assert response.json()["nutrition_total"]["calories_kcal"] == 168
+    assert client.delete(
+        f"/api/foods/{egg_id}/portions/{portion['id']}"
+    ).status_code == 409
+
+
+def test_recipe_rejects_portion_from_another_food(client: TestClient) -> None:
+    egg_id = create_food(client, "Ei", "g", 140, 13, 1, 9)
+    bread_id = create_food(client, "Brot", "g", 220, 7, 40, 2)
+    portion = client.post(
+        f"/api/foods/{bread_id}/portions", json={"name": "Scheibe", "amount": 55}
+    ).json()
+    payload = {
+        "title": "Falsche Einheit",
+        "servings": 1,
+        "meal_roles": ["snack"],
+        "ingredients": [
+            {"food_id": egg_id, "amount": 1, "food_portion_id": portion["id"]}
+        ],
+        "instructions": ["Zubereiten."],
+    }
+    assert client.post("/api/recipes", json=payload).status_code == 422
