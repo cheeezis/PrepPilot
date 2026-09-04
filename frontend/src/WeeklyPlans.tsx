@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { deleteWeeklyPlan, generateWeeklyPlan, listWeeklyPlans, WeeklyPlanApiError, type WeeklyPlan, type WeeklyPlanInput } from './api/weeklyPlans'
+import { deleteWeeklyPlan, generateWeeklyPlan, listWeeklyPlans, WeeklyPlanApiError, type DailyNutrition, type WeeklyPlan, type WeeklyPlanInput } from './api/weeklyPlans'
 
 const emptyDraft = { start_date: '', snacks_per_day: '1', calories_maximum_kcal: '', protein_minimum_g: '', carbohydrates_target_g: '', fat_maximum_g: '' }
 
@@ -60,9 +60,37 @@ function TargetField({ label, unit, value, onChange }: { label: string; unit: st
 
 function PlanCard({ plan, onDelete }: { plan: WeeklyPlan; onDelete: () => void }) {
   const days = Array.from({ length: 7 }, (_, day) => plan.assignments.filter((item) => item.day_index === day))
-  return <details className="plan-card"><summary><span>{formatDate(plan.start_date)}–{formatDate(plan.end_date)}</span><span>{plan.snacks_per_day} Snacks/Tag</span></summary><div className="plan-targets">höchstens {plan.calories_maximum_kcal} kcal · mindestens {plan.protein_minimum_g} g Protein · {plan.carbohydrates_target_g} g Kohlenhydrate · höchstens {plan.fat_maximum_g} g Fett</div><div className="plan-days">{days.map((assignments, day) => <section key={day}><h3>{formatDate(assignments[0]?.date ?? plan.start_date)}</h3>{assignments.map((item) => <p key={item.id}><span>{roleLabel(item.meal_role, item.slot_number)}</span><strong>{item.recipe_title}</strong>{item.portion_number && <small>Portion {item.portion_number}/{item.recipe_servings}</small>}</p>)}</section>)}</div><button type="button" className="button-danger" onClick={onDelete}>Wochenplan löschen</button></details>
+  return <details className="plan-card">
+    <summary><span>{formatDate(plan.start_date)}–{formatDate(plan.end_date)}</span><span>{plan.snacks_per_day} Snacks/Tag</span></summary>
+    <div className="plan-targets">höchstens {formatNumber(plan.calories_maximum_kcal)} kcal · mindestens {formatNumber(plan.protein_minimum_g)} g Protein · {formatNumber(plan.carbohydrates_target_g)} g Kohlenhydrate · höchstens {formatNumber(plan.fat_maximum_g)} g Fett</div>
+    <div className="plan-days">{days.map((assignments, day) => {
+      const nutrition = plan.daily_nutrition.find((item) => item.day_index === day)
+      return <section key={day}>
+        <h3>{formatDate(assignments[0]?.date ?? nutrition?.date ?? plan.start_date)}</h3>
+        {assignments.map((item) => <p key={item.id}><span>{roleLabel(item.meal_role, item.slot_number)}</span><strong>{item.recipe_title}</strong>{item.portion_number && <small>Portion {item.portion_number}/{item.recipe_servings}</small>}</p>)}
+        {nutrition && <DailyNutritionSummary nutrition={nutrition} />}
+      </section>
+    })}</div>
+    <button type="button" className="button-danger" onClick={onDelete}>Wochenplan löschen</button>
+  </details>
+}
+
+function DailyNutritionSummary({ nutrition }: { nutrition: DailyNutrition }) {
+  const deviations = [
+    nutrition.protein_shortfall_g > 0 ? `${formatNumber(nutrition.protein_shortfall_g)} g Protein fehlen` : null,
+    nutrition.calories_over_kcal > 0 ? `${formatNumber(nutrition.calories_over_kcal)} kcal zu viel` : null,
+    nutrition.fat_over_g > 0 ? `${formatNumber(nutrition.fat_over_g)} g Fett zu viel` : null,
+    Math.abs(nutrition.carbohydrates_difference_g) > 0.01
+      ? `${formatNumber(Math.abs(nutrition.carbohydrates_difference_g))} g Kohlenhydrate ${nutrition.carbohydrates_difference_g > 0 ? 'über' : 'unter'} Ziel`
+      : null,
+  ].filter(Boolean)
+  return <div className="day-nutrition">
+    <strong>{formatNumber(nutrition.calories_kcal)} kcal · {formatNumber(nutrition.protein_g)} g P · {formatNumber(nutrition.carbohydrates_g)} g KH · {formatNumber(nutrition.fat_g)} g F</strong>
+    <small>{deviations.length > 0 ? deviations.join(' · ') : 'Alle Tagesziele erreicht'}</small>
+  </div>
 }
 
 function roleLabel(role: string, slot: number) { return role === 'breakfast' ? 'Frühstück' : role === 'lunch' ? 'Mittagessen' : role === 'dinner' ? 'Abendessen' : `Snack ${slot}` }
 function formatDate(value: string) { return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)) }
+function formatNumber(value: number) { return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(value) }
 function message(reason: unknown) { return reason instanceof Error ? reason.message : 'Ein unbekannter Fehler ist aufgetreten' }

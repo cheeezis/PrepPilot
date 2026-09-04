@@ -12,6 +12,19 @@ export type MealAssignment = {
   recipe_servings: number
 }
 
+export type DailyNutrition = {
+  date: string
+  day_index: number
+  calories_kcal: number
+  protein_g: number
+  carbohydrates_g: number
+  fat_g: number
+  calories_over_kcal: number
+  protein_shortfall_g: number
+  carbohydrates_difference_g: number
+  fat_over_g: number
+}
+
 export type WeeklyPlan = {
   id: number
   start_date: string
@@ -22,6 +35,7 @@ export type WeeklyPlan = {
   carbohydrates_target_g: number
   fat_maximum_g: number
   assignments: MealAssignment[]
+  daily_nutrition: DailyNutrition[]
   created_at: string
   updated_at: string
 }

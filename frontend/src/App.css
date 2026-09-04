@@ -468,6 +468,22 @@ button:disabled {
   color: #71807a;
 }
 
+.day-nutrition {
+  display: grid;
+  gap: 3px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: #315c4d;
+  background: #edf4f0;
+  font-size: 12px;
+}
+
+.day-nutrition small {
+  color: #687771;
+  line-height: 1.4;
+}
+
 .button-danger {
   margin: 0 16px 16px;
   background: #a43c33;
