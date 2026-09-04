@@ -30,6 +30,7 @@ def test_weekly_plan_is_generated_persisted_and_reloaded(
     assert [item["portion_number"] for item in batch_assignments] == list(
         range(1, 7)
     )
+    assert len({item["day_index"] for item in batch_assignments}) == 6
     assert {item["recipe_servings"] for item in batch_assignments} == {6}
 
     assert client.get(f"/api/weekly-plans/{plan['id']}").json() == plan
@@ -145,6 +146,60 @@ def test_generation_optimizes_targets_in_documented_priority_order(
     assert [item["recipe_id"] for item in repeated.json()["assignments"]] == [
         item["recipe_id"] for item in first.json()["assignments"]
     ]
+
+
+def test_generation_avoids_duplicate_recipes_within_a_day(
+    client: TestClient,
+) -> None:
+    food_id = create_food(client)
+    recipe_ids = {
+        create_recipe(
+            client,
+            f"Gleichwertige Mahlzeit {number}",
+            1,
+            ["breakfast", "lunch", "dinner"],
+            food_id,
+        )
+        for number in range(1, 4)
+    }
+    payload = plan_payload()
+    payload["snacks_per_day"] = 0
+
+    response = client.post("/api/weekly-plans/generate", json=payload)
+
+    assert response.status_code == 201
+    for day_index in range(7):
+        daily_recipe_ids = {
+            item["recipe_id"]
+            for item in response.json()["assignments"]
+            if item["day_index"] == day_index
+        }
+        assert daily_recipe_ids == recipe_ids
+
+
+def test_generation_rotates_equally_suitable_single_recipes(
+    client: TestClient,
+) -> None:
+    food_id = create_food(client)
+    breakfast_ids = {
+        create_recipe(client, title, 1, ["breakfast"], food_id)
+        for title in ("Frühstück A", "Frühstück B")
+    }
+    create_recipe(client, "Mittagessen", 1, ["lunch"], food_id)
+    create_recipe(client, "Abendessen", 1, ["dinner"], food_id)
+    payload = plan_payload()
+    payload["snacks_per_day"] = 0
+
+    response = client.post("/api/weekly-plans/generate", json=payload)
+
+    assert response.status_code == 201
+    breakfasts = [
+        item["recipe_id"]
+        for item in response.json()["assignments"]
+        if item["meal_role"] == "breakfast"
+    ]
+    assert set(breakfasts) == breakfast_ids
+    assert abs(breakfasts.count(min(breakfast_ids)) - breakfasts.count(max(breakfast_ids))) == 1
 
 
 def create_complete_recipe_set(client: TestClient) -> None:
