@@ -20,10 +20,10 @@ def recipe(
         categories=(category,),
         servings=4,
         source_url=f"https://example.test/{recipe_id}",
-        license_name="Open Government Licence v3.0",
-        attribution_text="NHS",
         ingredients=("ingredient",),
         instructions=("instruction",),
+        preparation_minutes=10,
+        cooking_minutes=20,
         nutrients=Nutrients(*(Decimal(value) for value in values)),
     )
 
@@ -186,3 +186,4 @@ def test_recipe_api_exposes_the_stored_inventory(monkeypatch) -> None:
     assert response.json()[0]["instructions"] == ["instruction"]
     assert response.json()[0]["servings"] == 4
     assert response.json()[0]["categories"] == ["breakfast"]
+    assert response.json()[0]["preparation_minutes"] == 10

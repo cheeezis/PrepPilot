@@ -7,21 +7,23 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
-from preppilot_api.nhs_import import ImportItem, import_nhs_recipes
 from preppilot_api.nutrition import Nutrients
 from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
 from preppilot_api.recipe_repository import (
-    RecipeCatalogUnavailableError,
     RecipeCategory,
     RecipeDefinition,
+    RecipeValues,
+    create_recipe,
+    delete_recipe,
     load_recipes,
+    update_recipe,
 )
 
 
 class HealthResponse(BaseModel):
     status: Literal["ok", "error"]
     database: Literal["ok", "unavailable"]
-    recipes: Literal["ok", "unavailable"]
+    recipes: Literal["ok", "empty", "unavailable"]
 
 
 def _default_meal_categories() -> list[RecipeCategory]:
@@ -66,9 +68,7 @@ class PlannedRecipeResponse(BaseModel):
     category: Literal["breakfast", "lunch", "dinner", "snack"]
     portions: int
     recipe_servings: int
-    source_url: str
-    license_name: str
-    attribution_text: str
+    source_url: str | None
     nutrients: NutrientValuesResponse
     ingredients: list[str]
     instructions: list[str]
@@ -102,27 +102,63 @@ class RecipeResponse(BaseModel):
     title: str
     categories: list[Literal["breakfast", "lunch", "dinner", "snack"]]
     servings: int
-    source_url: str
-    license_name: str
-    attribution_text: str
+    source_url: str | None
+    preparation_minutes: int | None
+    cooking_minutes: int | None
     nutrients: NutrientValuesResponse
     ingredients: list[str]
     instructions: list[str]
 
 
-class ImportItemResponse(BaseModel):
-    source_url: str
-    status: Literal["created", "updated", "unchanged", "rejected"]
-    title: str | None
-    reason: str | None
+class RecipeWriteRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=300)
+    categories: list[RecipeCategory] = Field(min_length=1, max_length=4)
+    servings: int = Field(gt=0)
+    calories_per_serving: Decimal = Field(gt=0)
+    protein_per_serving: Decimal = Field(ge=0)
+    carbs_per_serving: Decimal = Field(ge=0)
+    fat_per_serving: Decimal = Field(ge=0)
+    sugar_per_serving: Decimal | None = Field(default=None, ge=0)
+    saturated_fat_per_serving: Decimal | None = Field(default=None, ge=0)
+    fiber_per_serving: Decimal | None = Field(default=None, ge=0)
+    salt_per_serving: Decimal | None = Field(default=None, ge=0)
+    ingredients: list[str] = Field(min_length=1)
+    instructions: list[str] = Field(min_length=1)
+    preparation_minutes: int | None = Field(default=None, ge=0)
+    cooking_minutes: int | None = Field(default=None, ge=0)
+    source_url: str | None = None
 
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_blank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("title must not be blank")
+        return value
 
-class ImportRunResponse(BaseModel):
-    created: int
-    updated: int
-    unchanged: int
-    rejected: int
-    items: list[ImportItemResponse]
+    @field_validator("categories")
+    @classmethod
+    def categories_must_be_unique(
+        cls, value: list[RecipeCategory]
+    ) -> list[RecipeCategory]:
+        if len(set(value)) != len(value):
+            raise ValueError("categories must be unique")
+        return value
+
+    @field_validator("ingredients", "instructions")
+    @classmethod
+    def text_items_must_not_be_blank(cls, value: list[str]) -> list[str]:
+        cleaned = [item.strip() for item in value]
+        if any(not item for item in cleaned):
+            raise ValueError("items must not be blank")
+        return cleaned
+
+    @field_validator("source_url")
+    @classmethod
+    def empty_source_url_becomes_none(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip() or None
 
 
 app = FastAPI(title="PrepPilot API", version="0.2.0")
@@ -132,23 +168,24 @@ DatabaseSession = Annotated[Session, Depends(get_session)]
 @app.get("/api/health", tags=["system"], response_model=HealthResponse)
 def health(response: Response, session: DatabaseSession) -> HealthResponse:
     try:
-        load_recipes(session)
+        recipes = load_recipes(session)
     except SQLAlchemyError:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return HealthResponse(
             status="error", database="unavailable", recipes="unavailable"
         )
-    except RecipeCatalogUnavailableError:
-        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-        return HealthResponse(status="error", database="ok", recipes="unavailable")
-    return HealthResponse(status="ok", database="ok", recipes="ok")
+    return HealthResponse(
+        status="ok",
+        database="ok",
+        recipes="ok" if recipes else "empty",
+    )
 
 
 @app.get("/api/recipes", tags=["recipes"], response_model=list[RecipeResponse])
 def list_recipes(session: DatabaseSession) -> list[RecipeResponse]:
     try:
         recipes = load_recipes(session)
-    except (SQLAlchemyError, RecipeCatalogUnavailableError) as error:
+    except SQLAlchemyError as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Rezeptbestand nicht verfügbar",
@@ -157,20 +194,59 @@ def list_recipes(session: DatabaseSession) -> list[RecipeResponse]:
 
 
 @app.post(
-    "/api/imports/nhs",
-    tags=["imports"],
-    response_model=ImportRunResponse,
+    "/api/recipes",
+    tags=["recipes"],
+    response_model=RecipeResponse,
+    status_code=status.HTTP_201_CREATED,
 )
-def run_nhs_import(session: DatabaseSession) -> ImportRunResponse:
+def add_recipe(
+    request: RecipeWriteRequest, session: DatabaseSession
+) -> RecipeResponse:
     try:
-        items = import_nhs_recipes(session)
-    except (OSError, ValueError, SQLAlchemyError) as error:
+        recipe = create_recipe(session, _recipe_values(request))
+    except SQLAlchemyError as error:
         session.rollback()
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="NHS-Rezeptkatalog ist derzeit nicht verfügbar",
+            detail="Rezept konnte nicht gespeichert werden",
         ) from error
-    return _serialize_import_run(items)
+    return _serialize_recipe(recipe)
+
+
+@app.put("/api/recipes/{recipe_id}", tags=["recipes"], response_model=RecipeResponse)
+def edit_recipe(
+    recipe_id: int, request: RecipeWriteRequest, session: DatabaseSession
+) -> RecipeResponse:
+    try:
+        recipe = update_recipe(session, recipe_id, _recipe_values(request))
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Rezept konnte nicht gespeichert werden",
+        ) from error
+    if recipe is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return _serialize_recipe(recipe)
+
+
+@app.delete(
+    "/api/recipes/{recipe_id}",
+    tags=["recipes"],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def remove_recipe(recipe_id: int, session: DatabaseSession) -> Response:
+    try:
+        deleted = delete_recipe(session, recipe_id)
+    except SQLAlchemyError as error:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Rezept konnte nicht gelöscht werden",
+        ) from error
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.post("/api/day-plans", tags=["planning"], response_model=DayPlansResponse)
@@ -179,7 +255,7 @@ def create_day_plans(
 ) -> DayPlansResponse:
     try:
         recipes = load_recipes(session)
-    except (SQLAlchemyError, RecipeCatalogUnavailableError) as error:
+    except SQLAlchemyError as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Rezeptbestand nicht verfügbar",
@@ -213,21 +289,11 @@ def _serialize_recipe(recipe: RecipeDefinition) -> RecipeResponse:
         categories=list(recipe.categories),
         servings=recipe.servings,
         source_url=recipe.source_url,
-        license_name=recipe.license_name,
-        attribution_text=recipe.attribution_text,
+        preparation_minutes=recipe.preparation_minutes,
+        cooking_minutes=recipe.cooking_minutes,
         nutrients=_serialize_nutrients(recipe.nutrients),
         ingredients=list(recipe.ingredients),
         instructions=list(recipe.instructions),
-    )
-
-
-def _serialize_import_run(items: tuple[ImportItem, ...]) -> ImportRunResponse:
-    return ImportRunResponse(
-        created=sum(item.status == "created" for item in items),
-        updated=sum(item.status == "updated" for item in items),
-        unchanged=sum(item.status == "unchanged" for item in items),
-        rejected=sum(item.status == "rejected" for item in items),
-        items=[ImportItemResponse(**item.__dict__) for item in items],
     )
 
 
@@ -256,14 +322,35 @@ def _serialize_day_plan(plan: DayPlan) -> DayPlanResponse:
                 portions=item.portions,
                 recipe_servings=item.recipe.servings,
                 source_url=item.recipe.source_url,
-                license_name=item.recipe.license_name,
-                attribution_text=item.recipe.attribution_text,
                 nutrients=_serialize_nutrients(item.nutrients),
                 ingredients=list(item.recipe.ingredients),
                 instructions=list(item.recipe.instructions),
             )
             for item in plan.recipes
         ],
+    )
+
+
+def _recipe_values(request: RecipeWriteRequest) -> RecipeValues:
+    return RecipeValues(
+        title=request.title,
+        categories=tuple(request.categories),
+        servings=request.servings,
+        source_url=request.source_url,
+        ingredients=tuple(request.ingredients),
+        instructions=tuple(request.instructions),
+        preparation_minutes=request.preparation_minutes,
+        cooking_minutes=request.cooking_minutes,
+        nutrients=Nutrients(
+            calories=request.calories_per_serving,
+            protein=request.protein_per_serving,
+            carbs=request.carbs_per_serving,
+            fat=request.fat_per_serving,
+            sugar=request.sugar_per_serving,
+            saturated_fat=request.saturated_fat_per_serving,
+            fiber=request.fiber_per_serving,
+            salt=request.salt_per_serving,
+        ),
     )
 
 
