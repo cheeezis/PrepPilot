@@ -11,7 +11,9 @@ Stand: 4. September 2026
   mit einer echten lokalen PostgreSQL-Datenbank geprüft.
 - Abschnitt 3 ist auf `feature/recipe-management` umgesetzt und automatisiert
   sowie mit einer echten lokalen PostgreSQL-Datenbank geprüft.
-- Als Nächstes folgt Abschnitt 4, das persistente Wochenmodell.
+- Abschnitt 4 ist auf `feature/weekly-plans` umgesetzt und automatisiert sowie
+  mit einem echten gespeicherten Sieben-Tage-Plan in PostgreSQL geprüft.
+- Als Nächstes folgt Abschnitt 5, die zielwertbasierte Planungsoptimierung.
 
 ## Ziel
 
