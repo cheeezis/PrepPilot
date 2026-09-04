@@ -1,72 +1,25 @@
 # PrepPilot
 
-PrepPilot ist ein persönlicher Meal-Prep-Planer für eine vollständige Woche.
-Die Anwendung verbindet selbst gepflegte Lebensmittel mit eigenen Rezepten und
-verteilt die Portionen eines vorbereiteten Rezepts nachvollziehbar auf sieben
-Tage.
-
-Der entscheidende Grundsatz: Wenn ein Meal-Prep-Rezept sechs Portionen ergibt,
-werden genau diese sechs Portionen innerhalb derselben Woche verwendet. Jede
-Mahlzeit verbraucht eine Portion; es entstehen weder unsichtbare zusätzliche
-Portionen noch unberücksichtigte Reste.
+PrepPilot plant für eine Person eine vollständige Woche aus selbst gepflegten
+Lebensmitteln und Rezepten. Ein Meal-Prep-Rezept erzeugt mehrere Portionen, die
+innerhalb derselben Woche vollständig und nachvollziehbar verwendet werden.
 
 ## V5-MVP
 
-Der erste V5-MVP ist bewusst auf einen klaren Alltagsfall begrenzt:
+- genau sieben Tage mit Frühstück, Mittagessen, Abendessen und Snacks
+- persönliche Lebensmittel als gemeinsame Nährwertquelle
+- persönliche Rezepte mit Zutaten und eindeutiger Portionenzahl
+- aus Zutaten berechnete Nährwerte pro Rezept und Portion
+- reproduzierbare Wochenplanung ohne verlorene oder doppelte Batch-Portionen
 
-- eine Person und sieben zusammenhängende Tage
-- Frühstück, Mittagessen und Abendessen
-- persönliche Lebensmittel mit Nährwerten pro Bezugsmenge
-- persönliche Rezepte mit Zutaten, Ausbeute und Meal-Prep-Kennzeichnung
-- aus Lebensmitteln berechnete Rezept- und Portionsnährwerte
-- reproduzierbare Wochenplanung mit vollständig verwendeten Meal-Prep-Batches
+Die technische Grundlage verwendet React/Vite, FastAPI, PostgreSQL und Alembic.
+Der persönliche Lebensmittelkatalog ist der erste umgesetzte Fachbaustein. Als
+Nächstes folgt die Rezeptverwaltung.
 
-Snacks, mehrere Personen, externe Datenquellen, Einkaufslisten und
-wochenübergreifende Reste gehören zunächst nicht zum MVP.
-
-## Aktueller Stand
-
-V5 ist ein sauberer Neustart auf dem Branch `rewrite/v5-foundation`. Die
-technische Grundlage besteht aus React/Vite, FastAPI, PostgreSQL und Alembic.
-Derzeit enthält sie bewusst noch keine fachlichen Tabellen oder Funktionen:
-
-```text
-React-Oberfläche mit leerem Anwendungszustand
-  -> GET /api/health
-  -> FastAPI prüft die PostgreSQL-Verbindung
-```
-
-Als nächster fachlicher Abschnitt entsteht der Lebensmittelkatalog.
-
-## Lokal entwickeln
-
-Vorausgesetzt werden Python 3.14, Node.js und Docker Desktop. Nach der einmaligen
-Einrichtung werden Datenbank, Backend und Frontend in drei Terminals gestartet.
-Die Anwendung ist anschließend unter <http://127.0.0.1:5173> erreichbar.
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-
-cd ..\frontend
-npm install
-
-cd ..
-docker compose up -d postgres
-```
-
-Die Befehle für Backend, Frontend und das Beenden der Dienste sowie alle
-Prüfbefehle stehen in [`docs/development.md`](docs/development.md).
-
-## Dokumentation
-
-- [`docs/v5-plan.md`](docs/v5-plan.md): verbindlicher Umfang, Fachmodell und
-  Umsetzungsreihenfolge
-- [`docs/project-history.md`](docs/project-history.md): frühere Produktphasen
-  und Gründe für den Neustart
-- [`docs/development.md`](docs/development.md): lokale Einrichtung, Start und
-  Prüfungen
+Der verbindliche Umfang und die Umsetzungsreihenfolge stehen im
+[`V5-Plan`](docs/v5-plan.md). Frühere Produktphasen dokumentiert die
+[`Projektgeschichte`](docs/project-history.md); bewusst verschobene Funktionen
+stehen im [`Backlog`](docs/backlog.md).
 
 PrepPilot befindet sich in Entwicklung und ist keine medizinische
 Ernährungsberatung.

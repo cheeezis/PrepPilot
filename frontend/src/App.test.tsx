@@ -3,11 +3,14 @@ import { describe, expect, it } from 'vitest'
 import App from './App'
 
 describe('App', () => {
-  it('shows the empty V5 application state', () => {
+  it('shows the food catalog and its required fields', () => {
     const html = renderToStaticMarkup(<App />)
 
-    expect(html).toContain('Noch keine Lebensmittel oder Rezepte')
-    expect(html).toContain('persönliche Lebensmittel')
-    expect(html).not.toContain('Tagesplan')
+    expect(html).toContain('Lebensmittel hinzufügen')
+    expect(html).toContain('pro 100 g')
+    expect(html).toContain('Kalorien')
+    expect(html).toContain('Protein')
+    expect(html).toContain('Kohlenhydrate')
+    expect(html).toContain('Fett')
   })
 })
