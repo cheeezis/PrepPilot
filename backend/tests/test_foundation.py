@@ -7,9 +7,11 @@ from preppilot_api.models import Base
 def test_v5_schema_contains_foods_and_relational_recipes() -> None:
     assert set(Base.metadata.tables) == {
         "foods",
+        "meal_assignments",
         "recipe_ingredients",
         "recipe_meal_roles",
         "recipes",
+        "weekly_plans",
     }
 
 
