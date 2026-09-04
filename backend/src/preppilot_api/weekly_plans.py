@@ -21,7 +21,7 @@ MEAL_ROLE_ORDER = {"breakfast": 0, "lunch": 1, "dinner": 2, "snack": 3}
 class GenerateWeeklyPlanRequest(BaseModel):
     start_date: date
     snacks_per_day: int = Field(ge=0, le=3)
-    calories_target_kcal: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    calories_maximum_kcal: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
     protein_minimum_g: Decimal = Field(ge=0, max_digits=10, decimal_places=2)
     carbohydrates_target_g: Decimal = Field(
         ge=0, max_digits=10, decimal_places=2
@@ -47,7 +47,7 @@ class WeeklyPlanResponse(BaseModel):
     start_date: date
     end_date: date
     snacks_per_day: int
-    calories_target_kcal: float
+    calories_maximum_kcal: float
     protein_minimum_g: float
     carbohydrates_target_g: float
     fat_maximum_g: float
@@ -119,7 +119,7 @@ def generate_weekly_plan(
         start_date=request.start_date,
         end_date=end_date,
         snacks_per_day=request.snacks_per_day,
-        calories_target_kcal=request.calories_target_kcal,
+        calories_maximum_kcal=request.calories_maximum_kcal,
         protein_minimum_g=request.protein_minimum_g,
         carbohydrates_target_g=request.carbohydrates_target_g,
         fat_maximum_g=request.fat_maximum_g,
@@ -188,7 +188,7 @@ def _serialize(plan: WeeklyPlan) -> WeeklyPlanResponse:
         start_date=plan.start_date,
         end_date=plan.end_date,
         snacks_per_day=plan.snacks_per_day,
-        calories_target_kcal=float(plan.calories_target_kcal),
+        calories_maximum_kcal=float(plan.calories_maximum_kcal),
         protein_minimum_g=float(plan.protein_minimum_g),
         carbohydrates_target_g=float(plan.carbohydrates_target_g),
         fat_maximum_g=float(plan.fat_maximum_g),

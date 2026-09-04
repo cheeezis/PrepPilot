@@ -136,7 +136,7 @@ class WeeklyPlan(Base):
             name="ck_weekly_plans_snacks_per_day",
         ),
         CheckConstraint(
-            "calories_target_kcal > 0",
+            "calories_maximum_kcal > 0",
             name="ck_weekly_plans_calories_positive",
         ),
         CheckConstraint(
@@ -158,7 +158,7 @@ class WeeklyPlan(Base):
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date] = mapped_column(Date)
     snacks_per_day: Mapped[int]
-    calories_target_kcal: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    calories_maximum_kcal: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     protein_minimum_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     carbohydrates_target_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     fat_maximum_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))

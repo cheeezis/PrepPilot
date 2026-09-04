@@ -17,7 +17,7 @@ export type WeeklyPlan = {
   start_date: string
   end_date: string
   snacks_per_day: number
-  calories_target_kcal: number
+  calories_maximum_kcal: number
   protein_minimum_g: number
   carbohydrates_target_g: number
   fat_maximum_g: number
@@ -26,7 +26,7 @@ export type WeeklyPlan = {
   updated_at: string
 }
 
-export type WeeklyPlanInput = Pick<WeeklyPlan, 'start_date' | 'snacks_per_day' | 'calories_target_kcal' | 'protein_minimum_g' | 'carbohydrates_target_g' | 'fat_maximum_g'> & { replace_existing: boolean }
+export type WeeklyPlanInput = Pick<WeeklyPlan, 'start_date' | 'snacks_per_day' | 'calories_maximum_kcal' | 'protein_minimum_g' | 'carbohydrates_target_g' | 'fat_maximum_g'> & { replace_existing: boolean }
 
 export class WeeklyPlanApiError extends Error {
   readonly status: number

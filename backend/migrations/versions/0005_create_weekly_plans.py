@@ -23,7 +23,7 @@ def upgrade() -> None:
         sa.Column("start_date", sa.Date(), nullable=False),
         sa.Column("end_date", sa.Date(), nullable=False),
         sa.Column("snacks_per_day", sa.Integer(), nullable=False),
-        sa.Column("calories_target_kcal", sa.Numeric(10, 2), nullable=False),
+        sa.Column("calories_maximum_kcal", sa.Numeric(10, 2), nullable=False),
         sa.Column("protein_minimum_g", sa.Numeric(10, 2), nullable=False),
         sa.Column("carbohydrates_target_g", sa.Numeric(10, 2), nullable=False),
         sa.Column("fat_maximum_g", sa.Numeric(10, 2), nullable=False),
@@ -47,7 +47,7 @@ def upgrade() -> None:
             name="ck_weekly_plans_snacks_per_day",
         ),
         sa.CheckConstraint(
-            "calories_target_kcal > 0",
+            "calories_maximum_kcal > 0",
             name="ck_weekly_plans_calories_positive",
         ),
         sa.CheckConstraint(

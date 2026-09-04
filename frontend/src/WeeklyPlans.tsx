@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { deleteWeeklyPlan, generateWeeklyPlan, listWeeklyPlans, WeeklyPlanApiError, type WeeklyPlan, type WeeklyPlanInput } from './api/weeklyPlans'
 
-const emptyDraft = { start_date: '', snacks_per_day: '1', calories_target_kcal: '', protein_minimum_g: '', carbohydrates_target_g: '', fat_maximum_g: '' }
+const emptyDraft = { start_date: '', snacks_per_day: '1', calories_maximum_kcal: '', protein_minimum_g: '', carbohydrates_target_g: '', fat_maximum_g: '' }
 
 export function WeeklyPlans() {
   const [plans, setPlans] = useState<WeeklyPlan[]>([])
@@ -31,7 +31,7 @@ export function WeeklyPlans() {
   }
 
   function toInput(replace_existing: boolean): WeeklyPlanInput {
-    return { start_date: draft.start_date, snacks_per_day: Number(draft.snacks_per_day), calories_target_kcal: Number(draft.calories_target_kcal), protein_minimum_g: Number(draft.protein_minimum_g), carbohydrates_target_g: Number(draft.carbohydrates_target_g), fat_maximum_g: Number(draft.fat_maximum_g), replace_existing }
+    return { start_date: draft.start_date, snacks_per_day: Number(draft.snacks_per_day), calories_maximum_kcal: Number(draft.calories_maximum_kcal), protein_minimum_g: Number(draft.protein_minimum_g), carbohydrates_target_g: Number(draft.carbohydrates_target_g), fat_maximum_g: Number(draft.fat_maximum_g), replace_existing }
   }
 
   async function remove(plan: WeeklyPlan) {
@@ -44,7 +44,7 @@ export function WeeklyPlans() {
       <div className="section-heading"><p className="eyebrow">Neue Woche</p><h2>Wochenplan erzeugen</h2></div>
       <label className="field field--wide"><span>Startdatum</span><input required type="date" value={draft.start_date} onChange={(event) => setDraft({ ...draft, start_date: event.target.value })} /></label>
       <label className="field field--wide"><span>Snacks pro Tag</span><select value={draft.snacks_per_day} onChange={(event) => setDraft({ ...draft, snacks_per_day: event.target.value })}>{[0,1,2,3].map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
-      <TargetField label="Kalorienziel" unit="kcal" value={draft.calories_target_kcal} onChange={(value) => setDraft({ ...draft, calories_target_kcal: value })} />
+      <TargetField label="Kalorienmaximum" unit="kcal" value={draft.calories_maximum_kcal} onChange={(value) => setDraft({ ...draft, calories_maximum_kcal: value })} />
       <TargetField label="Proteinminimum" unit="g" value={draft.protein_minimum_g} onChange={(value) => setDraft({ ...draft, protein_minimum_g: value })} />
       <TargetField label="Kohlenhydratziel" unit="g" value={draft.carbohydrates_target_g} onChange={(value) => setDraft({ ...draft, carbohydrates_target_g: value })} />
       <TargetField label="Fettmaximum" unit="g" value={draft.fat_maximum_g} onChange={(value) => setDraft({ ...draft, fat_maximum_g: value })} />
@@ -60,7 +60,7 @@ function TargetField({ label, unit, value, onChange }: { label: string; unit: st
 
 function PlanCard({ plan, onDelete }: { plan: WeeklyPlan; onDelete: () => void }) {
   const days = Array.from({ length: 7 }, (_, day) => plan.assignments.filter((item) => item.day_index === day))
-  return <details className="plan-card"><summary><span>{formatDate(plan.start_date)}–{formatDate(plan.end_date)}</span><span>{plan.snacks_per_day} Snacks/Tag</span></summary><div className="plan-targets">{plan.calories_target_kcal} kcal · mindestens {plan.protein_minimum_g} g Protein · {plan.carbohydrates_target_g} g Kohlenhydrate · höchstens {plan.fat_maximum_g} g Fett</div><div className="plan-days">{days.map((assignments, day) => <section key={day}><h3>{formatDate(assignments[0]?.date ?? plan.start_date)}</h3>{assignments.map((item) => <p key={item.id}><span>{roleLabel(item.meal_role, item.slot_number)}</span><strong>{item.recipe_title}</strong>{item.portion_number && <small>Portion {item.portion_number}/{item.recipe_servings}</small>}</p>)}</section>)}</div><button type="button" className="button-danger" onClick={onDelete}>Wochenplan löschen</button></details>
+  return <details className="plan-card"><summary><span>{formatDate(plan.start_date)}–{formatDate(plan.end_date)}</span><span>{plan.snacks_per_day} Snacks/Tag</span></summary><div className="plan-targets">höchstens {plan.calories_maximum_kcal} kcal · mindestens {plan.protein_minimum_g} g Protein · {plan.carbohydrates_target_g} g Kohlenhydrate · höchstens {plan.fat_maximum_g} g Fett</div><div className="plan-days">{days.map((assignments, day) => <section key={day}><h3>{formatDate(assignments[0]?.date ?? plan.start_date)}</h3>{assignments.map((item) => <p key={item.id}><span>{roleLabel(item.meal_role, item.slot_number)}</span><strong>{item.recipe_title}</strong>{item.portion_number && <small>Portion {item.portion_number}/{item.recipe_servings}</small>}</p>)}</section>)}</div><button type="button" className="button-danger" onClick={onDelete}>Wochenplan löschen</button></details>
 }
 
 function roleLabel(role: string, slot: number) { return role === 'breakfast' ? 'Frühstück' : role === 'lunch' ? 'Mittagessen' : role === 'dinner' ? 'Abendessen' : `Snack ${slot}` }

@@ -7,7 +7,7 @@ describe('WeeklyPlans', () => {
     const html = renderToStaticMarkup(<WeeklyPlans />)
     expect(html).toContain('Startdatum')
     expect(html).toContain('Snacks pro Tag')
-    expect(html).toContain('Kalorienziel')
+    expect(html).toContain('Kalorienmaximum')
     expect(html).toContain('Proteinminimum')
     expect(html).toContain('Kohlenhydratziel')
     expect(html).toContain('Fettmaximum')

@@ -78,7 +78,7 @@ def weekly_plan() -> WeeklyPlan:
         start_date=date(2026, 9, 7),
         end_date=date(2026, 9, 13),
         snacks_per_day=1,
-        calories_target_kcal=Decimal("2500"),
+        calories_maximum_kcal=Decimal("2500"),
         protein_minimum_g=Decimal("180"),
         carbohydrates_target_g=Decimal("250"),
         fat_maximum_g=Decimal("80"),

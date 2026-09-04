@@ -14,7 +14,7 @@ describe('weekly plan api', () => {
   it('generates a plan with the selected targets', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 1 })))
     vi.stubGlobal('fetch', fetchMock)
-    await generateWeeklyPlan({ start_date: '2026-09-07', snacks_per_day: 1, calories_target_kcal: 2500, protein_minimum_g: 180, carbohydrates_target_g: 250, fat_maximum_g: 80, replace_existing: false })
+    await generateWeeklyPlan({ start_date: '2026-09-07', snacks_per_day: 1, calories_maximum_kcal: 2500, protein_minimum_g: 180, carbohydrates_target_g: 250, fat_maximum_g: 80, replace_existing: false })
     expect(fetchMock).toHaveBeenCalledWith('/api/weekly-plans/generate', expect.objectContaining({ method: 'POST' }))
   })
 

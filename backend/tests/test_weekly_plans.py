@@ -128,7 +128,7 @@ def plan_payload() -> dict[str, object]:
     return {
         "start_date": "2026-09-07",
         "snacks_per_day": 1,
-        "calories_target_kcal": 2500,
+        "calories_maximum_kcal": 2500,
         "protein_minimum_g": 180,
         "carbohydrates_target_g": 250,
         "fat_maximum_g": 80,
