@@ -15,7 +15,11 @@ Stand: 4. September 2026
   mit einem echten gespeicherten Sieben-Tage-Plan in PostgreSQL geprüft.
 - Lebensmittelbezogene Einheiten und ein praxistauglicher Grundkatalog sind auf
   `feature/food-portions` umgesetzt und lokal geprüft.
-- Danach folgt Abschnitt 5, die zielwertbasierte Planungsoptimierung.
+- Abschnitt 5 ist auf `feature/plan-optimization` mit dem persönlichen
+  Rezeptbestand und den festgelegten Zielwerten umgesetzt und lokal geprüft.
+- Abschnitt 6 ist mit automatisierten Tests, einer frischen Migration, dem
+  lokalen Windows-Start und einer vollständigen Beispielwoche abgeschlossen.
+- Der in diesem Dokument definierte V5-MVP ist damit umgesetzt.
 
 ## Ziel
 
@@ -259,6 +263,9 @@ Kalorienmaximums sind zulässig; Überschreitungen werden stärker bewertet.
 - Priorität zwischen Nährwerttreue und Kocheffizienz festlegen
 - Such- oder Optimierungsverfahren mit reproduzierbarem Ergebnis umsetzen
 - Abweichungen und Kochentscheidungen im Frontend erklären
+- mögliche vollständige Meal-Prep-Batches vergleichen und nur als Ganzes
+  einplanen
+- tägliche Nährwertsummen und konkrete Zielabweichungen anzeigen
 
 ### 6. Abnahme
 

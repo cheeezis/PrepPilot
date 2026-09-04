@@ -10,7 +10,12 @@ from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
 from preppilot_api.models import MealAssignment, Recipe, WeeklyPlan
-from preppilot_api.weekly_planner import PlanGenerationError, generate_assignments
+from preppilot_api.nutrition import Nutrients, calculate_recipe_nutrition
+from preppilot_api.weekly_planner import (
+    NutritionTargets,
+    PlanGenerationError,
+    generate_assignments,
+)
 
 router = APIRouter(prefix="/api/weekly-plans", tags=["weekly plans"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
@@ -42,6 +47,19 @@ class MealAssignmentResponse(BaseModel):
     recipe_servings: int
 
 
+class DailyNutritionResponse(BaseModel):
+    date: date
+    day_index: int
+    calories_kcal: float
+    protein_g: float
+    carbohydrates_g: float
+    fat_g: float
+    calories_over_kcal: float
+    protein_shortfall_g: float
+    carbohydrates_difference_g: float
+    fat_over_g: float
+
+
 class WeeklyPlanResponse(BaseModel):
     id: int
     start_date: date
@@ -52,6 +70,7 @@ class WeeklyPlanResponse(BaseModel):
     carbohydrates_target_g: float
     fat_maximum_g: float
     assignments: list[MealAssignmentResponse]
+    daily_nutrition: list[DailyNutritionResponse]
     created_at: datetime
     updated_at: datetime
 
@@ -104,7 +123,16 @@ def generate_weekly_plan(
 
     try:
         recipes = list(session.scalars(select(Recipe).order_by(Recipe.id)).all())
-        assignments = generate_assignments(recipes, request.snacks_per_day)
+        assignments = generate_assignments(
+            recipes,
+            request.snacks_per_day,
+            NutritionTargets(
+                calories_maximum_kcal=request.calories_maximum_kcal,
+                protein_minimum_g=request.protein_minimum_g,
+                carbohydrates_target_g=request.carbohydrates_target_g,
+                fat_maximum_g=request.fat_maximum_g,
+            ),
+        )
     except PlanGenerationError as error:
         session.rollback()
         raise HTTPException(
@@ -203,8 +231,36 @@ def _serialize(plan: WeeklyPlan) -> WeeklyPlanResponse:
                 ),
             )
         ],
+        daily_nutrition=[_serialize_daily_nutrition(plan, day) for day in range(7)],
         created_at=plan.created_at,
         updated_at=plan.updated_at,
+    )
+
+
+def _serialize_daily_nutrition(
+    plan: WeeklyPlan, day_index: int
+) -> DailyNutritionResponse:
+    total = Nutrients()
+    for assignment in plan.assignments:
+        if assignment.day_index == day_index:
+            total += calculate_recipe_nutrition(assignment.recipe).per_serving
+    return DailyNutritionResponse(
+        date=plan.start_date + timedelta(days=day_index),
+        day_index=day_index,
+        calories_kcal=float(total.calories_kcal),
+        protein_g=float(total.protein_g),
+        carbohydrates_g=float(total.carbohydrates_g),
+        fat_g=float(total.fat_g),
+        calories_over_kcal=float(
+            max(Decimal(0), total.calories_kcal - plan.calories_maximum_kcal)
+        ),
+        protein_shortfall_g=float(
+            max(Decimal(0), plan.protein_minimum_g - total.protein_g)
+        ),
+        carbohydrates_difference_g=float(
+            total.carbohydrates_g - plan.carbohydrates_target_g
+        ),
+        fat_over_g=float(max(Decimal(0), total.fat_g - plan.fat_maximum_g)),
     )
 
 

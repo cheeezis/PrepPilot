@@ -79,6 +79,54 @@ def test_generation_explains_missing_recipe(client: TestClient) -> None:
     assert response.json()["detail"] == "Kein Einzelrezept für Tag 1, Frühstück verfügbar"
 
 
+def test_generation_optimizes_targets_in_documented_priority_order(
+    client: TestClient,
+) -> None:
+    low_id = create_nutrition_food(client, "Wenig Protein", 100, 10, 10, 1)
+    high_id = create_nutrition_food(client, "Viel Protein", 600, 60, 10, 1)
+    low_recipe = create_recipe(
+        client, "Leichte Mahlzeit", 1, ["breakfast", "lunch", "dinner"], low_id
+    )
+    high_recipe = create_recipe(
+        client, "Proteinmahlzeit", 1, ["breakfast", "lunch", "dinner"], high_id
+    )
+    payload = plan_payload()
+    payload.update(
+        {
+            "snacks_per_day": 0,
+            "calories_maximum_kcal": 1000,
+            "protein_minimum_g": 150,
+            "carbohydrates_target_g": 30,
+            "fat_maximum_g": 10,
+        }
+    )
+
+    first = client.post("/api/weekly-plans/generate", json=payload)
+    assert first.status_code == 201
+    assert {item["recipe_id"] for item in first.json()["assignments"]} == {
+        high_recipe
+    }
+    assert low_recipe != high_recipe
+    assert first.json()["daily_nutrition"][0] == {
+        "date": "2026-09-07",
+        "day_index": 0,
+        "calories_kcal": 1800.0,
+        "protein_g": 180.0,
+        "carbohydrates_g": 30.0,
+        "fat_g": 3.0,
+        "calories_over_kcal": 800.0,
+        "protein_shortfall_g": 0.0,
+        "carbohydrates_difference_g": 0.0,
+        "fat_over_g": 0.0,
+    }
+
+    payload["replace_existing"] = True
+    repeated = client.post("/api/weekly-plans/generate", json=payload)
+    assert [item["recipe_id"] for item in repeated.json()["assignments"]] == [
+        item["recipe_id"] for item in first.json()["assignments"]
+    ]
+
+
 def create_complete_recipe_set(client: TestClient) -> None:
     food_id = create_food(client)
     create_recipe(client, "Frühstück", 1, ["breakfast"], food_id)
@@ -87,16 +135,27 @@ def create_complete_recipe_set(client: TestClient) -> None:
 
 
 def create_food(client: TestClient) -> int:
+    return create_nutrition_food(client, "Testlebensmittel", 100, 10, 10, 1)
+
+
+def create_nutrition_food(
+    client: TestClient,
+    name: str,
+    calories: float,
+    protein: float,
+    carbohydrates: float,
+    fat: float,
+) -> int:
     response = client.post(
         "/api/foods",
         json={
-            "name": "Testlebensmittel",
+            "name": name,
             "base_unit": "g",
             "category": "other",
-            "calories_kcal": 100,
-            "protein_g": 10,
-            "carbohydrates_g": 10,
-            "fat_g": 1,
+            "calories_kcal": calories,
+            "protein_g": protein,
+            "carbohydrates_g": carbohydrates,
+            "fat_g": fat,
         },
     )
     assert response.status_code == 201
@@ -116,7 +175,7 @@ def create_recipe(
             "title": title,
             "servings": servings,
             "meal_roles": roles,
-            "ingredients": [{"food_id": food_id, "amount": 100}],
+            "ingredients": [{"food_id": food_id, "amount": 100 * servings}],
             "instructions": ["Zubereiten."],
         },
     )

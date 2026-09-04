@@ -62,6 +62,10 @@ gehören zu Lebensmitteln und werden von Rezepten über ihre Zutaten bezogen.
 Meal-Prep-Rezepte erzeugen einen Batch, dessen Portionen vollständig auf alle
 dafür geeigneten Mahlzeitenplätze der Woche verteilt werden.
 
+**Ergebnis:** Der definierte V5-MVP umfasst den persönlichen Lebensmittel- und
+Rezeptkatalog, alltagstaugliche Mengeneinheiten, persistente Wochenpläne sowie
+eine reproduzierbare Optimierung nach den vier festgelegten Nährwertzielen.
+
 Der verbindliche fachliche und technische Plan steht in
 [`v5-plan.md`](v5-plan.md).
 
