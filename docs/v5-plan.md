@@ -13,7 +13,9 @@ Stand: 4. September 2026
   sowie mit einer echten lokalen PostgreSQL-Datenbank geprüft.
 - Abschnitt 4 ist auf `feature/weekly-plans` umgesetzt und automatisiert sowie
   mit einem echten gespeicherten Sieben-Tage-Plan in PostgreSQL geprüft.
-- Als Nächstes folgt Abschnitt 5, die zielwertbasierte Planungsoptimierung.
+- Lebensmittelbezogene Einheiten und ein praxistauglicher Grundkatalog sind auf
+  `feature/food-portions` umgesetzt und lokal geprüft.
+- Danach folgt Abschnitt 5, die zielwertbasierte Planungsoptimierung.
 
 ## Ziel
 
@@ -36,6 +38,8 @@ die schrittweise weiter umgebaut werden muss.
 - der Nutzer wählt für den gesamten Plan null bis drei Snacks pro Tag; dieselbe
   Anzahl gilt an allen sieben Tagen
 - persönliche Lebensmittel und persönliche Rezepte
+- Lebensmittel können zusätzlich zur Basiseinheit eigene Alltagsgrößen wie
+  Stück, Scheibe, Dose oder Packung mit einer festen Umrechnung verwenden
 - Meal-Prep-Rezepte können für Frühstück, Mittagessen, Abendessen und Snacks
   geeignet sein
 - ein Rezept speichert seine gesamte Rezeptausbeute als Portionenzahl
@@ -98,6 +102,13 @@ Ein Lebensmittel, das bereits als Zutat eines Rezepts verwendet wird, darf
 nicht gelöscht werden. Die API und das Frontend erklären in diesem Fall,
 welche Abhängigkeit das Löschen verhindert.
 
+### `food_portions`
+
+Eine optionale Portionsdefinition gehört immer zu genau einem Lebensmittel und
+speichert einen kurzen Namen sowie die entsprechende Menge in dessen
+Basiseinheit. Beispiele sind `1 Ei = 60 g`, `1 Scheibe Brot = 55 g` oder
+`1 Dose Mais = 285 g`. Eine verwendete Definition darf nicht gelöscht werden.
+
 ### `recipes`
 
 - `id`
@@ -119,11 +130,12 @@ Die Zuordnung enthält nur die rezeptbezogenen Angaben:
 - `recipe_id`
 - `food_id`
 - `amount`
-- `unit`
+- optionale lebensmittelbezogene Portionsdefinition; ohne sie ist `amount`
+  direkt in `g` oder `ml` angegeben
 - `position`
 
-Sie enthält keine eigenen Nährwerte. Im MVP muss `unit` zur Basiseinheit des
-Lebensmittels passen, damit die Berechnung eindeutig bleibt.
+Sie enthält keine eigenen Nährwerte. Vor der Berechnung wird eine ausgewählte
+Alltagseinheit eindeutig in die Basiseinheit des Lebensmittels umgerechnet.
 
 ### `weekly_plans` und `meal_assignments`
 
@@ -154,10 +166,12 @@ Für alle sieben Tage gelten im MVP dieselben vier Eingaben:
 Ernährungsmodi oder automatisch berechnete Ziele sind nicht Teil des ersten
 MVP.
 
-Für jede Zutat wird der Anteil an 100 Basiseinheiten berechnet:
+Für jede Zutat wird zunächst die Grundmenge und daraus der Anteil an 100
+Basiseinheiten berechnet:
 
 ```text
-Zutatennährwert = Lebensmittelwert pro 100 g/ml * Zutatenmenge / 100
+Grundmenge = Anzahl * Umrechnung der Einheit (oder direkte Menge in g/ml)
+Zutatennährwert = Lebensmittelwert pro 100 g/ml * Grundmenge / 100
 Rezeptgesamtwert = Summe aller Zutatennährwerte
 Portionswert = Rezeptgesamtwert / Rezeptausbeute
 ```
@@ -194,24 +208,6 @@ Kohlenhydratziel. Bei ähnlich guten Plänen wird die Variante mit weniger
 unterschiedlichen Kochvorgängen bevorzugt. Unterschreitungen des
 Kalorienmaximums sind zulässig; Überschreitungen werden stärker bewertet.
 
-## Spätere Mengenumrechnungen
-
-Alltagsgrößen wie `1 Dose`, `1 Stück` oder `1 Packung` sind sinnvoll, aber nicht
-Teil des ersten MVP. Eine spätere Tabelle `food_portions` kann pro Lebensmittel
-eine Bezeichnung und die entsprechende Menge in der Basiseinheit speichern.
-
-Beispiel:
-
-```text
-Mais: Nährwerte pro 100 g
-Portionsdefinition: 1 Dose = 265 g
-Rezeptangabe: 1 Dose
-Berechnung: 265 g Mais
-```
-
-Dadurch bleibt die Nährwertquelle am Lebensmittel, während Rezepte bequemere
-Einheiten verwenden können.
-
 ## Umsetzung in klaren Abschnitten
 
 ### 0. V4 abschließen
@@ -236,6 +232,7 @@ Einheiten verwenden können.
 - Frontend mit verständlichen numerischen Nährwertfeldern
 - feste Lebensmittelkategorien für eine übersichtliche Zutatenauswahl
 - Validierung nichtnegativer Nährwerte und der Einheiten `g` und `ml`
+- optionale, lebensmittelspezifische Alltagseinheiten mit fester Umrechnung
 
 ### 3. Rezeptverwaltung
 
@@ -290,7 +287,7 @@ zulässig, wenn sie zu den übrigen Wochenzielen passt.
 ## Bewusst außerhalb des ersten MVP
 
 - externe Rezept- oder Lebensmitteldatenquellen
-- automatische Einheitenerkennung und Packungsgrößen
+- automatische Einheitenerkennung und Übernahme von Packungsgrößen
 - Einkaufsliste
 - Vorratshaltung
 - Allergene und Ernährungsformen

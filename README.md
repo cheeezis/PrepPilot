@@ -8,6 +8,8 @@ innerhalb derselben Woche vollständig und nachvollziehbar verwendet werden.
 
 - genau sieben Tage mit Frühstück, Mittagessen, Abendessen und Snacks
 - persönliche Lebensmittel als gemeinsame Nährwertquelle
+- alltagstaugliche Einheiten wie Stück, Scheibe oder Dose mit eindeutiger
+  Umrechnung in Gramm beziehungsweise Milliliter
 - persönliche Rezepte mit Zutaten und eindeutiger Portionenzahl
 - aus Zutaten berechnete Nährwerte pro Rezept und Portion
 - reproduzierbare Wochenplanung ohne verlorene oder doppelte Batch-Portionen
