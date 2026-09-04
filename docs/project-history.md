@@ -56,8 +56,8 @@ zubereitete Batch soll innerhalb derselben Woche sinnvoll verteilt werden.
 
 ## V5 – Persönlicher Lebensmittelkatalog und Meal-Prep-Woche
 
-V5 ist der geplante saubere Neustart innerhalb desselben Repositorys. Die
-Anwendung wird für eine Person und genau sieben Tage entworfen. Nährwerte
+V5 ist der saubere Neustart innerhalb desselben Repositorys. Die Anwendung wird
+für eine Person und genau sieben Tage entworfen. Nährwerte
 gehören zu Lebensmitteln und werden von Rezepten über ihre Zutaten bezogen.
 Meal-Prep-Rezepte erzeugen einen Batch, dessen Portionen vollständig auf
 Mittag- und Abendessen der Woche verteilt werden.
@@ -65,22 +65,23 @@ Mittag- und Abendessen der Woche verteilt werden.
 Der verbindliche fachliche und technische Plan steht in
 [`v5-plan.md`](v5-plan.md).
 
-## Umgang mit alten Branches
+## Übergang von V4 zu V5
 
 Der Code aus überholten Experimenten darf nicht erneut in die aktuelle
-Anwendung gelangen. Ihre Commits sollen trotzdem in der Historie erhalten
-bleiben. Deshalb gilt für den Übergang:
+Anwendung gelangen. Ihre Commits sollten trotzdem in der Historie erhalten
+bleiben. Der Übergang wurde deshalb so abgeschlossen:
 
-1. `feature/custom-recipes` wird regulär per Pull Request gemergt.
-2. Die nicht gemergten Experimente werden danach auf einem eigenen
+1. `feature/custom-recipes` wurde regulär per Pull Request gemergt.
+2. Die nicht gemergten Experimente wurden danach auf einem eigenen
    Archivierungsbranch mit Git-Merges der Strategie `ours` historisch
    verknüpft. Dadurch werden ihre Commits Vorfahren von `main`, während der
    Dateistand von `main` unverändert bleibt.
-3. Der abgeschlossene Stand wird nach dem Archivierungs-PR mit dem annotierten
+3. Der abgeschlossene Stand wurde nach dem Archivierungs-PR mit dem annotierten
    Tag `prototype-v4` markiert.
-4. Erst danach beginnt `rewrite/v5-foundation` auf dem aktualisierten `main`.
+4. `rewrite/v5-foundation` wurde anschließend vom aktualisierten `main`
+   erstellt.
 
-Zu archivieren sind:
+Archiviert wurden:
 
 - `docs/mvp-validation`
 - `feature/food-concepts`
