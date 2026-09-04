@@ -9,17 +9,18 @@ React
        -> Recipe-Repository -> recipes
   -> POST /api/day-plans
        -> Recipe-Repository -> Planer
-  -> Ergebnis mit Portionen, Zutaten und Zubereitung
+  -> Ergebnis mit je einer Portion, Zutaten und Zubereitung
 ```
 
 Es gibt fachlich nur die Tabelle `recipes`. Ein Rezept enthält eine oder mehrere
 Mahlzeitenkategorien, seine ursprüngliche Portionszahl, Nährwerte pro Portion,
-Zutaten und Zubereitung. Ein Quellenlink sowie Vorbereitungs- und Kochzeit sind
-optional.
+strukturierte Zutaten und Zubereitung. Eine Zutat besteht aus Menge, Einheit und
+Bezeichnung. Ein Quellenlink sowie Vorbereitungs- und Kochzeit sind optional.
 
 Der Planer arbeitet ausschließlich mit gespeicherten persönlichen Rezepten und
-fragt keine externe Quelle ab. Er skaliert ihre Nährwerte mit einer oder zwei
-ganzen Portionen. Bis zu drei ausgewählte Mahlzeiten werden vollständig
+fragt keine externe Quelle ab. Jeder Mahlzeitenplatz verwendet genau eine
+Portion und damit die gespeicherten Nährwerte pro Portion. Bis zu drei
+ausgewählte Mahlzeiten werden vollständig
 durchsucht. Bei vier Mahlzeiten begrenzt eine reproduzierbare Vorauswahl den
 Rechenraum; der vollständige Rezeptbestand bleibt gespeichert und sichtbar.
 

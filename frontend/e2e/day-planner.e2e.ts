@@ -3,15 +3,21 @@ import { expect, test, type APIRequestContext } from '@playwright/test'
 const createdRecipeIds: number[] = []
 
 function recipe(category: 'breakfast' | 'lunch' | 'dinner' | 'snack') {
+  const nutrients = {
+    breakfast: { calories: 550, protein: 30, carbs: 60, fat: 15 },
+    lunch: { calories: 650, protein: 40, carbs: 75, fat: 20 },
+    dinner: { calories: 800, protein: 50, carbs: 85, fat: 30 },
+    snack: { calories: 200, protein: 10, carbs: 20, fat: 5 },
+  }[category]
   return {
     title: `E2E ${category} recipe`,
     categories: [category],
     servings: 4,
-    calories_per_serving: category === 'snack' ? 250 : 500,
-    protein_per_serving: category === 'snack' ? 15 : 30,
-    carbs_per_serving: category === 'snack' ? 25 : 55,
-    fat_per_serving: category === 'snack' ? 7 : 15,
-    ingredients: ['1 test ingredient'],
+    calories_per_serving: nutrients.calories,
+    protein_per_serving: nutrients.protein,
+    carbs_per_serving: nutrients.carbs,
+    fat_per_serving: nutrients.fat,
+    ingredients: [{ amount: 1, unit: 'Stück', name: 'Testzutat' }],
     instructions: ['Test instruction.'],
     preparation_minutes: 10,
     cooking_minutes: 20,
@@ -62,6 +68,7 @@ test('creates and selects a valid day plan', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Tagespläne/ })).toBeVisible()
   const plans = page.getByRole('article')
   await expect(plans.first()).toContainText(/Ziel 2\.000 kcal/)
+  await expect(plans.first().getByText('1 Portion eingeplant')).toHaveCount(3)
   await plans.first().getByRole('button', { name: 'Diesen Plan auswählen' }).click()
   await expect(page.getByText('Vorschlag 1 ausgewählt')).toBeVisible()
 })

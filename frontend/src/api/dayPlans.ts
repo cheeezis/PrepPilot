@@ -1,4 +1,4 @@
-import type { RecipeCategory } from './recipes'
+import type { RecipeCategory, RecipeIngredient } from './recipes'
 
 export type DayPlanRequest = {
   calories: number
@@ -33,11 +33,10 @@ export type PlannedRecipe = {
   id: number
   title: string
   category: 'breakfast' | 'lunch' | 'dinner' | 'snack'
-  portions: number
   recipe_servings: number
   source_url: string | null
   nutrients: NutrientValues
-  ingredients: string[]
+  ingredients: RecipeIngredient[]
   instructions: string[]
 }
 

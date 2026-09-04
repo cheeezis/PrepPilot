@@ -1,13 +1,13 @@
 # Produkt-Backlog
 
-Stand: 3. September 2026
+Stand: 4. September 2026
 
 ## Als Nächstes
 
 - eigene Rezeptverwaltung mit Nutzern auf Verständlichkeit prüfen
 - genügend persönliche Rezepte für realistische Tagespläne erfassen
 - Wochenplanung auf den persönlichen Rezeptbestand übertragen
-- Portionspraktikabilität und Wiederholungen bewerten
+- Rezeptportionen effizient auf mehrere Mittag- und Abendessen verteilen
 
 ## Spätere Produktabschnitte
 
@@ -15,7 +15,6 @@ Stand: 3. September 2026
 - null bis zwei Snacks
 - Favoriten
 - unterschiedliche Tagesziele innerhalb einer Woche
-- Zutaten auf geplante Portionen skalieren
-- normalisierte Mengen und Einheiten für Einkaufslisten
+- strukturierte Zutaten zu einer Einkaufsliste zusammenführen
 - Ernährungsformen und Allergene
 - Benutzerkonten und gespeicherte Pläne

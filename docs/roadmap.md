@@ -1,6 +1,6 @@
 # Produkt- und Entwicklungs-Roadmap
 
-Stand: 3. September 2026
+Stand: 4. September 2026
 
 ## Aktueller Stand
 
@@ -8,7 +8,8 @@ Stand: 3. September 2026
 |---|---|---|
 | Datenmodell | eine fachliche Tabelle `recipes` | abgeschlossen |
 | Eigene Rezepte | anlegen, bearbeiten, löschen und anzeigen | abgeschlossen |
-| Tagesplanung | gespeicherte Rezeptmakros mit ganzen Portionen kombinieren | abgeschlossen |
+| Zutaten | numerische Menge, Einheit und Bezeichnung erfassen | abgeschlossen |
+| Tagesplanung | genau eine Portion je Mahlzeitenplatz kombinieren | abgeschlossen |
 | Flexible Tagesstruktur | Frühstück, Mittagessen, Abendessen und Snack auswählbar | abgeschlossen |
 | Erklärung | harte und weiche Zielabweichungen sichtbar | abgeschlossen |
 | Abnahme | Backend-, Frontend- und Browsertests | abgeschlossen |
@@ -17,7 +18,7 @@ Stand: 3. September 2026
 
 1. persönliche Rezepte im Alltag erfassen und Darstellung bewerten
 2. Tagespläne mit realistischen Rezeptdaten prüfen
-3. vorhandene Wochenplanung auf den persönlichen Bestand übertragen
+3. Rezeptausbeute auf aufeinanderfolgende Mittag- und Abendessen verteilen
 
 ## Später
 

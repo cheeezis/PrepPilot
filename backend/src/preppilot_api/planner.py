@@ -29,7 +29,6 @@ class PlanTargets:
 class PlannedRecipe:
     recipe: RecipeDefinition
     category: RecipeCategory
-    portions: int
     nutrients: Nutrients
 
 
@@ -59,7 +58,6 @@ class _MealChoice:
     position: int
     category: RecipeCategory
     recipe: RecipeDefinition
-    portions: int
     nutrients: Nutrients
 
 
@@ -88,12 +86,10 @@ def generate_day_plans(
                 position=position,
                 category=category,
                 recipe=recipe,
-                portions=portions,
-                nutrients=recipe.nutrients.scaled(portions),
+                nutrients=recipe.nutrients,
             )
             for recipe in recipes
             if category in recipe.categories
-            for portions in (1, 2)
         )
         for position, category in enumerate(meal_categories)
     ]
@@ -116,7 +112,6 @@ def generate_day_plans(
     def search(
         group_index: int,
         selected: tuple[_MealChoice, ...],
-        selected_ids: frozenset[int],
         nutrients: Nutrients,
     ) -> None:
         if not _nutrient_range_can_reach_outer_limits(
@@ -130,16 +125,13 @@ def generate_day_plans(
             return
 
         for choice in choice_groups[group_index]:
-            if choice.recipe.id in selected_ids:
-                continue
             search(
                 group_index + 1,
                 selected + (choice,),
-                selected_ids | {choice.recipe.id},
                 nutrients + choice.nutrients,
             )
 
-    search(0, (), frozenset(), Nutrients())
+    search(0, (), Nutrients())
     return tuple(candidates)
 
 
@@ -155,37 +147,20 @@ def _generate_exact_day_plans(
         for category in meal_categories
     )
     for selected in product(*recipes_by_category):
-        if len({recipe.id for recipe in selected}) != len(selected):
-            continue
-        minimum = sum((recipe.nutrients for recipe in selected), start=Nutrients())
-        if not _nutrient_range_can_reach_outer_limits(
-            minimum, minimum.scaled(2), targets
-        ):
+        nutrients = sum((recipe.nutrients for recipe in selected), start=Nutrients())
+        if not _is_within_outer_limits(nutrients, targets):
             continue
 
-        additional_nutrients: tuple[Nutrients, ...] = (Nutrients(),)
-        for recipe in selected:
-            additional_nutrients += tuple(
-                nutrients + recipe.nutrients for nutrients in additional_nutrients
+        choices = tuple(
+            _MealChoice(
+                position=index,
+                category=meal_categories[index],
+                recipe=recipe,
+                nutrients=recipe.nutrients,
             )
-
-        for portion_mask, additional in enumerate(additional_nutrients):
-            nutrients = minimum + additional
-            if not _is_within_outer_limits(nutrients, targets):
-                continue
-            choices = tuple(
-                _MealChoice(
-                    position=index,
-                    category=meal_categories[index],
-                    recipe=recipe,
-                    portions=(2 if portion_mask & (1 << index) else 1),
-                    nutrients=recipe.nutrients.scaled(
-                        2 if portion_mask & (1 << index) else 1
-                    ),
-                )
-                for index, recipe in enumerate(selected)
-            )
-            _keep_plan_candidate(candidates, choices, nutrients, targets, limit)
+            for index, recipe in enumerate(selected)
+        )
+        _keep_plan_candidate(candidates, choices, nutrients, targets, limit)
     return tuple(candidates)
 
 
@@ -204,7 +179,7 @@ def _shortlist_choices(
     else:
         share = Decimal(1) / Decimal(meal_count)
 
-    def suitability(choice: _MealChoice) -> tuple[Decimal, int, int]:
+    def suitability(choice: _MealChoice) -> tuple[Decimal, int]:
         nutrients = choice.nutrients
         score = (
             abs(nutrients.calories - targets.calories * share) / targets.calories
@@ -213,7 +188,7 @@ def _shortlist_choices(
             + abs(nutrients.fat - targets.fat_maximum * share) / targets.fat_maximum
             + abs(nutrients.carbs - targets.carbs * share) / targets.carbs
         )
-        return score, choice.recipe.id, choice.portions
+        return score, choice.recipe.id
 
     return tuple(sorted(choices, key=suitability)[:FLEXIBLE_CHOICE_LIMIT])
 
@@ -250,7 +225,6 @@ def _keep_plan_candidate(
         PlannedRecipe(
             recipe=choice.recipe,
             category=choice.category,
-            portions=choice.portions,
             nutrients=choice.nutrients,
         )
         for choice in sorted(selected, key=lambda item: item.position)
@@ -265,9 +239,7 @@ def _keep_plan_candidate(
         )
         else "approximation"
     )
-    stable_key = "|".join(
-        f"{item.category}:{item.recipe.id}:{item.portions}" for item in planned
-    )
+    stable_key = "|".join(f"{item.category}:{item.recipe.id}" for item in planned)
     candidates.append(
         DayPlan(
             status=status,
@@ -285,10 +257,8 @@ def _keep_plan_candidate(
 def _combination_can_reach_outer_limits(
     recipes: tuple[RecipeDefinition, ...], targets: PlanTargets
 ) -> bool:
-    minimum = sum((recipe.nutrients for recipe in recipes), start=Nutrients())
-    return _nutrient_range_can_reach_outer_limits(
-        minimum, minimum.scaled(2), targets
-    )
+    nutrients = sum((recipe.nutrients for recipe in recipes), start=Nutrients())
+    return _is_within_outer_limits(nutrients, targets)
 
 
 def _nutrient_range_can_reach_outer_limits(
