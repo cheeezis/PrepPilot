@@ -214,6 +214,64 @@ h1 {
   gap: 14px;
 }
 
+.ingredient-editor {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ingredient-editor legend {
+  margin-bottom: 8px;
+  color: #4e5b56;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ingredient-rows {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ingredient-row {
+  display: grid;
+  grid-template-columns: minmax(78px, 0.6fr) minmax(88px, 0.7fr) minmax(150px, 2fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.ingredient-row label {
+  display: grid;
+  gap: 5px;
+  color: #66716d;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ingredient-row input {
+  padding: 0 10px;
+}
+
+.ingredient-editor .secondary-button,
+.ingredient-remove {
+  width: auto;
+  grid-column: auto;
+  margin: 0;
+  padding: 0 12px;
+}
+
+.ingredient-remove {
+  border: 1px solid #a7352d;
+  color: #a7352d;
+  background: #fff;
+}
+
+.ingredient-remove:hover {
+  color: #fff;
+  background: #a7352d;
+}
+
 textarea {
   width: 100%;
   border: 1px solid #cbd4d0;
@@ -881,6 +939,15 @@ button:disabled {
   .recipe-number-grid--optional,
   .recipe-text-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ingredient-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ingredient-row label:nth-of-type(3),
+  .ingredient-remove {
+    grid-column: 1 / -1;
   }
 
   .recipe-editor {

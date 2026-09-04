@@ -13,6 +13,7 @@ import {
   updateRecipe,
   type Recipe,
   type RecipeCategory,
+  type RecipeIngredient,
   type RecipeInput,
 } from './api/recipes'
 import './App.css'
@@ -22,6 +23,7 @@ type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
 type RecipeStatus = 'loading' | 'success' | 'error'
 type SaveStatus = 'idle' | 'loading' | 'error'
 type AppPage = 'planner' | 'recipes'
+type EditableIngredient = Omit<RecipeIngredient, 'amount'> & { amount: number | '' }
 
 const metricNames: Record<RuleEvaluation['metric'], string> = {
   calories: 'Kalorien',
@@ -302,6 +304,9 @@ function RecipeEditor({
   const [categories, setCategories] = useState<RecipeCategory[]>(
     recipe?.categories ?? ['dinner'],
   )
+  const [ingredients, setIngredients] = useState<EditableIngredient[]>(
+    recipe?.ingredients ?? [{ amount: '', unit: 'g', name: '' }],
+  )
 
   function toggleCategory(category: RecipeCategory) {
     setCategories((current) => {
@@ -314,6 +319,34 @@ function RecipeEditor({
         current.includes(item) || item === category
       ))
     })
+  }
+
+  function updateIngredient(
+    index: number,
+    field: keyof EditableIngredient,
+    value: string,
+  ) {
+    setIngredients((current) => current.map((ingredient, ingredientIndex) => (
+      ingredientIndex === index
+        ? {
+            ...ingredient,
+            [field]: field === 'amount' ? (value === '' ? '' : Number(value)) : value,
+          }
+        : ingredient
+    )))
+  }
+
+  function addIngredient() {
+    setIngredients((current) => [
+      ...current,
+      { amount: '', unit: 'g', name: '' },
+    ])
+  }
+
+  function removeIngredient(index: number) {
+    setIngredients((current) => current.filter((_, ingredientIndex) => (
+      ingredientIndex !== index
+    )))
   }
 
   async function handleRecipeSubmit(event: FormEvent<HTMLFormElement>) {
@@ -331,7 +364,10 @@ function RecipeEditor({
       saturated_fat_per_serving: optionalNumber(form.get('saturated_fat_per_serving')),
       fiber_per_serving: optionalNumber(form.get('fiber_per_serving')),
       salt_per_serving: optionalNumber(form.get('salt_per_serving')),
-      ingredients: splitLines(form.get('ingredients')),
+      ingredients: ingredients.map((ingredient) => ({
+        ...ingredient,
+        amount: Number(ingredient.amount),
+      })),
       instructions: splitLines(form.get('instructions')),
       preparation_minutes: optionalNumber(form.get('preparation_minutes')),
       cooking_minutes: optionalNumber(form.get('cooking_minutes')),
@@ -384,10 +420,59 @@ function RecipeEditor({
           </div>
         </div>
         <div className="recipe-text-grid">
-          <label className="field">
-            <span>Zutaten – eine Zutat pro Zeile</span>
-            <textarea name="ingredients" rows={7} defaultValue={recipe?.ingredients.join('\n') ?? ''} required />
-          </label>
+          <fieldset className="ingredient-editor">
+            <legend>Zutaten für das vollständige Rezept</legend>
+            <div className="ingredient-rows">
+              {ingredients.map((ingredient, index) => (
+                <div className="ingredient-row" key={index}>
+                  <label>
+                    <span>Menge</span>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={ingredient.amount}
+                      onChange={(event) => updateIngredient(index, 'amount', event.target.value)}
+                      aria-label={`Menge Zutat ${index + 1}`}
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>Einheit</span>
+                    <input
+                      value={ingredient.unit}
+                      onChange={(event) => updateIngredient(index, 'unit', event.target.value)}
+                      aria-label={`Einheit Zutat ${index + 1}`}
+                      placeholder="g"
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>Zutat</span>
+                    <input
+                      value={ingredient.name}
+                      onChange={(event) => updateIngredient(index, 'name', event.target.value)}
+                      aria-label={`Name Zutat ${index + 1}`}
+                      placeholder="Kartoffeln"
+                      required
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="ingredient-remove"
+                    onClick={() => removeIngredient(index)}
+                    disabled={ingredients.length === 1}
+                    aria-label={`Zutat ${index + 1} entfernen`}
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="secondary-button" onClick={addIngredient}>
+              Zutat hinzufügen
+            </button>
+          </fieldset>
           <label className="field">
             <span>Zubereitung – ein Schritt pro Zeile</span>
             <textarea name="instructions" rows={7} defaultValue={recipe?.instructions.join('\n') ?? ''} required />
@@ -563,7 +648,9 @@ function RecipeInventory({
                   <h3>Zutaten für {recipe.servings} Portionen</h3>
                   <ul>
                     {recipe.ingredients.map((ingredient, index) => (
-                      <li key={`${index}:${ingredient}`}>{ingredient}</li>
+                      <li key={`${index}:${ingredient.name}`}>
+                        {formatIngredient(ingredient)}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -737,8 +824,7 @@ function PlanCard({
             <summary>
               <span>
                 <small>
-                  {categoryNames[recipe.category]} · {recipe.portions}{' '}
-                  {recipe.portions === 1 ? 'Portion eingeplant' : 'Portionen eingeplant'}
+                  {categoryNames[recipe.category]} · 1 Portion eingeplant
                 </small>
                 <strong>{recipe.title}</strong>
               </span>
@@ -746,12 +832,14 @@ function PlanCard({
             </summary>
             <p className="ingredient-note">
               Die Zutatenmengen gehören zum vollständigen Rezept für{' '}
-              {recipe.recipe_servings} Portionen. PrepPilot rechnet sie noch nicht
-              auf die eingeplante Portionszahl um.
+              {recipe.recipe_servings} Portionen. Dieser Tagesplan verwendet davon
+              genau eine Portion.
             </p>
             <ul>
               {recipe.ingredients.map((ingredient, index) => (
-                <li key={`${index}:${ingredient}`}><span>{ingredient}</span></li>
+                <li key={`${index}:${ingredient.name}`}>
+                  <span>{formatIngredient(ingredient)}</span>
+                </li>
               ))}
             </ul>
             {recipe.source_url && (
@@ -878,6 +966,10 @@ function optionalNumber(value: FormDataEntryValue | null) {
 function optionalText(value: FormDataEntryValue | null) {
   const text = String(value ?? '').trim()
   return text === '' ? null : text
+}
+
+function formatIngredient(ingredient: RecipeIngredient) {
+  return `${formatNumber(ingredient.amount)} ${ingredient.unit} ${ingredient.name}`
 }
 
 export default App

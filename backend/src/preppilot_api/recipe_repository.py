@@ -12,13 +12,20 @@ RecipeCategory = Literal["breakfast", "lunch", "dinner", "snack"]
 
 
 @dataclass(frozen=True)
+class RecipeIngredient:
+    amount: Decimal
+    unit: str
+    name: str
+
+
+@dataclass(frozen=True)
 class RecipeDefinition:
     id: int
     title: str
     categories: tuple[RecipeCategory, ...]
     servings: int
     source_url: str | None
-    ingredients: tuple[str, ...]
+    ingredients: tuple[RecipeIngredient, ...]
     instructions: tuple[str, ...]
     preparation_minutes: int | None
     cooking_minutes: int | None
@@ -31,7 +38,7 @@ class RecipeValues:
     categories: tuple[RecipeCategory, ...]
     servings: int
     source_url: str | None
-    ingredients: tuple[str, ...]
+    ingredients: tuple[RecipeIngredient, ...]
     instructions: tuple[str, ...]
     preparation_minutes: int | None
     cooking_minutes: int | None
@@ -78,7 +85,14 @@ def _apply_values(row: Recipe, values: RecipeValues) -> None:
     row.categories = list(values.categories)
     row.servings = values.servings
     row.source_url = values.source_url
-    row.ingredients = list(values.ingredients)
+    row.ingredients = [
+        {
+            "amount": str(ingredient.amount),
+            "unit": ingredient.unit,
+            "name": ingredient.name,
+        }
+        for ingredient in values.ingredients
+    ]
     row.instructions = list(values.instructions)
     row.preparation_minutes = values.preparation_minutes
     row.cooking_minutes = values.cooking_minutes
@@ -99,7 +113,14 @@ def _to_definition(row: Recipe) -> RecipeDefinition:
         categories=tuple(cast(RecipeCategory, value) for value in row.categories),
         servings=row.servings,
         source_url=row.source_url,
-        ingredients=tuple(row.ingredients),
+        ingredients=tuple(
+            RecipeIngredient(
+                amount=Decimal(str(ingredient["amount"])),
+                unit=str(ingredient["unit"]),
+                name=str(ingredient["name"]),
+            )
+            for ingredient in row.ingredients
+        ),
         instructions=tuple(row.instructions),
         preparation_minutes=row.preparation_minutes,
         cooking_minutes=row.cooking_minutes,

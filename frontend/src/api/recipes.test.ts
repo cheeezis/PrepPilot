@@ -21,7 +21,7 @@ const input: RecipeInput = {
   saturated_fat_per_serving: null,
   fiber_per_serving: null,
   salt_per_serving: null,
-  ingredients: ['800 g Kartoffeln'],
+  ingredients: [{ amount: 800, unit: 'g', name: 'Kartoffeln' }],
   instructions: ['Alles garen.'],
   preparation_minutes: 15,
   cooking_minutes: 30,

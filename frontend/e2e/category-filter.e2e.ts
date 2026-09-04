@@ -18,7 +18,7 @@ const recipe = (id: number, title: string, categories: Array<'breakfast' | 'lunc
     fiber: 6,
     salt: 1,
   },
-  ingredients: ['1 test ingredient'],
+  ingredients: [{ amount: 1, unit: 'Stück', name: 'Testzutat' }],
   instructions: ['Test instruction.'],
 })
 

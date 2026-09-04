@@ -19,7 +19,10 @@ def recipe_payload(title: str = "Kartoffel-Curry") -> dict[str, object]:
         "protein_per_serving": 32,
         "carbs_per_serving": 61,
         "fat_per_serving": 14,
-        "ingredients": ["800 g Kartoffeln", "1 Dose Kichererbsen"],
+        "ingredients": [
+            {"amount": 800, "unit": "g", "name": "Kartoffeln"},
+            {"amount": 1, "unit": "Dose", "name": "Kichererbsen"},
+        ],
         "instructions": ["Kartoffeln schneiden.", "Alles köcheln lassen."],
         "preparation_minutes": 15,
         "cooking_minutes": 30,
@@ -71,7 +74,10 @@ def test_personal_recipe_rejects_blank_content() -> None:
     with TestClient(app) as client:
         response = client.post(
             "/api/recipes",
-            json={**recipe_payload(), "ingredients": ["   "]},
+            json={
+                **recipe_payload(),
+                "ingredients": [{"amount": 1, "unit": " ", "name": "Salz"}],
+            },
         )
 
     assert response.status_code == 422

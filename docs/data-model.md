@@ -8,12 +8,13 @@ Ein Rezept speichert:
 - Anzahl der Portionen des vollständigen Rezepts
 - Kalorien, Protein, Kohlenhydrate und Fett pro Portion
 - optionale Werte für Zucker, gesättigte Fettsäuren, Ballaststoffe und Salz
-- Zutaten und Zubereitungsschritte als geordnete Listen
+- Zutaten mit numerischer Menge, Einheit und Bezeichnung
+- Zubereitungsschritte als geordnete Liste
 - optionale Vorbereitungszeit, Kochzeit und Quellen-URL
 
-Die Zutaten bleiben bewusst quellnaher beziehungsweise nutzereigener Text. Eine
-Normalisierung in Lebensmittel, Mengen und Einheiten wird erst eingeführt, wenn
-Einkaufslisten oder Zutatenfilter sie tatsächlich benötigen.
+Die Zutatenmengen gelten für das vollständige Rezept. Die strukturierte
+Erfassung ermöglicht der späteren Wochenplanung, benötigte Kochmengen und eine
+zusammengeführte Einkaufsliste zu berechnen.
 
 Es gibt noch keine Tabellen für Benutzer, gespeicherte Pläne, Favoriten oder
 Einkaufslisten.

@@ -11,13 +11,12 @@ Der aktuelle Ablauf:
 eigenes Rezept anlegen oder bearbeiten
   -> recipes in PostgreSQL
   -> gewünschte Mahlzeiten auswählen
-  -> Tagesplan aus einer oder zwei ganzen Portionen
+  -> Tagesplan mit genau einer Portion je Mahlzeitenplatz
   -> Rezept, Zutaten und Zubereitung im Frontend anzeigen
 ```
 
-Die Zutaten werden aktuell nur angezeigt. PrepPilot berechnet die Nährwerte aus
-den manuell angegebenen Werten pro Portion und normalisiert keine einzelnen
-Lebensmittel.
+Jede Zutat wird mit numerischer Menge, Einheit und Bezeichnung gespeichert. Die
+Mengen gelten für das vollständige Rezept; die Nährwerte gelten pro Portion.
 
 ## Lokal starten
 

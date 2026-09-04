@@ -21,9 +21,13 @@ test('creates, edits and deletes a personal recipe', async ({ page }) => {
   await page.getByRole('spinbutton', { name: 'Protein g' }).fill('32')
   await page.getByRole('spinbutton', { name: 'Kohlenhydrate g' }).fill('61')
   await page.getByRole('spinbutton', { name: 'Fett g' }).fill('14')
-  await page.getByLabel('Zutaten – eine Zutat pro Zeile').fill(
-    '800 g Kartoffeln\n1 Dose Kichererbsen',
-  )
+  await page.getByLabel('Menge Zutat 1').fill('800')
+  await page.getByLabel('Einheit Zutat 1').fill('g')
+  await page.getByLabel('Name Zutat 1').fill('Kartoffeln')
+  await page.getByRole('button', { name: 'Zutat hinzufügen' }).click()
+  await page.getByLabel('Menge Zutat 2').fill('1')
+  await page.getByLabel('Einheit Zutat 2').fill('Dose')
+  await page.getByLabel('Name Zutat 2').fill('Kichererbsen')
   await page.getByLabel('Zubereitung – ein Schritt pro Zeile').fill(
     'Kartoffeln schneiden.\nAlles köcheln lassen.',
   )

@@ -12,6 +12,7 @@ from preppilot_api.planner import DayPlan, PlanTargets, generate_day_plans
 from preppilot_api.recipe_repository import (
     RecipeCategory,
     RecipeDefinition,
+    RecipeIngredient,
     RecipeValues,
     create_recipe,
     delete_recipe,
@@ -62,15 +63,20 @@ class NutrientValuesResponse(BaseModel):
     salt: float | None
 
 
+class RecipeIngredientResponse(BaseModel):
+    amount: float
+    unit: str
+    name: str
+
+
 class PlannedRecipeResponse(BaseModel):
     id: int
     title: str
     category: Literal["breakfast", "lunch", "dinner", "snack"]
-    portions: int
     recipe_servings: int
     source_url: str | None
     nutrients: NutrientValuesResponse
-    ingredients: list[str]
+    ingredients: list[RecipeIngredientResponse]
     instructions: list[str]
 
 
@@ -106,8 +112,22 @@ class RecipeResponse(BaseModel):
     preparation_minutes: int | None
     cooking_minutes: int | None
     nutrients: NutrientValuesResponse
-    ingredients: list[str]
+    ingredients: list[RecipeIngredientResponse]
     instructions: list[str]
+
+
+class RecipeIngredientRequest(BaseModel):
+    amount: Decimal = Field(gt=0)
+    unit: str = Field(min_length=1, max_length=40)
+    name: str = Field(min_length=1, max_length=200)
+
+    @field_validator("unit", "name")
+    @classmethod
+    def text_must_not_be_blank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("ingredient text must not be blank")
+        return value
 
 
 class RecipeWriteRequest(BaseModel):
@@ -122,7 +142,7 @@ class RecipeWriteRequest(BaseModel):
     saturated_fat_per_serving: Decimal | None = Field(default=None, ge=0)
     fiber_per_serving: Decimal | None = Field(default=None, ge=0)
     salt_per_serving: Decimal | None = Field(default=None, ge=0)
-    ingredients: list[str] = Field(min_length=1)
+    ingredients: list[RecipeIngredientRequest] = Field(min_length=1)
     instructions: list[str] = Field(min_length=1)
     preparation_minutes: int | None = Field(default=None, ge=0)
     cooking_minutes: int | None = Field(default=None, ge=0)
@@ -145,7 +165,7 @@ class RecipeWriteRequest(BaseModel):
             raise ValueError("categories must be unique")
         return value
 
-    @field_validator("ingredients", "instructions")
+    @field_validator("instructions")
     @classmethod
     def text_items_must_not_be_blank(cls, value: list[str]) -> list[str]:
         cleaned = [item.strip() for item in value]
@@ -292,7 +312,7 @@ def _serialize_recipe(recipe: RecipeDefinition) -> RecipeResponse:
         preparation_minutes=recipe.preparation_minutes,
         cooking_minutes=recipe.cooking_minutes,
         nutrients=_serialize_nutrients(recipe.nutrients),
-        ingredients=list(recipe.ingredients),
+        ingredients=[_serialize_ingredient(item) for item in recipe.ingredients],
         instructions=list(recipe.instructions),
     )
 
@@ -319,11 +339,13 @@ def _serialize_day_plan(plan: DayPlan) -> DayPlanResponse:
                 id=item.recipe.id,
                 title=item.recipe.title,
                 category=item.category,
-                portions=item.portions,
                 recipe_servings=item.recipe.servings,
                 source_url=item.recipe.source_url,
                 nutrients=_serialize_nutrients(item.nutrients),
-                ingredients=list(item.recipe.ingredients),
+                ingredients=[
+                    _serialize_ingredient(ingredient)
+                    for ingredient in item.recipe.ingredients
+                ],
                 instructions=list(item.recipe.instructions),
             )
             for item in plan.recipes
@@ -337,7 +359,14 @@ def _recipe_values(request: RecipeWriteRequest) -> RecipeValues:
         categories=tuple(request.categories),
         servings=request.servings,
         source_url=request.source_url,
-        ingredients=tuple(request.ingredients),
+        ingredients=tuple(
+            RecipeIngredient(
+                amount=ingredient.amount,
+                unit=ingredient.unit,
+                name=ingredient.name,
+            )
+            for ingredient in request.ingredients
+        ),
         instructions=tuple(request.instructions),
         preparation_minutes=request.preparation_minutes,
         cooking_minutes=request.cooking_minutes,
@@ -351,6 +380,16 @@ def _recipe_values(request: RecipeWriteRequest) -> RecipeValues:
             fiber=request.fiber_per_serving,
             salt=request.salt_per_serving,
         ),
+    )
+
+
+def _serialize_ingredient(
+    ingredient: RecipeIngredient,
+) -> RecipeIngredientResponse:
+    return RecipeIngredientResponse(
+        amount=float(ingredient.amount),
+        unit=ingredient.unit,
+        name=ingredient.name,
     )
 
 

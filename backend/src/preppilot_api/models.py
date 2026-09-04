@@ -50,7 +50,7 @@ class Recipe(Base):
     saturated_fat_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     fiber_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     salt_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
-    ingredients: Mapped[list[str]] = mapped_column(JSON)
+    ingredients: Mapped[list[dict[str, str]]] = mapped_column(JSON)
     instructions: Mapped[list[str]] = mapped_column(JSON)
     preparation_minutes: Mapped[int | None] = mapped_column(Integer)
     cooking_minutes: Mapped[int | None] = mapped_column(Integer)

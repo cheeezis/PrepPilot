@@ -2,6 +2,12 @@ import type { NutrientValues } from './dayPlans'
 
 export type RecipeCategory = 'breakfast' | 'lunch' | 'dinner' | 'snack'
 
+export type RecipeIngredient = {
+  amount: number
+  unit: string
+  name: string
+}
+
 export type Recipe = {
   id: number
   title: string
@@ -11,7 +17,7 @@ export type Recipe = {
   preparation_minutes: number | null
   cooking_minutes: number | null
   nutrients: NutrientValues
-  ingredients: string[]
+  ingredients: RecipeIngredient[]
   instructions: string[]
 }
 
@@ -27,7 +33,7 @@ export type RecipeInput = {
   saturated_fat_per_serving: number | null
   fiber_per_serving: number | null
   salt_per_serving: number | null
-  ingredients: string[]
+  ingredients: RecipeIngredient[]
   instructions: string[]
   preparation_minutes: number | null
   cooking_minutes: number | null
