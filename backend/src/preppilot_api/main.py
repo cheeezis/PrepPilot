@@ -341,7 +341,7 @@ def _serialize_day_plan(plan: DayPlan) -> DayPlanResponse:
                 category=item.category,
                 recipe_servings=item.recipe.servings,
                 source_url=item.recipe.source_url,
-                nutrients=_serialize_nutrients(item.nutrients),
+                nutrients=_serialize_nutrients(item.recipe.nutrients),
                 ingredients=[
                     _serialize_ingredient(ingredient)
                     for ingredient in item.recipe.ingredients

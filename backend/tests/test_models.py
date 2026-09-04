@@ -1,7 +1,7 @@
 from preppilot_api.models import Base
 
 
-def test_schema_contains_only_the_recipe_catalog() -> None:
+def test_schema_contains_only_personal_recipes() -> None:
     assert set(Base.metadata.tables) == {"recipes"}
 
 

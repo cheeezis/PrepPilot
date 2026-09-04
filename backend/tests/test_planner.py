@@ -3,7 +3,6 @@ from decimal import Decimal
 from preppilot_api.nutrition import Nutrients
 from preppilot_api.planner import (
     PlanTargets,
-    _combination_can_reach_outer_limits,
     generate_day_plans,
 )
 from preppilot_api.recipe_repository import (
@@ -54,7 +53,9 @@ def test_reference_profile_returns_recipe_first_plan() -> None:
     plans = generate_day_plans(targets(), RECIPES)
     assert plans and plans[0].status == "valid"
     assert len(plans[0].recipes) == 3
-    assert all(item.nutrients == item.recipe.nutrients for item in plans[0].recipes)
+    assert plans[0].nutrients == sum(
+        (item.recipe.nutrients for item in plans[0].recipes), start=Nutrients()
+    )
     assert [item.category for item in plans[0].recipes] == [
         "breakfast",
         "lunch",
@@ -112,21 +113,6 @@ def test_can_use_one_batch_for_lunch_and_dinner() -> None:
 
     assert plans
     assert [item.recipe.id for item in plans[0].recipes] == [11, 11]
-
-
-def test_skips_recipe_combinations_that_cannot_reach_outer_limits() -> None:
-    recipes = tuple(
-        recipe(recipe_id, "dinner", ("100", "5", "10", "2"))
-        for recipe_id in range(1, 4)
-    )
-    high_targets = PlanTargets(
-        calories=Decimal("2500"),
-        protein_minimum=Decimal("220"),
-        fat_maximum=Decimal("71"),
-        carbs=Decimal("233"),
-    )
-
-    assert not _combination_can_reach_outer_limits(recipes, high_targets)
 
 
 def test_api_serializes_recipe_source_data(monkeypatch) -> None:
