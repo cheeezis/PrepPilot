@@ -21,6 +21,7 @@ const input: FoodInput = {
 const food: Food = {
   id: 1,
   ...input,
+  portions: [],
   created_at: '2026-09-04T08:00:00Z',
   updated_at: '2026-09-04T08:00:00Z',
 }

@@ -4,6 +4,7 @@ export const foodCategories: Array<{ value: FoodCategory; label: string }> = [
   { value: 'protein', label: 'Proteinquellen' },
   { value: 'carbohydrate', label: 'Getreide & Stärke' },
   { value: 'vegetable', label: 'Gemüse & Hülsenfrüchte' },
+  { value: 'fruit', label: 'Obst' },
   { value: 'dairy', label: 'Milchprodukte' },
   { value: 'fat', label: 'Fette & Öle' },
   { value: 'sauce', label: 'Saucen & Würzmittel' },

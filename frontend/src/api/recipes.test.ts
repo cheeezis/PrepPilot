@@ -5,7 +5,7 @@ const input = {
   title: 'Porridge',
   servings: 2,
   meal_roles: ['breakfast'] as const,
-  ingredients: [{ food_id: 3, amount: 100 }],
+  ingredients: [{ food_id: 3, amount: 100, food_portion_id: null }],
   instructions: ['Kochen.'],
 }
 

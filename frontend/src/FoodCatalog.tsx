@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import {
+  createFoodPortion,
   createFood,
+  deleteFoodPortion,
   deleteFood,
   listFoods,
   type BaseUnit,
   type Food,
   type FoodCategory,
   type FoodInput,
+  type FoodPortion,
+  updateFoodPortion,
   updateFood,
 } from './api/foods'
 import { foodCategories, foodCategoryLabel } from './foodCategories'
@@ -90,6 +94,38 @@ export function FoodCatalog() {
     }
   }
 
+  async function savePortion(food: Food, portion: FoodPortion | null, name: string, amount: number) {
+    setError(null)
+    try {
+      const saved = portion
+        ? await updateFoodPortion(food.id, portion.id, { name, amount })
+        : await createFoodPortion(food.id, { name, amount })
+      setFoods((current) => current.map((item) => item.id !== food.id ? item : {
+        ...item,
+        portions: portion
+          ? item.portions.map((entry) => entry.id === saved.id ? saved : entry)
+          : [...item.portions, saved],
+      }))
+    } catch (reason) {
+      setError(errorMessage(reason))
+      throw reason
+    }
+  }
+
+  async function removePortion(food: Food, portion: FoodPortion) {
+    if (!window.confirm(`Einheit „${portion.name}“ wirklich löschen?`)) return
+    setError(null)
+    try {
+      await deleteFoodPortion(food.id, portion.id)
+      setFoods((current) => current.map((item) => item.id !== food.id ? item : {
+        ...item,
+        portions: item.portions.filter((entry) => entry.id !== portion.id),
+      }))
+    } catch (reason) {
+      setError(errorMessage(reason))
+    }
+  }
+
   function resetForm() {
     setDraft(emptyDraft)
     setEditingId(null)
@@ -119,7 +155,7 @@ export function FoodCatalog() {
         {loading ? <p className="notice">Lebensmittel werden geladen …</p> : foods.length === 0 ? (
           <div className="empty-state"><div className="empty-state__icon" aria-hidden="true">100</div><div><h3>Noch keine Lebensmittel</h3><p>Lege links das erste Lebensmittel mit seinen Nährwerten an.</p></div></div>
         ) : (
-          <FoodCategoryList foods={foods} onEdit={editFood} onDelete={removeFood} />
+          <FoodCategoryList foods={foods} onEdit={editFood} onDelete={removeFood} onSavePortion={savePortion} onDeletePortion={removePortion} />
         )}
       </section>
     </section>
@@ -130,6 +166,8 @@ export function FoodCategoryList(props: {
   foods: Food[]
   onEdit: (food: Food) => void
   onDelete: (food: Food) => void
+  onSavePortion: (food: Food, portion: FoodPortion | null, name: string, amount: number) => Promise<void>
+  onDeletePortion: (food: Food, portion: FoodPortion) => void
 }) {
   return <div className="food-category-list">{foodCategories.map((category) => {
     const categoryFoods = props.foods.filter((food) => food.category === category.value)
@@ -140,9 +178,58 @@ export function FoodCategoryList(props: {
         <div className="food-card__heading"><div><h3>{food.name}</h3><p>pro 100 {food.base_unit}</p></div><div className="food-actions"><button type="button" onClick={() => props.onEdit(food)}>Bearbeiten</button><button type="button" onClick={() => void props.onDelete(food)}>Löschen</button></div></div>
         <span className="food-category">{foodCategoryLabel(food.category)}</span>
         <dl className="nutrient-list"><NutrientValue label="Kalorien" value={food.calories_kcal} unit="kcal" /><NutrientValue label="Protein" value={food.protein_g} unit="g" /><NutrientValue label="Kohlenhydrate" value={food.carbohydrates_g} unit="g" /><NutrientValue label="Fett" value={food.fat_g} unit="g" /></dl>
+        <FoodPortionEditor food={food} onSave={props.onSavePortion} onDelete={props.onDeletePortion} />
       </article>)}</div>
     </details>
   })}</div>
+}
+
+function FoodPortionEditor(props: {
+  food: Food
+  onSave: (food: Food, portion: FoodPortion | null, name: string, amount: number) => Promise<void>
+  onDelete: (food: Food, portion: FoodPortion) => void
+}) {
+  const [editing, setEditing] = useState<FoodPortion | null>(null)
+  const [name, setName] = useState('')
+  const [amount, setAmount] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  function select(portion: FoodPortion) {
+    setEditing(portion)
+    setName(portion.name)
+    setAmount(String(portion.amount))
+  }
+
+  function reset() {
+    setEditing(null)
+    setName('')
+    setAmount('')
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSaving(true)
+    try {
+      await props.onSave(props.food, editing, name, Number(amount))
+      reset()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <details className="portion-editor">
+    <summary>Einheiten ({props.food.portions.length})</summary>
+    {props.food.portions.length > 0 && <ul>{props.food.portions.map((portion) => <li key={portion.id}>
+      <span>1 {portion.name} = {formatNutrient(portion.amount)} {props.food.base_unit}</span>
+      <span><button type="button" onClick={() => select(portion)}>Ändern</button><button type="button" onClick={() => props.onDelete(props.food, portion)}>Löschen</button></span>
+    </li>)}</ul>}
+    <form onSubmit={submit}>
+      <input required maxLength={50} aria-label={`Einheit für ${props.food.name}`} placeholder="z. B. Stück" value={name} onChange={(event) => setName(event.target.value)} />
+      <div className="number-input"><input required type="number" min="0.001" step="0.001" aria-label={`Umrechnung für ${props.food.name}`} value={amount} onChange={(event) => setAmount(event.target.value)} /><small>{props.food.base_unit}</small></div>
+      <button type="submit" disabled={saving}>{editing ? 'Speichern' : 'Hinzufügen'}</button>
+      {editing && <button type="button" className="button-secondary" onClick={reset}>Abbrechen</button>}
+    </form>
+  </details>
 }
 
 function NutrientField(props: { label: string; unit: string; value: string; onChange: (value: string) => void }) {

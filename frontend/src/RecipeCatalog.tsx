@@ -13,7 +13,7 @@ import {
   updateRecipe,
 } from './api/recipes'
 
-type IngredientDraft = { food_id: string; amount: string }
+type IngredientDraft = { food_id: string; amount: string; food_portion_id: string }
 type RecipeDraft = {
   title: string
   servings: string
@@ -33,7 +33,7 @@ const emptyDraft: RecipeDraft = {
   title: '',
   servings: '1',
   meal_roles: [],
-  ingredients: [{ food_id: '', amount: '' }],
+  ingredients: [{ food_id: '', amount: '', food_portion_id: '' }],
   instructions: '',
 }
 
@@ -114,6 +114,7 @@ export function RecipeCatalog() {
       ingredients: recipe.ingredients.map((item) => ({
         food_id: String(item.food_id),
         amount: String(item.amount),
+        food_portion_id: item.food_portion_id ? String(item.food_portion_id) : '',
       })),
       instructions: recipe.instructions.join('\n'),
     })
@@ -151,14 +152,15 @@ export function RecipeCatalog() {
         <fieldset className="ingredient-editor"><legend>Zutaten</legend>{draft.ingredients.map((ingredient, index) => {
           const selectedFood = foods.find((food) => food.id === Number(ingredient.food_id))
           return <div className="ingredient-row" key={index}>
-            <select required aria-label={`Lebensmittel ${index + 1}`} value={ingredient.food_id} onChange={(event) => updateIngredient(index, { food_id: event.target.value })}><option value="">Lebensmittel wählen</option>{foodCategories.map((category) => {
+            <select required aria-label={`Lebensmittel ${index + 1}`} value={ingredient.food_id} onChange={(event) => updateIngredient(index, { food_id: event.target.value, food_portion_id: '' })}><option value="">Lebensmittel wählen</option>{foodCategories.map((category) => {
               const categoryFoods = foods.filter((food) => food.category === category.value)
               return categoryFoods.length > 0 ? <optgroup label={category.label} key={category.value}>{categoryFoods.map((food) => <option value={food.id} key={food.id}>{food.name}</option>)}</optgroup> : null
             })}</select>
-            <div className="number-input"><input required aria-label={`Menge ${index + 1}`} type="number" min="0.001" step="0.001" value={ingredient.amount} onChange={(event) => updateIngredient(index, { amount: event.target.value })} /><small>{selectedFood?.base_unit ?? 'g/ml'}</small></div>
+            <div className="number-input"><input required aria-label={`Menge ${index + 1}`} type="number" min="0.001" step="0.001" value={ingredient.amount} onChange={(event) => updateIngredient(index, { amount: event.target.value })} /></div>
+            <select aria-label={`Einheit ${index + 1}`} value={ingredient.food_portion_id} onChange={(event) => updateIngredient(index, { food_portion_id: event.target.value })} disabled={!selectedFood}><option value="">{selectedFood?.base_unit ?? 'g/ml'}</option>{selectedFood?.portions.map((portion) => <option value={portion.id} key={portion.id}>{portion.name}</option>)}</select>
             {draft.ingredients.length > 1 && <button type="button" className="button-icon" aria-label={`Zutat ${index + 1} entfernen`} onClick={() => removeIngredient(index)}>×</button>}
           </div>
-        })}<button type="button" className="button-secondary" disabled={foods.length === 0} onClick={() => setDraft((current) => ({ ...current, ingredients: [...current.ingredients, { food_id: '', amount: '' }] }))}>Weitere Zutat</button></fieldset>
+        })}<button type="button" className="button-secondary" disabled={foods.length === 0} onClick={() => setDraft((current) => ({ ...current, ingredients: [...current.ingredients, { food_id: '', amount: '', food_portion_id: '' }] }))}>Weitere Zutat</button></fieldset>
 
         <label className="field field--wide"><span>Zubereitung <small>ein Schritt pro Zeile</small></span><textarea required rows={5} value={draft.instructions} onChange={(event) => setDraft({ ...draft, instructions: event.target.value })} placeholder={'Zutaten vermengen\nKurz aufkochen\nServieren'} /></label>
         <div className="form-actions"><button type="submit" disabled={saving || foods.length === 0 || draft.meal_roles.length === 0}>{saving ? 'Wird gespeichert …' : editingId ? 'Änderungen speichern' : 'Hinzufügen'}</button>{editingId && <button type="button" className="button-secondary" onClick={resetForm}>Abbrechen</button>}</div>
@@ -179,7 +181,9 @@ function RecipeCard({ recipe, onEdit, onDelete }: { recipe: Recipe; onEdit: () =
   return <article className="food-card recipe-card">
     <div className="food-card__heading"><div><h3>{recipe.title}</h3><p>{recipe.servings} {recipe.servings === 1 ? 'Portion' : 'Portionen'} · {recipe.is_meal_prep ? 'Meal Prep' : 'Einzelportion'}</p></div><div className="food-actions"><button type="button" onClick={onEdit}>Bearbeiten</button><button type="button" onClick={onDelete}>Löschen</button></div></div>
     <div className="role-tags">{recipe.meal_roles.map((role) => <span key={role}>{roleLabel(role)}</span>)}</div>
-    <p className="recipe-ingredients">{recipe.ingredients.map((item) => `${formatNumber(item.amount)} ${item.unit} ${item.food_name}`).join(' · ')}</p>
+    <p className="recipe-ingredients">{recipe.ingredients.map((item) => item.food_portion_id
+      ? `${formatNumber(item.amount)} × ${item.unit} ${item.food_name}`
+      : `${formatNumber(item.amount)} ${item.unit} ${item.food_name}`).join(' · ')}</p>
     <dl className="nutrient-list"><NutrientValue label="Kalorien" value={recipe.nutrition_per_serving.calories_kcal} unit="kcal" /><NutrientValue label="Protein" value={recipe.nutrition_per_serving.protein_g} unit="g" /><NutrientValue label="Kohlenhydrate" value={recipe.nutrition_per_serving.carbohydrates_g} unit="g" /><NutrientValue label="Fett" value={recipe.nutrition_per_serving.fat_g} unit="g" /></dl>
     <details><summary>Zubereitung und Gesamtwerte</summary><ol>{recipe.instructions.map((step, index) => <li key={index}>{step}</li>)}</ol><p>{nutritionSummary(recipe.nutrition_total)} gesamt</p></details>
   </article>
@@ -194,7 +198,7 @@ function draftToInput(draft: RecipeDraft): RecipeInput {
     title: draft.title,
     servings: Number(draft.servings),
     meal_roles: draft.meal_roles,
-    ingredients: draft.ingredients.map((item) => ({ food_id: Number(item.food_id), amount: Number(item.amount) })),
+    ingredients: draft.ingredients.map((item) => ({ food_id: Number(item.food_id), amount: Number(item.amount), food_portion_id: item.food_portion_id ? Number(item.food_portion_id) : null })),
     instructions: draft.instructions.split('\n').map((step) => step.trim()).filter(Boolean),
   }
 }

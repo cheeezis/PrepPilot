@@ -3,6 +3,7 @@ export type FoodCategory =
   | 'protein'
   | 'carbohydrate'
   | 'vegetable'
+  | 'fruit'
   | 'dairy'
   | 'fat'
   | 'sauce'
@@ -18,9 +19,18 @@ export type Food = {
   protein_g: number
   carbohydrates_g: number
   fat_g: number
+  portions: FoodPortion[]
   created_at: string
   updated_at: string
 }
+
+export type FoodPortion = {
+  id: number
+  name: string
+  amount: number
+}
+
+export type FoodPortionInput = Pick<FoodPortion, 'name' | 'amount'>
 
 export type FoodInput = Pick<
   Food,
@@ -55,6 +65,22 @@ export async function updateFood(id: number, input: FoodInput): Promise<Food> {
 
 export async function deleteFood(id: number): Promise<void> {
   await request<void>(`/api/foods/${id}`, { method: 'DELETE' })
+}
+
+export function createFoodPortion(foodId: number, input: FoodPortionInput): Promise<FoodPortion> {
+  return request<FoodPortion>(`/api/foods/${foodId}/portions`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  })
+}
+
+export function updateFoodPortion(foodId: number, portionId: number, input: FoodPortionInput): Promise<FoodPortion> {
+  return request<FoodPortion>(`/api/foods/${foodId}/portions/${portionId}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  })
+}
+
+export async function deleteFoodPortion(foodId: number, portionId: number): Promise<void> {
+  await request<void>(`/api/foods/${foodId}/portions/${portionId}`, { method: 'DELETE' })
 }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
