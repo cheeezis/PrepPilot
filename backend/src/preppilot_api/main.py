@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from preppilot_api.database import get_session
 from preppilot_api.foods import router as foods_router
 from preppilot_api.recipes import router as recipes_router
+from preppilot_api.weekly_plans import router as weekly_plans_router
 
 
 class HealthResponse(BaseModel):
@@ -19,6 +20,7 @@ class HealthResponse(BaseModel):
 app = FastAPI(title="PrepPilot API", version="0.5.0")
 app.include_router(foods_router)
 app.include_router(recipes_router)
+app.include_router(weekly_plans_router)
 DatabaseSession = Annotated[Session, Depends(get_session)]
 
 

@@ -8,6 +8,7 @@ describe('App', () => {
 
     expect(html).toContain('Lebensmittel hinzufügen')
     expect(html).toContain('Rezepte')
+    expect(html).toContain('Wochenpläne')
     expect(html).toContain('pro 100 g')
     expect(html).toContain('Kategorie')
     expect(html).toContain('Kalorien')

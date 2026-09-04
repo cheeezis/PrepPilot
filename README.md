@@ -13,8 +13,9 @@ innerhalb derselben Woche vollständig und nachvollziehbar verwendet werden.
 - reproduzierbare Wochenplanung ohne verlorene oder doppelte Batch-Portionen
 
 Die technische Grundlage verwendet React/Vite, FastAPI, PostgreSQL und Alembic.
-Lebensmittelkatalog und Rezeptverwaltung bilden die umgesetzte fachliche Basis.
-Als Nächstes folgt das persistente Wochenmodell.
+Lebensmittelkatalog, Rezeptverwaltung und ein persistentes Wochenmodell bilden
+die umgesetzte fachliche Basis. Als Nächstes folgt die zielwertbasierte
+Planungsoptimierung.
 
 Der verbindliche Umfang und die Umsetzungsreihenfolge stehen im
 [`V5-Plan`](docs/v5-plan.md). Frühere Produktphasen dokumentiert die

@@ -11,7 +11,9 @@ Stand: 4. September 2026
   mit einer echten lokalen PostgreSQL-Datenbank geprüft.
 - Abschnitt 3 ist auf `feature/recipe-management` umgesetzt und automatisiert
   sowie mit einer echten lokalen PostgreSQL-Datenbank geprüft.
-- Als Nächstes folgt Abschnitt 4, das persistente Wochenmodell.
+- Abschnitt 4 ist auf `feature/weekly-plans` umgesetzt und automatisiert sowie
+  mit einem echten gespeicherten Sieben-Tage-Plan in PostgreSQL geprüft.
+- Als Nächstes folgt Abschnitt 5, die zielwertbasierte Planungsoptimierung.
 
 ## Ziel
 
@@ -144,7 +146,7 @@ MVP.
 
 Für alle sieben Tage gelten im MVP dieselben vier Eingaben:
 
-- Kalorienziel
+- Kalorienmaximum
 - Proteinminimum
 - Kohlenhydratziel
 - Fettmaximum
@@ -186,11 +188,11 @@ der alle harten Bedingungen erfüllt. Seine Abweichungen werden konkret
 erklärt. Die Planung wird nur abgelehnt, wenn keine Belegung sämtliche harten
 Bedingungen erfüllen kann.
 
-Die genaue Gewichtung von Nährwerttreue und Kochaufwand ist noch keine
-Produktentscheidung. Vor Implementierung der automatischen Optimierung wird sie
-an wenigen realistischen Beispielwochen festgelegt. Bis dahin werden beide
-Werte getrennt ausgegeben, damit keine willkürliche Gewichtung im Code
-verschwindet.
+Die Optimierung priorisiert zuerst das Proteinminimum, danach das
+Kalorienmaximum, anschließend das Fettmaximum und zuletzt die Nähe zum
+Kohlenhydratziel. Bei ähnlich guten Plänen wird die Variante mit weniger
+unterschiedlichen Kochvorgängen bevorzugt. Unterschreitungen des
+Kalorienmaximums sind zulässig; Überschreitungen werden stärker bewertet.
 
 ## Spätere Mengenumrechnungen
 

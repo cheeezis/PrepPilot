@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
     JSON,
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -124,3 +125,101 @@ class RecipeIngredient(Base):
     unit: Mapped[str] = mapped_column(String(2))
     position: Mapped[int]
     food: Mapped[Food] = relationship(lazy="joined")
+
+
+class WeeklyPlan(Base):
+    __tablename__ = "weekly_plans"
+    __table_args__ = (
+        CheckConstraint("end_date >= start_date", name="ck_weekly_plans_date_order"),
+        CheckConstraint(
+            "snacks_per_day BETWEEN 0 AND 3",
+            name="ck_weekly_plans_snacks_per_day",
+        ),
+        CheckConstraint(
+            "calories_maximum_kcal > 0",
+            name="ck_weekly_plans_calories_positive",
+        ),
+        CheckConstraint(
+            "protein_minimum_g >= 0",
+            name="ck_weekly_plans_protein_nonnegative",
+        ),
+        CheckConstraint(
+            "carbohydrates_target_g >= 0",
+            name="ck_weekly_plans_carbohydrates_nonnegative",
+        ),
+        CheckConstraint(
+            "fat_maximum_g >= 0",
+            name="ck_weekly_plans_fat_nonnegative",
+        ),
+        UniqueConstraint("start_date", "end_date", name="uq_weekly_plans_period"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    start_date: Mapped[date] = mapped_column(Date)
+    end_date: Mapped[date] = mapped_column(Date)
+    snacks_per_day: Mapped[int]
+    calories_maximum_kcal: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    protein_minimum_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    carbohydrates_target_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    fat_maximum_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    assignments: Mapped[list["MealAssignment"]] = relationship(
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="MealAssignment.day_index, MealAssignment.meal_role, "
+        "MealAssignment.slot_number",
+    )
+
+
+class MealAssignment(Base):
+    __tablename__ = "meal_assignments"
+    __table_args__ = (
+        CheckConstraint(
+            "day_index BETWEEN 0 AND 6",
+            name="ck_meal_assignments_day_index",
+        ),
+        CheckConstraint(
+            "meal_role IN ('breakfast', 'lunch', 'dinner', 'snack')",
+            name="ck_meal_assignments_role",
+        ),
+        CheckConstraint(
+            "(meal_role = 'snack' AND slot_number BETWEEN 1 AND 3) OR "
+            "(meal_role <> 'snack' AND slot_number = 1)",
+            name="ck_meal_assignments_slot_number",
+        ),
+        CheckConstraint(
+            "portion_number IS NULL OR portion_number > 0",
+            name="ck_meal_assignments_portion_positive",
+        ),
+        UniqueConstraint(
+            "weekly_plan_id",
+            "day_index",
+            "meal_role",
+            "slot_number",
+            name="uq_meal_assignments_slot",
+        ),
+        UniqueConstraint(
+            "weekly_plan_id",
+            "recipe_id",
+            "portion_number",
+            name="uq_meal_assignments_batch_portion",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    weekly_plan_id: Mapped[int] = mapped_column(
+        ForeignKey("weekly_plans.id", ondelete="CASCADE"), index=True
+    )
+    day_index: Mapped[int]
+    meal_role: Mapped[str] = mapped_column(String(10))
+    slot_number: Mapped[int]
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id", ondelete="RESTRICT"), index=True
+    )
+    portion_number: Mapped[int | None]
+    recipe: Mapped[Recipe] = relationship(lazy="joined")
