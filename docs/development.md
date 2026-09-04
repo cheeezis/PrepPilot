@@ -2,8 +2,22 @@
 
 ## Anwendung
 
-Im Projektordner startet `start-preppilot.bat` PostgreSQL, FastAPI und Vite.
-`stop-preppilot.bat` beendet die lokalen Dienste.
+Voraussetzungen sind Python 3.14, Node.js und ein gestartetes Docker Desktop.
+Die Abhängigkeiten werden einmalig eingerichtet:
+
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+
+cd ..\frontend
+npm install
+```
+
+Im Projektordner startet `start-preppilot.bat` den PostgreSQL-Container, wendet
+offene Alembic-Migrationen an und startet danach FastAPI und Vite.
+`stop-preppilot.bat` beendet alle drei lokalen Dienste. Die PostgreSQL-Daten
+bleiben im Docker-Volume `postgres-data` erhalten.
 
 Nach einer Schemaänderung im Backend:
 
