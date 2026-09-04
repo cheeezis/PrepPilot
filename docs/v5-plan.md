@@ -2,6 +2,13 @@
 
 Stand: 4. September 2026
 
+## Umsetzungsstand
+
+- Abschnitt 0 ist abgeschlossen; der V4-Stand ist mit `prototype-v4` markiert.
+- Abschnitt 1 ist auf `rewrite/v5-foundation` umgesetzt und automatisiert
+  geprüft. Der echte lokale Start mit Docker steht noch aus.
+- Als Nächstes folgt Abschnitt 2, der Lebensmittelkatalog.
+
 ## Ziel
 
 PrepPilot V5 plant für eine Person eine vollständige Woche aus selbst
@@ -168,8 +175,8 @@ Einheiten verwenden können.
 
 - `rewrite/v5-foundation` vom aktualisierten `main` erstellen
 - alte Fachlogik, Migrationen und Oberflächen konsequent entfernen
-- React/Vite, FastAPI, PostgreSQL, Alembic und die lokalen Startskripte als
-  bewährte technische Grundlage sauber neu aufsetzen
+- React/Vite, FastAPI, PostgreSQL und Alembic als bewährte technische Grundlage
+  sauber neu aufsetzen und lokale Startbefehle dokumentieren
 - Healthcheck und leeren Anwendungszustand testen
 
 ### 2. Lebensmittelkatalog
@@ -205,7 +212,7 @@ Einheiten verwenden können.
 
 - Backend-, Frontend- und Browsertests
 - Migration einer leeren Datenbank testen
-- lokale Start- und Stoppskripte auf Windows prüfen
+- dokumentierte lokale Start- und Stoppbefehle auf Windows prüfen
 - eine Beispielwoche mit einem Meal-Prep-Rezept über mehrere Mittag- und
   Abendessen vollständig durchspielen
 

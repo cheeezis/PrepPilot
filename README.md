@@ -1,34 +1,72 @@
 # PrepPilot
 
-PrepPilot erstellt nachvollziehbare Tagespläne aus persönlichen Rezepten. Der
-Nutzer hinterlegt Rezeptausbeute, Nährwerte, Zutaten und Zubereitung selbst.
-PostgreSQL speichert diese Rezepte; der Planer kombiniert ihre Nährwerte pro
-Portion passend zu Kalorien- und Makrozielen.
+PrepPilot ist ein persönlicher Meal-Prep-Planer für eine vollständige Woche.
+Die Anwendung verbindet selbst gepflegte Lebensmittel mit eigenen Rezepten und
+verteilt die Portionen eines vorbereiteten Rezepts nachvollziehbar auf sieben
+Tage.
 
-Der aktuelle Ablauf:
+Der entscheidende Grundsatz: Wenn ein Meal-Prep-Rezept sechs Portionen ergibt,
+werden genau diese sechs Portionen innerhalb derselben Woche verwendet. Jede
+Mahlzeit verbraucht eine Portion; es entstehen weder unsichtbare zusätzliche
+Portionen noch unberücksichtigte Reste.
+
+## V5-MVP
+
+Der erste V5-MVP ist bewusst auf einen klaren Alltagsfall begrenzt:
+
+- eine Person und sieben zusammenhängende Tage
+- Frühstück, Mittagessen und Abendessen
+- persönliche Lebensmittel mit Nährwerten pro Bezugsmenge
+- persönliche Rezepte mit Zutaten, Ausbeute und Meal-Prep-Kennzeichnung
+- aus Lebensmitteln berechnete Rezept- und Portionsnährwerte
+- reproduzierbare Wochenplanung mit vollständig verwendeten Meal-Prep-Batches
+
+Snacks, mehrere Personen, externe Datenquellen, Einkaufslisten und
+wochenübergreifende Reste gehören zunächst nicht zum MVP.
+
+## Aktueller Stand
+
+V5 ist ein sauberer Neustart auf dem Branch `rewrite/v5-foundation`. Die
+technische Grundlage besteht aus React/Vite, FastAPI, PostgreSQL und Alembic.
+Derzeit enthält sie bewusst noch keine fachlichen Tabellen oder Funktionen:
 
 ```text
-eigenes Rezept anlegen oder bearbeiten
-  -> recipes in PostgreSQL
-  -> gewünschte Mahlzeiten auswählen
-  -> Tagesplan mit genau einer Portion je Mahlzeitenplatz
-  -> Rezept, Zutaten und Zubereitung im Frontend anzeigen
+React-Oberfläche mit leerem Anwendungszustand
+  -> GET /api/health
+  -> FastAPI prüft die PostgreSQL-Verbindung
 ```
 
-Jede Zutat wird mit numerischer Menge, Einheit und Bezeichnung gespeichert. Die
-Mengen gelten für das vollständige Rezept; die Nährwerte gelten pro Portion.
+Als nächster fachlicher Abschnitt entsteht der Lebensmittelkatalog.
 
-## Lokal starten
+## Lokal entwickeln
 
-`start-preppilot.bat` startet PostgreSQL, Backend und Frontend. Die Anwendung
-ist anschließend unter <http://127.0.0.1:5173> erreichbar. Mit
-`stop-preppilot.bat` werden die lokalen Dienste beendet.
+Vorausgesetzt werden Python 3.14, Node.js und Docker Desktop. Nach der einmaligen
+Einrichtung werden Datenbank, Backend und Frontend in drei Terminals gestartet.
+Die Anwendung ist anschließend unter <http://127.0.0.1:5173> erreichbar.
 
-Weitere Hinweise stehen in [`docs/development.md`](docs/development.md).
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 
-Das Projekt befindet sich in Entwicklung und ist nicht für den produktiven
-Einsatz gedacht.
+cd ..\frontend
+npm install
 
-Die bisherigen Produktphasen sind in
-[`docs/project-history.md`](docs/project-history.md) dokumentiert. Der geplante
-saubere Neustart ist in [`docs/v5-plan.md`](docs/v5-plan.md) festgehalten.
+cd ..
+docker compose up -d postgres
+```
+
+Die Befehle für Backend, Frontend und das Beenden der Dienste sowie alle
+Prüfbefehle stehen in [`docs/development.md`](docs/development.md).
+
+## Dokumentation
+
+- [`docs/v5-plan.md`](docs/v5-plan.md): verbindlicher Umfang, Fachmodell und
+  Umsetzungsreihenfolge
+- [`docs/project-history.md`](docs/project-history.md): frühere Produktphasen
+  und Gründe für den Neustart
+- [`docs/development.md`](docs/development.md): lokale Einrichtung, Start und
+  Prüfungen
+
+PrepPilot befindet sich in Entwicklung und ist keine medizinische
+Ernährungsberatung.

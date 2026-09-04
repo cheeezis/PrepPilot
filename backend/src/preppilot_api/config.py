@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="PREPPILOT_")
 
     database_url: str = (
-        "postgresql+psycopg://preppilot:preppilot@localhost:5432/preppilot"
+        "postgresql+psycopg://preppilot:preppilot@localhost:5432/preppilot_v5"
     )
 
 
