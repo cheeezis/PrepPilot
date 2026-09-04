@@ -11,6 +11,7 @@ import {
 const input: FoodInput = {
   name: 'Haferflocken',
   base_unit: 'g',
+  category: 'carbohydrate',
   calories_kcal: 372.5,
   protein_g: 13.5,
   carbohydrates_g: 58.7,

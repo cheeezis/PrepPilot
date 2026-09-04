@@ -74,6 +74,8 @@ Ein Datensatz beschreibt ein Lebensmittel und seine Nährwerte pro `100 g` oder
 - `id`
 - `name`, ohne Beachtung der Groß-/Kleinschreibung eindeutig
 - `base_unit`, im MVP `g` oder `ml`
+- `category` für eine grobe, feste Gruppierung im Katalog und in der
+  Zutatenauswahl
 - `calories_kcal`
 - `protein_g`
 - `carbohydrates_g`
@@ -230,6 +232,7 @@ Einheiten verwenden können.
 - Schema und Migration für `foods`
 - API zum Anlegen, Anzeigen, Bearbeiten und Löschen
 - Frontend mit verständlichen numerischen Nährwertfeldern
+- feste Lebensmittelkategorien für eine übersichtliche Zutatenauswahl
 - Validierung nichtnegativer Nährwerte und der Einheiten `g` und `ml`
 
 ### 3. Rezeptverwaltung

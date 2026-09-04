@@ -6,13 +6,16 @@ import {
   listFoods,
   type BaseUnit,
   type Food,
+  type FoodCategory,
   type FoodInput,
   updateFood,
 } from './api/foods'
+import { foodCategories, foodCategoryLabel } from './foodCategories'
 
 type FoodDraft = {
   name: string
   base_unit: BaseUnit
+  category: FoodCategory
   calories_kcal: string
   protein_g: string
   carbohydrates_g: string
@@ -20,7 +23,7 @@ type FoodDraft = {
 }
 
 const emptyDraft: FoodDraft = {
-  name: '', base_unit: 'g', calories_kcal: '', protein_g: '',
+  name: '', base_unit: 'g', category: 'other', calories_kcal: '', protein_g: '',
   carbohydrates_g: '', fat_g: '',
 }
 
@@ -36,7 +39,7 @@ export function FoodCatalog() {
     const controller = new AbortController()
     let active = true
     listFoods(controller.signal)
-      .then((items) => { if (active) setFoods(items) })
+      .then((items) => { if (active) setFoods(sortFoods(items)) })
       .catch((reason: unknown) => { if (active) setError(errorMessage(reason)) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false; controller.abort() }
@@ -65,6 +68,7 @@ export function FoodCatalog() {
     setDraft({
       name: food.name,
       base_unit: food.base_unit,
+      category: food.category,
       calories_kcal: String(food.calories_kcal),
       protein_g: String(food.protein_g),
       carbohydrates_g: String(food.carbohydrates_g),
@@ -101,6 +105,7 @@ export function FoodCatalog() {
 
         <label className="field field--wide"><span>Name</span><input required maxLength={200} value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} placeholder="z. B. Haferflocken" /></label>
         <label className="field field--unit"><span>Bezugsgröße</span><select value={draft.base_unit} onChange={(event) => setDraft({ ...draft, base_unit: event.target.value as BaseUnit })}><option value="g">pro 100 g</option><option value="ml">pro 100 ml</option></select></label>
+        <label className="field field--wide"><span>Kategorie</span><select value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value as FoodCategory })}>{foodCategories.map((category) => <option value={category.value} key={category.value}>{category.label}</option>)}</select></label>
         <NutrientField label="Kalorien" unit="kcal" value={draft.calories_kcal} onChange={(value) => setDraft({ ...draft, calories_kcal: value })} />
         <NutrientField label="Protein" unit="g" value={draft.protein_g} onChange={(value) => setDraft({ ...draft, protein_g: value })} />
         <NutrientField label="Kohlenhydrate" unit="g" value={draft.carbohydrates_g} onChange={(value) => setDraft({ ...draft, carbohydrates_g: value })} />
@@ -116,6 +121,7 @@ export function FoodCatalog() {
         ) : (
           <div className="food-list">{foods.map((food) => <article className="food-card" key={food.id}>
             <div className="food-card__heading"><div><h3>{food.name}</h3><p>pro 100 {food.base_unit}</p></div><div className="food-actions"><button type="button" onClick={() => editFood(food)}>Bearbeiten</button><button type="button" onClick={() => void removeFood(food)}>Löschen</button></div></div>
+            <span className="food-category">{foodCategoryLabel(food.category)}</span>
             <dl className="nutrient-list"><NutrientValue label="Kalorien" value={food.calories_kcal} unit="kcal" /><NutrientValue label="Protein" value={food.protein_g} unit="g" /><NutrientValue label="Kohlenhydrate" value={food.carbohydrates_g} unit="g" /><NutrientValue label="Fett" value={food.fat_g} unit="g" /></dl>
           </article>)}</div>
         )}
@@ -133,11 +139,15 @@ function NutrientValue(props: { label: string; value: number; unit: string }) {
 }
 
 function draftToInput(draft: FoodDraft): FoodInput {
-  return { name: draft.name, base_unit: draft.base_unit, calories_kcal: Number(draft.calories_kcal), protein_g: Number(draft.protein_g), carbohydrates_g: Number(draft.carbohydrates_g), fat_g: Number(draft.fat_g) }
+  return { name: draft.name, base_unit: draft.base_unit, category: draft.category, calories_kcal: Number(draft.calories_kcal), protein_g: Number(draft.protein_g), carbohydrates_g: Number(draft.carbohydrates_g), fat_g: Number(draft.fat_g) }
 }
 
 function sortFoods(foods: Food[]): Food[] {
-  return [...foods].sort((left, right) => left.name.localeCompare(right.name, 'de', { sensitivity: 'base' }))
+  return [...foods].sort((left, right) => {
+    const categoryOrder = foodCategories.findIndex((item) => item.value === left.category)
+      - foodCategories.findIndex((item) => item.value === right.category)
+    return categoryOrder || left.name.localeCompare(right.name, 'de', { sensitivity: 'base' })
+  })
 }
 
 function formatNutrient(value: number): string {

@@ -24,6 +24,11 @@ class Food(Base):
     __table_args__ = (
         CheckConstraint("length(trim(name)) > 0", name="ck_foods_name_not_blank"),
         CheckConstraint("base_unit IN ('g', 'ml')", name="ck_foods_base_unit"),
+        CheckConstraint(
+            "category IN ('protein', 'carbohydrate', 'vegetable', 'dairy', "
+            "'fat', 'sauce', 'spice', 'other')",
+            name="ck_foods_category",
+        ),
         CheckConstraint("calories_kcal >= 0", name="ck_foods_calories_nonnegative"),
         CheckConstraint("protein_g >= 0", name="ck_foods_protein_nonnegative"),
         CheckConstraint(
@@ -35,6 +40,7 @@ class Food(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(200))
     base_unit: Mapped[str] = mapped_column(String(2))
+    category: Mapped[str] = mapped_column(String(20), server_default="other")
     calories_kcal: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     protein_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     carbohydrates_g: Mapped[Decimal] = mapped_column(Numeric(10, 2))

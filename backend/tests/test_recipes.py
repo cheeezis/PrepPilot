@@ -15,6 +15,7 @@ def create_food(
         json={
             "name": name,
             "base_unit": unit,
+            "category": "other",
             "calories_kcal": calories,
             "protein_g": protein,
             "carbohydrates_g": carbohydrates,

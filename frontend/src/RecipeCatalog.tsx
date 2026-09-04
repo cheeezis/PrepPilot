@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { listFoods, type Food } from './api/foods'
+import { foodCategories } from './foodCategories'
 import {
   createRecipe,
   deleteRecipe,
@@ -150,7 +151,10 @@ export function RecipeCatalog() {
         <fieldset className="ingredient-editor"><legend>Zutaten</legend>{draft.ingredients.map((ingredient, index) => {
           const selectedFood = foods.find((food) => food.id === Number(ingredient.food_id))
           return <div className="ingredient-row" key={index}>
-            <select required aria-label={`Lebensmittel ${index + 1}`} value={ingredient.food_id} onChange={(event) => updateIngredient(index, { food_id: event.target.value })}><option value="">Lebensmittel wählen</option>{foods.map((food) => <option value={food.id} key={food.id}>{food.name}</option>)}</select>
+            <select required aria-label={`Lebensmittel ${index + 1}`} value={ingredient.food_id} onChange={(event) => updateIngredient(index, { food_id: event.target.value })}><option value="">Lebensmittel wählen</option>{foodCategories.map((category) => {
+              const categoryFoods = foods.filter((food) => food.category === category.value)
+              return categoryFoods.length > 0 ? <optgroup label={category.label} key={category.value}>{categoryFoods.map((food) => <option value={food.id} key={food.id}>{food.name}</option>)}</optgroup> : null
+            })}</select>
             <div className="number-input"><input required aria-label={`Menge ${index + 1}`} type="number" min="0.001" step="0.001" value={ingredient.amount} onChange={(event) => updateIngredient(index, { amount: event.target.value })} /><small>{selectedFood?.base_unit ?? 'g/ml'}</small></div>
             {draft.ingredients.length > 1 && <button type="button" className="button-icon" aria-label={`Zutat ${index + 1} entfernen`} onClick={() => removeIngredient(index)}>×</button>}
           </div>

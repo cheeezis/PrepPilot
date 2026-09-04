@@ -6,6 +6,7 @@ def food_payload(name: str = "Haferflocken") -> dict[str, object]:
     return {
         "name": name,
         "base_unit": "g",
+        "category": "carbohydrate",
         "calories_kcal": 372.5,
         "protein_g": 13.5,
         "carbohydrates_g": 58.7,
@@ -24,6 +25,7 @@ def test_foods_start_empty_and_can_be_created(client: TestClient) -> None:
         "id": 1,
         "name": "Haferflocken",
         "base_unit": "g",
+        "category": "carbohydrate",
         "calories_kcal": 372.5,
         "protein_g": 13.5,
         "carbohydrates_g": 58.7,
@@ -66,6 +68,7 @@ def test_food_names_are_unique_ignoring_case(client: TestClient) -> None:
     [
         {"name": "   "},
         {"base_unit": "kg"},
+        {"category": "unknown"},
         {"calories_kcal": -1},
         {"protein_g": -1},
         {"carbohydrates_g": -1},
