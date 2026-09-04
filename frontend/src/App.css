@@ -100,31 +100,6 @@ h1 {
   line-height: 1.6;
 }
 
-.import-control {
-  display: grid;
-  grid-template-columns: 1fr minmax(220px, 300px);
-  align-items: center;
-  gap: 20px;
-  margin: 32px 0;
-  padding: 24px;
-  border: 1px solid #dce4e0;
-  border-radius: 14px;
-  background: #f7faf8;
-}
-
-.import-control h2,
-.import-control p {
-  margin-bottom: 4px;
-}
-
-.import-control button {
-  margin: 0;
-}
-
-.import-control .notice {
-  grid-column: 1 / -1;
-}
-
 .app-navigation {
   display: flex;
   align-items: center;
@@ -149,33 +124,142 @@ h1 {
   background: #176b52;
 }
 
-.import-result {
+.recipe-editor {
+  margin: 32px 0;
+  padding: 24px;
+  border: 1px solid #dce4e0;
+  border-radius: 16px;
+  background: #f7faf8;
+}
+
+.recipe-editor > div p:last-child {
+  color: #5d6863;
+}
+
+.recipe-editor form,
+.recipe-form-section {
   display: grid;
-  gap: 12px;
+  gap: 18px;
+}
+
+.recipe-editor form {
+  grid-template-columns: 2fr 1fr;
+  margin-top: 20px;
+}
+
+.recipe-category-selector,
+.recipe-form-section,
+.recipe-text-grid,
+.recipe-number-grid--optional,
+.recipe-form-actions,
+.recipe-editor .notice {
   grid-column: 1 / -1;
 }
 
-.import-result .notice {
-  grid-column: auto;
+.recipe-category-selector {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-.import-rejections {
-  padding-left: 14px;
-  border-left: 3px solid #c33d32;
+.recipe-category-selector legend {
+  margin-bottom: 8px;
+  color: #4e5b56;
+  font-size: 13px;
+  font-weight: 650;
 }
 
-.import-rejections ul {
-  display: grid;
+.recipe-category-selector > div,
+.recipe-form-actions,
+.recipe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.recipe-category-selector label {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin: 8px 0 0;
-  padding-left: 20px;
+  padding: 9px 12px;
+  border: 1px solid #cbd4d0;
+  border-radius: 9px;
+  background: #fff;
 }
 
-.import-rejections li span {
-  display: block;
-  margin-top: 2px;
-  color: #5d6863;
-  font-size: 14px;
+.recipe-category-selector input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: #176b52;
+}
+
+.recipe-form-section h3 {
+  margin-bottom: -6px;
+}
+
+.recipe-number-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.recipe-number-grid--optional {
+  grid-template-columns: repeat(2, 1fr) 2fr;
+}
+
+.recipe-text-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+textarea {
+  width: 100%;
+  border: 1px solid #cbd4d0;
+  border-radius: 9px;
+  padding: 12px;
+  color: #18201d;
+  background: #fff;
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+textarea:focus {
+  border-color: #176b52;
+  outline: 3px solid rgb(23 107 82 / 16%);
+}
+
+.recipe-form-actions button,
+.recipe-actions button {
+  width: auto;
+  grid-column: auto;
+  margin: 0;
+  padding: 0 16px;
+}
+
+.secondary-button,
+.recipe-actions button {
+  border: 1px solid #176b52;
+  color: #176b52;
+  background: #fff;
+}
+
+.secondary-button:hover,
+.recipe-actions button:hover {
+  color: #fff;
+  background: #176b52;
+}
+
+.recipe-actions button:last-child {
+  border-color: #a7352d;
+  color: #a7352d;
+}
+
+.recipe-actions button:last-child:hover {
+  color: #fff;
+  background: #a7352d;
 }
 
 .recipe-inventory {
@@ -745,6 +829,15 @@ button:disabled {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .recipe-number-grid,
+  .recipe-number-grid--optional {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .recipe-source-field {
+    grid-column: 1 / -1;
+  }
+
 }
 
 .ingredient-note {
@@ -772,11 +865,6 @@ button:disabled {
     padding-top: 50px;
   }
 
-  .import-control {
-    grid-template-columns: 1fr;
-    padding: 18px;
-  }
-
   .inventory-heading,
   .recipe-source {
     align-items: flex-start;
@@ -786,6 +874,17 @@ button:disabled {
   .target-form {
     grid-template-columns: 1fr;
     padding: 16px;
+  }
+
+  .recipe-editor form,
+  .recipe-number-grid,
+  .recipe-number-grid--optional,
+  .recipe-text-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recipe-editor {
+    padding: 18px;
   }
 
   .nutrient-grid {
