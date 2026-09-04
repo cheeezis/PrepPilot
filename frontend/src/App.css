@@ -396,6 +396,83 @@ button:disabled {
   grid-template-columns: minmax(360px, 0.95fr) minmax(0, 1.25fr);
 }
 
+.plan-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.75fr) minmax(0, 1.5fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.plan-form {
+  position: sticky;
+  top: 20px;
+}
+
+.plan-list,
+.plan-days {
+  display: grid;
+  gap: 12px;
+}
+
+.plan-card {
+  border: 1px solid #dce6e1;
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.plan-card > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 16px;
+  color: #24493c;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.plan-card > summary span:last-child {
+  color: #62726c;
+  font-size: 12px;
+}
+
+.plan-targets {
+  padding: 12px 16px;
+  color: #52645d;
+  background: #f2f7f4;
+  font-size: 13px;
+}
+
+.plan-days {
+  padding: 16px;
+}
+
+.plan-days section {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e4ebe7;
+}
+
+.plan-days h3 {
+  margin-bottom: 9px;
+}
+
+.plan-days p {
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.plan-days p span,
+.plan-days p small {
+  color: #71807a;
+}
+
+.button-danger {
+  margin: 0 16px 16px;
+  background: #a43c33;
+}
+
 .recipe-form {
   display: block;
 }
@@ -570,8 +647,13 @@ button:disabled {
 
 @media (max-width: 900px) {
   .catalog-layout,
-  .catalog-layout--recipes {
+  .catalog-layout--recipes,
+  .plan-layout {
     grid-template-columns: 1fr;
+  }
+
+  .plan-form {
+    position: static;
   }
 }
 

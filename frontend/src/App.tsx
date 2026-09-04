@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { FoodCatalog } from './FoodCatalog'
 import { RecipeCatalog } from './RecipeCatalog'
+import { WeeklyPlans } from './WeeklyPlans'
 import { getHealth } from './api/health'
 
 type SystemState = 'checking' | 'ready' | 'unavailable'
-type CatalogView = 'foods' | 'recipes'
+type CatalogView = 'foods' | 'recipes' | 'plans'
 
 export default function App() {
   const [systemState, setSystemState] = useState<SystemState>('checking')
@@ -43,9 +44,12 @@ export default function App() {
       <nav className="catalog-tabs" aria-label="Katalog auswählen">
         <button type="button" aria-pressed={view === 'foods'} onClick={() => setView('foods')}>Lebensmittel</button>
         <button type="button" aria-pressed={view === 'recipes'} onClick={() => setView('recipes')}>Rezepte</button>
+        <button type="button" aria-pressed={view === 'plans'} onClick={() => setView('plans')}>Wochenpläne</button>
       </nav>
 
-      {view === 'foods' ? <FoodCatalog /> : <RecipeCatalog />}
+      {view === 'foods' && <FoodCatalog />}
+      {view === 'recipes' && <RecipeCatalog />}
+      {view === 'plans' && <WeeklyPlans />}
     </main>
   )
 }
