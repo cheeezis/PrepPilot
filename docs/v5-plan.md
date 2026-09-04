@@ -7,10 +7,10 @@ Stand: 4. September 2026
 - Abschnitt 0 ist abgeschlossen; der V4-Stand ist mit `prototype-v4` markiert.
 - Abschnitt 1 ist auf `rewrite/v5-foundation` umgesetzt und automatisiert
   geprüft. Der echte lokale Start mit Docker steht noch aus.
-- Abschnitt 2 ist auf `feature/food-catalog` umgesetzt und automatisiert
-  geprüft. Der echte Migrationstest mit PostgreSQL steht noch aus.
+- Abschnitt 2 ist auf `feature/food-catalog` umgesetzt und automatisiert sowie
+  mit einer echten lokalen PostgreSQL-Datenbank geprüft.
 - Abschnitt 3 ist auf `feature/recipe-management` umgesetzt und automatisiert
-  geprüft. Der echte Migrationstest mit PostgreSQL steht noch aus.
+  sowie mit einer echten lokalen PostgreSQL-Datenbank geprüft.
 - Als Nächstes folgt Abschnitt 4, das persistente Wochenmodell.
 
 ## Ziel
