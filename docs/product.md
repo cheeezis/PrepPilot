@@ -2,7 +2,7 @@
 
 PrepPilot hilft dabei, aus eigenen, tatsächlich gegessenen Rezepten einen
 nachvollziehbaren Tagesplan zu erstellen. Der Nutzer behält die Kontrolle über
-Portionsgröße, Nährwerte, Zutaten und Zubereitung.
+Rezeptausbeute, Nährwerte, Zutaten und Zubereitung.
 
 Der aktuelle Produktkern:
 

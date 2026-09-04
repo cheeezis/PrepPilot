@@ -1,7 +1,7 @@
 # PrepPilot
 
 PrepPilot erstellt nachvollziehbare Tagespläne aus persönlichen Rezepten. Der
-Nutzer hinterlegt Portionszahl, Nährwerte, Zutaten und Zubereitung selbst.
+Nutzer hinterlegt Rezeptausbeute, Nährwerte, Zutaten und Zubereitung selbst.
 PostgreSQL speichert diese Rezepte; der Planer kombiniert ihre Nährwerte pro
 Portion passend zu Kalorien- und Makrozielen.
 

@@ -27,5 +27,5 @@ Stand: 4. September 2026
 - skalierte Zutaten und Einkaufslisten
 - Benutzerkonten und gespeicherte Pläne
 
-Frühere Import- und Quellenansätze bleiben über die Git-Historie nachvollziehbar,
-bestimmen aber nicht mehr die aktuelle Architektur.
+Frühere Produktansätze bleiben über die Git-Historie nachvollziehbar, bestimmen
+aber nicht mehr die aktuelle Architektur.

@@ -13,7 +13,7 @@ React
 ```
 
 Es gibt fachlich nur die Tabelle `recipes`. Ein Rezept enthält eine oder mehrere
-Mahlzeitenkategorien, seine ursprüngliche Portionszahl, Nährwerte pro Portion,
+Mahlzeitenkategorien, seine Rezeptausbeute, Nährwerte pro Portion,
 strukturierte Zutaten und Zubereitung. Eine Zutat besteht aus Menge, Einheit und
 Bezeichnung. Ein Quellenlink sowie Vorbereitungs- und Kochzeit sind optional.
 

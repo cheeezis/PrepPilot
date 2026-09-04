@@ -22,7 +22,7 @@ Bis zu drei Mahlzeiten werden vollständig durchsucht. Für vier Mahlzeiten wäh
 der Planer je Rolle zuerst reproduzierbar die 24 nährwertlich passendsten
 Rezepte aus. So bleibt die Berechnung interaktiv; das Ergebnis
 ist in diesem Fall die beste gefundene Kombination innerhalb dieser Vorauswahl
-und kein Beweis für das globale Optimum des gesamten Katalogs.
+und kein Beweis für das globale Optimum des gesamten Rezeptbestands.
 
 Harte Regeln:
 
