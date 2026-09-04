@@ -26,7 +26,7 @@ class Food(Base):
         CheckConstraint("length(trim(name)) > 0", name="ck_foods_name_not_blank"),
         CheckConstraint("base_unit IN ('g', 'ml')", name="ck_foods_base_unit"),
         CheckConstraint(
-            "category IN ('protein', 'carbohydrate', 'vegetable', 'dairy', "
+            "category IN ('protein', 'carbohydrate', 'vegetable', 'fruit', 'dairy', "
             "'fat', 'sauce', 'spice', 'other')",
             name="ck_foods_category",
         ),
@@ -52,9 +52,40 @@ class Food(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    portions: Mapped[list["FoodPortion"]] = relationship(
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="FoodPortion.position, FoodPortion.id",
+    )
 
 
 Index("uq_foods_name_ci", func.lower(Food.name), unique=True)
+
+
+class FoodPortion(Base):
+    __tablename__ = "food_portions"
+    __table_args__ = (
+        CheckConstraint("length(trim(name)) > 0", name="ck_food_portions_name_not_blank"),
+        CheckConstraint("amount > 0", name="ck_food_portions_amount_positive"),
+        CheckConstraint("position >= 0", name="ck_food_portions_position_nonnegative"),
+        UniqueConstraint("food_id", "position", name="uq_food_portions_position"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    food_id: Mapped[int] = mapped_column(
+        ForeignKey("foods.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(50))
+    amount: Mapped[Decimal] = mapped_column(Numeric(12, 3))
+    position: Mapped[int]
+
+
+Index(
+    "uq_food_portions_food_name_ci",
+    FoodPortion.food_id,
+    func.lower(FoodPortion.name),
+    unique=True,
+)
 
 
 class Recipe(Base):
@@ -121,10 +152,14 @@ class RecipeIngredient(Base):
     food_id: Mapped[int] = mapped_column(
         ForeignKey("foods.id", ondelete="RESTRICT"), index=True
     )
+    food_portion_id: Mapped[int | None] = mapped_column(
+        ForeignKey("food_portions.id", ondelete="RESTRICT"), index=True
+    )
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 3))
     unit: Mapped[str] = mapped_column(String(2))
     position: Mapped[int]
     food: Mapped[Food] = relationship(lazy="joined")
+    food_portion: Mapped[FoodPortion | None] = relationship(lazy="joined")
 
 
 class WeeklyPlan(Base):

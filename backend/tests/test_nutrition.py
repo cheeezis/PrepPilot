@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from preppilot_api.models import Food, Recipe, RecipeIngredient
+from preppilot_api.models import Food, FoodPortion, Recipe, RecipeIngredient
 from preppilot_api.nutrition import Nutrients, calculate_recipe_nutrition
 
 
@@ -41,3 +41,18 @@ def test_recipe_nutrition_comes_from_food_amounts_and_servings() -> None:
         carbohydrates_g=Decimal("34.8"),
         fat_g=Decimal("5.0"),
     )
+
+
+def test_recipe_nutrition_converts_food_portions_to_base_amounts() -> None:
+    egg = Food(
+        name="Ei", base_unit="g", calories_kcal=Decimal("140"),
+        protein_g=Decimal("13"), carbohydrates_g=Decimal("1"), fat_g=Decimal("9"),
+    )
+    piece = FoodPortion(name="Stück", amount=Decimal("60"), position=0)
+    recipe = Recipe(title="Eier", servings=1, instructions=["Kochen"])
+    recipe.ingredients = [
+        RecipeIngredient(
+            amount=Decimal("2"), unit="g", position=0, food=egg, food_portion=piece
+        )
+    ]
+    assert calculate_recipe_nutrition(recipe).total.calories_kcal == Decimal("168.0")

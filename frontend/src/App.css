@@ -523,9 +523,22 @@ button:disabled {
 
 .ingredient-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(110px, 0.8fr) auto;
+  grid-template-columns: minmax(0, 1.45fr) minmax(90px, 0.55fr) minmax(100px, 0.7fr) auto;
   gap: 8px;
 }
+
+.portion-editor {
+  margin-top: 14px;
+  color: #52645d;
+  font-size: 13px;
+}
+
+.portion-editor summary { cursor: pointer; font-weight: 750; }
+.portion-editor ul { padding: 0; list-style: none; }
+.portion-editor li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #e8eeeb; }
+.portion-editor li button { min-height: 28px; padding: 0 7px; margin-left: 5px; font-size: 11px; }
+.portion-editor form { display: grid; grid-template-columns: 1fr minmax(100px, .7fr) auto auto; gap: 7px; margin-top: 10px; }
+.portion-editor form button { min-height: 38px; padding: 0 9px; font-size: 12px; }
 
 .ingredient-editor > .button-secondary {
   justify-self: start;
@@ -691,6 +704,8 @@ button:disabled {
   .ingredient-row {
     grid-template-columns: 1fr;
   }
+
+  .portion-editor form { grid-template-columns: 1fr 1fr; }
 
   .ingredient-row .button-icon {
     justify-self: end;

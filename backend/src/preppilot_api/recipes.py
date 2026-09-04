@@ -9,7 +9,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
-from preppilot_api.models import Food, Recipe, RecipeIngredient, RecipeMealRole
+from preppilot_api.models import (
+    Food,
+    FoodPortion,
+    Recipe,
+    RecipeIngredient,
+    RecipeMealRole,
+)
 from preppilot_api.nutrition import Nutrients, calculate_recipe_nutrition
 
 MealRole = Literal["breakfast", "lunch", "dinner", "snack"]
@@ -27,6 +33,7 @@ DatabaseSession = Annotated[Session, Depends(get_session)]
 class RecipeIngredientRequest(BaseModel):
     food_id: int = Field(gt=0)
     amount: Decimal = Field(gt=0, max_digits=12, decimal_places=3)
+    food_portion_id: int | None = Field(default=None, gt=0)
 
 
 class RecipeWriteRequest(BaseModel):
@@ -79,8 +86,11 @@ class NutrientResponse(BaseModel):
 class RecipeIngredientResponse(BaseModel):
     food_id: int
     food_name: str
+    food_portion_id: int | None
     amount: float
-    unit: Literal["g", "ml"]
+    unit: str
+    base_amount: float
+    base_unit: Literal["g", "ml"]
     position: int
 
 
@@ -164,6 +174,7 @@ def _apply_request(
     recipe: Recipe, request: RecipeWriteRequest, session: Session
 ) -> None:
     foods = _load_foods(request.ingredients, session)
+    portions = _load_portions(request.ingredients, session)
     recipe.title = request.title
     recipe.servings = request.servings
     recipe.instructions = request.instructions
@@ -175,10 +186,16 @@ def _apply_request(
     recipe.ingredients = [
         RecipeIngredient(
             food_id=item.food_id,
+            food_portion_id=item.food_portion_id,
             amount=item.amount,
             unit=foods[item.food_id].base_unit,
             position=position,
             food=foods[item.food_id],
+            food_portion=(
+                portions[item.food_portion_id]
+                if item.food_portion_id is not None
+                else None
+            ),
         )
         for position, item in enumerate(request.ingredients)
     ]
@@ -199,6 +216,35 @@ def _load_foods(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Unbekannte Lebensmittel-ID: {missing[0]}",
         )
+    return by_id
+
+
+def _load_portions(
+    ingredients: list[RecipeIngredientRequest], session: Session
+) -> dict[int, FoodPortion]:
+    portion_ids = [
+        item.food_portion_id
+        for item in ingredients
+        if item.food_portion_id is not None
+    ]
+    if not portion_ids:
+        return {}
+    try:
+        portions = session.scalars(
+            select(FoodPortion).where(FoodPortion.id.in_(portion_ids))
+        ).all()
+    except SQLAlchemyError as error:
+        raise _database_unavailable() from error
+    by_id = {portion.id: portion for portion in portions}
+    for item in ingredients:
+        if item.food_portion_id is None:
+            continue
+        portion = by_id.get(item.food_portion_id)
+        if portion is None or portion.food_id != item.food_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=f"Ungültige Einheit für Lebensmittel-ID: {item.food_id}",
+            )
     return by_id
 
 
@@ -235,8 +281,15 @@ def _serialize(recipe: Recipe) -> RecipeResponse:
             RecipeIngredientResponse(
                 food_id=item.food_id,
                 food_name=item.food.name,
+                food_portion_id=item.food_portion_id,
                 amount=float(item.amount),
-                unit=cast(Literal["g", "ml"], item.unit),
+                unit=(item.food_portion.name if item.food_portion else item.food.base_unit),
+                base_amount=float(
+                    item.amount * item.food_portion.amount
+                    if item.food_portion
+                    else item.amount
+                ),
+                base_unit=cast(Literal["g", "ml"], item.food.base_unit),
                 position=item.position,
             )
             for item in recipe.ingredients

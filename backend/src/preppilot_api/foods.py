@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
-from preppilot_api.models import Food, RecipeIngredient
+from preppilot_api.models import Food, FoodPortion, RecipeIngredient
 
 router = APIRouter(prefix="/api/foods", tags=["foods"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
@@ -17,6 +17,7 @@ FoodCategory = Literal[
     "protein",
     "carbohydrate",
     "vegetable",
+    "fruit",
     "dairy",
     "fat",
     "sauce",
@@ -43,6 +44,25 @@ class FoodWriteRequest(BaseModel):
         return normalized
 
 
+class FoodPortionWriteRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=50)
+    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=3)
+
+    @field_validator("name")
+    @classmethod
+    def normalize_name(cls, value: str) -> str:
+        normalized = " ".join(value.split())
+        if not normalized:
+            raise ValueError("name must not be blank")
+        return normalized
+
+
+class FoodPortionResponse(BaseModel):
+    id: int
+    name: str
+    amount: float
+
+
 class FoodResponse(BaseModel):
     id: int
     name: str
@@ -52,6 +72,7 @@ class FoodResponse(BaseModel):
     protein_g: float
     carbohydrates_g: float
     fat_g: float
+    portions: list[FoodPortionResponse]
     created_at: datetime
     updated_at: datetime
 
@@ -114,6 +135,66 @@ def delete_food(food_id: int, session: DatabaseSession) -> Response:
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+@router.post(
+    "/{food_id}/portions",
+    response_model=FoodPortionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_food_portion(
+    food_id: int, request: FoodPortionWriteRequest, session: DatabaseSession
+) -> FoodPortionResponse:
+    _get_food(food_id, session)
+    next_position = session.scalar(
+        select(func.coalesce(func.max(FoodPortion.position), -1)).where(
+            FoodPortion.food_id == food_id
+        )
+    )
+    portion = FoodPortion(
+        food_id=food_id,
+        name=request.name,
+        amount=request.amount,
+        position=int(next_position if next_position is not None else -1) + 1,
+    )
+    session.add(portion)
+    _commit(session, duplicate_detail="Diese Einheit existiert bereits")
+    session.refresh(portion)
+    return _serialize_portion(portion)
+
+
+@router.put("/{food_id}/portions/{portion_id}", response_model=FoodPortionResponse)
+def update_food_portion(
+    food_id: int,
+    portion_id: int,
+    request: FoodPortionWriteRequest,
+    session: DatabaseSession,
+) -> FoodPortionResponse:
+    portion = _get_food_portion(food_id, portion_id, session)
+    portion.name = request.name
+    portion.amount = request.amount
+    _commit(session, duplicate_detail="Diese Einheit existiert bereits")
+    session.refresh(portion)
+    return _serialize_portion(portion)
+
+
+@router.delete("/{food_id}/portions/{portion_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_food_portion(
+    food_id: int, portion_id: int, session: DatabaseSession
+) -> Response:
+    portion = _get_food_portion(food_id, portion_id, session)
+    if session.scalar(
+        select(RecipeIngredient.id)
+        .where(RecipeIngredient.food_portion_id == portion_id)
+        .limit(1)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Einheit wird bereits in einem Rezept verwendet",
+        )
+    session.delete(portion)
+    _commit(session, duplicate_detail="Einheit wird bereits in einem Rezept verwendet")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 def _apply_request(food: Food, request: FoodWriteRequest) -> None:
     food.name = request.name
     food.base_unit = request.base_unit
@@ -122,6 +203,26 @@ def _apply_request(food: Food, request: FoodWriteRequest) -> None:
     food.protein_g = request.protein_g
     food.carbohydrates_g = request.carbohydrates_g
     food.fat_g = request.fat_g
+
+
+def _get_food(food_id: int, session: Session) -> Food:
+    food = session.get(Food, food_id)
+    if food is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lebensmittel nicht gefunden",
+        )
+    return food
+
+
+def _get_food_portion(food_id: int, portion_id: int, session: Session) -> FoodPortion:
+    portion = session.get(FoodPortion, portion_id)
+    if portion is None or portion.food_id != food_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Einheit nicht gefunden",
+        )
+    return portion
 
 
 def _commit(session: Session, duplicate_detail: str) -> None:
@@ -155,6 +256,15 @@ def _serialize(food: Food) -> FoodResponse:
         protein_g=float(food.protein_g),
         carbohydrates_g=float(food.carbohydrates_g),
         fat_g=float(food.fat_g),
+        portions=[_serialize_portion(portion) for portion in food.portions],
         created_at=food.created_at,
         updated_at=food.updated_at,
+    )
+
+
+def _serialize_portion(portion: FoodPortion) -> FoodPortionResponse:
+    return FoodPortionResponse(
+        id=portion.id,
+        name=portion.name,
+        amount=float(portion.amount),
     )

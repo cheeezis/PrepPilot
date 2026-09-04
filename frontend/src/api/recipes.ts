@@ -12,8 +12,11 @@ export type Nutrients = {
 export type RecipeIngredient = {
   food_id: number
   food_name: string
+  food_portion_id: number | null
   amount: number
-  unit: BaseUnit
+  unit: string
+  base_amount: number
+  base_unit: BaseUnit
   position: number
 }
 
@@ -35,7 +38,7 @@ export type RecipeInput = {
   title: string
   servings: number
   meal_roles: MealRole[]
-  ingredients: Array<{ food_id: number; amount: number }>
+  ingredients: Array<{ food_id: number; amount: number; food_portion_id: number | null }>
   instructions: string[]
 }
 

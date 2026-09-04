@@ -7,6 +7,7 @@ from preppilot_api.models import Base
 def test_v5_schema_contains_foods_and_relational_recipes() -> None:
     assert set(Base.metadata.tables) == {
         "foods",
+        "food_portions",
         "meal_assignments",
         "recipe_ingredients",
         "recipe_meal_roles",
@@ -22,6 +23,8 @@ def test_food_catalog_is_the_only_domain_api() -> None:
     assert set(schema["paths"]) == {
         "/api/foods",
         "/api/foods/{food_id}",
+        "/api/foods/{food_id}/portions",
+        "/api/foods/{food_id}/portions/{portion_id}",
         "/api/health",
         "/api/recipes",
         "/api/recipes/{recipe_id}",
