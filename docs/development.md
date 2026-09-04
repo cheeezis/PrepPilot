@@ -1,50 +1,35 @@
 # Lokale Entwicklung
 
-## Datenbank
+## Anwendung
 
-PostgreSQL starten:
+Im Projektordner startet `start-preppilot.bat` PostgreSQL, FastAPI und Vite.
+`stop-preppilot.bat` beendet die lokalen Dienste.
 
-```powershell
-docker compose up -d postgres
-```
-
-Nach dem ausdrücklich freigegebenen Recipe-first-Reset wird das neue Schema im
-Backend angelegt:
-
-```powershell
-.\.venv\Scripts\alembic.exe upgrade head
-```
-
-## Backend
+Nach einer Schemaänderung im Backend:
 
 ```powershell
 cd backend
-.\.venv\Scripts\fastapi.exe dev src/preppilot_api/main.py
+.\.venv\Scripts\python.exe -m alembic upgrade head
 ```
 
-Prüfungen:
+## Backend prüfen
 
 ```powershell
+cd backend
 .\.venv\Scripts\python.exe -m ruff check .
 .\.venv\Scripts\python.exe -m mypy src
 .\.venv\Scripts\python.exe -m pytest
 ```
 
-## Frontend
+## Frontend prüfen
 
 ```powershell
 cd frontend
-npm run dev
-```
-
-Prüfungen:
-
-```powershell
 npm run lint
 npm test
 npm run build
+npm run test:e2e
 ```
 
-Im Browser startet „NHS-Katalog synchronisieren“ die automatische Erkennung und
-den Import. Der zweite Lauf muss die bereits gespeicherten Rezepte als
-unverändert melden und darf keine Duplikate erzeugen.
+Die Browser-Tests legen eigene Testrezepte an und löschen ausschließlich diese
+Datensätze nach dem Lauf wieder.

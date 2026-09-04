@@ -14,7 +14,7 @@ Der Nutzer wählt mindestens eine Mahlzeitenrolle aus. Standardmäßig enthält 
 Plan ein Frühstück, ein Mittagessen und ein Abendessen; ein Snack kann ergänzt
 und jede Hauptmahlzeit abgewählt werden. Pro ausgewählter Rolle wird genau ein
 Rezept mit einer oder zwei ganzen Portionen eingeplant. Dasselbe Rezept wird
-auch bei mehreren Quellkategorien höchstens einmal verwendet. Die Ausgabe ist
+auch bei mehreren ausgewählten Kategorien höchstens einmal verwendet. Die Ausgabe ist
 bei unverändertem Rezeptbestand und denselben Eingaben reproduzierbar.
 
 Bis zu drei Mahlzeiten werden vollständig durchsucht. Für vier Mahlzeiten wählt
