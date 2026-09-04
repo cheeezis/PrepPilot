@@ -9,7 +9,9 @@ Stand: 4. September 2026
   geprüft. Der echte lokale Start mit Docker steht noch aus.
 - Abschnitt 2 ist auf `feature/food-catalog` umgesetzt und automatisiert
   geprüft. Der echte Migrationstest mit PostgreSQL steht noch aus.
-- Als Nächstes folgt Abschnitt 3, die Rezeptverwaltung.
+- Abschnitt 3 ist auf `feature/recipe-management` umgesetzt und automatisiert
+  geprüft. Der echte Migrationstest mit PostgreSQL steht noch aus.
+- Als Nächstes folgt Abschnitt 4, das persistente Wochenmodell.
 
 ## Ziel
 

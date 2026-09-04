@@ -13,8 +13,8 @@ innerhalb derselben Woche vollständig und nachvollziehbar verwendet werden.
 - reproduzierbare Wochenplanung ohne verlorene oder doppelte Batch-Portionen
 
 Die technische Grundlage verwendet React/Vite, FastAPI, PostgreSQL und Alembic.
-Der persönliche Lebensmittelkatalog ist der erste umgesetzte Fachbaustein. Als
-Nächstes folgt die Rezeptverwaltung.
+Lebensmittelkatalog und Rezeptverwaltung bilden die umgesetzte fachliche Basis.
+Als Nächstes folgt das persistente Wochenmodell.
 
 Der verbindliche Umfang und die Umsetzungsreihenfolge stehen im
 [`V5-Plan`](docs/v5-plan.md). Frühere Produktphasen dokumentiert die
