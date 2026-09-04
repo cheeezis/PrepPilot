@@ -1,14 +1,16 @@
 # Produkt
 
-PrepPilot soll Ernährungsplanung leichter machen, ohne eine Genauigkeit
-vorzutäuschen, die die Quelldaten nicht besitzen.
+PrepPilot hilft dabei, aus eigenen, tatsächlich gegessenen Rezepten einen
+nachvollziehbaren Tagesplan zu erstellen. Der Nutzer behält die Kontrolle über
+Rezeptausbeute, Nährwerte, Zutaten und Zubereitung.
 
-Der erste Produktbeweis ist bewusst klein: Eine Person lädt zehn vollständige
-Rezepte aus einer freigegebenen Quelle, gibt Tagesziele ein und erhält passende
-Rezeptkombinationen. Jede Auswahl zeigt ganze Portionen, Originalzutaten,
-Quellenlink und Attribution.
+Der aktuelle Produktkern:
 
-Der MVP gilt als nützlich, wenn der Import ohne Handarbeit wiederholbar ist und
-der reale Datenbestand mindestens einen brauchbaren Plan für das Referenzprofil
-erzeugt. Erst danach folgen mehr Rezepte, Kategorien, Filter, normalisierte
-Zutaten, Einkaufslisten oder Lebensmittelprofile.
+1. persönliche Rezepte anlegen, bearbeiten und löschen
+2. Nährwerte pro Portion speichern
+3. gewünschte Mahlzeitenrollen auswählen
+4. bis zu drei passende Tagespläne erzeugen
+5. harte und weiche Zielabweichungen sichtbar erklären
+
+PrepPilot ist keine medizinische Ernährungsberatung. Die Qualität eines Plans
+hängt von den eingetragenen Rezept- und Nährwertdaten ab.

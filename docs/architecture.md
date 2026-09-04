@@ -5,39 +5,24 @@ Schema.
 
 ```text
 React
-  -> POST /api/imports/nhs
-       -> NHS-Adapter -> recipes
+  -> GET/POST/PUT/DELETE /api/recipes
+       -> Recipe-Repository -> recipes
   -> POST /api/day-plans
        -> Recipe-Repository -> Planer
-  -> Ergebnis mit Portionen, Zutaten und Quelllink
+  -> Ergebnis mit je einer Portion, Zutaten und Zubereitung
 ```
 
-Der NHS-Adapter entdeckt Rezept-URLs über die offiziellen NHS-Filter für
-Frühstück, Mittagessen, Abendessen, Snacks und Getränke. Getränke und Snacks
-werden in PrepPilot gemeinsam als `snack` geführt; alle Rezepte aus der
-Nachtisch-Sammlung werden ausgeschlossen. Der Adapter liest
-Titel und Zutaten aus Recipe-JSON-LD, die sichtbare Methodenliste aus dem
-Rezeptbereich sowie Portionen, Zeiten und acht Nährwerte aus dem wiederkehrenden
-Rezeptkopf. Unvollständige oder energetisch widersprüchliche Seiten werden
-abgelehnt. Bis zu vier Seiten werden parallel abgerufen; Auswertung und
-Datenbankspeicherung erfolgen anschließend geordnet. Quelle plus URL
-identifizieren ein Rezept; ein Inhalts-Hash erkennt unveränderte Wiederholungen
-und Aktualisierungen.
+Es gibt fachlich nur die Tabelle `recipes`. Ein Rezept enthält eine oder mehrere
+Mahlzeitenkategorien, seine Rezeptausbeute, Nährwerte pro Portion,
+strukturierte Zutaten und Zubereitung. Eine Zutat besteht aus Menge, Einheit und
+Bezeichnung. Ein Quellenlink sowie Vorbereitungs- und Kochzeit sind optional.
 
-Die Kategorien werden aus den offiziellen NHS-Sammlungen übernommen. Ein Rezept
-kann mehreren Sammlungen angehören; deshalb speichert PrepPilot eine Liste. Sie
-ist im Rezeptbestand sichtbar, durchsuchbar und filterbar. Im Planer wählt der
-Nutzer die gewünschten Mahlzeiten aus. Frühstück, Mittagessen und Abendessen
-sind voreingestellt; ein Snack kann ergänzt oder eine Hauptmahlzeit abgewählt
-werden.
+Der Planer arbeitet ausschließlich mit gespeicherten persönlichen Rezepten und
+fragt keine externe Quelle ab. Jeder Mahlzeitenplatz verwendet genau eine
+Portion und damit die gespeicherten Nährwerte pro Portion. Bis zu drei
+ausgewählte Mahlzeiten werden vollständig
+durchsucht. Bei vier Mahlzeiten begrenzt eine reproduzierbare Vorauswahl den
+Rechenraum; der vollständige Rezeptbestand bleibt gespeichert und sichtbar.
 
-Der Planer fragt keine externe Quelle ab. Er arbeitet nur mit vollständigen
-Rezepten aus PostgreSQL und skaliert sie mit einer oder zwei ganzen Portionen.
-Rezeptgruppen, die selbst mit zwei Portionen die äußeren Zielgrenzen nicht
-erreichen können, werden vor der Portionssuche sicher verworfen. Aus den
-verbleibenden Kombinationen hält der Planer nur die drei aktuell besten im
-Speicher. Bis zu drei ausgewählte Mahlzeiten werden vollständig durchsucht. Bei
-vier Mahlzeiten begrenzt eine reproduzierbare, nährwertbasierte Vorauswahl den
-Rechenraum, bevor die Kombinationen vollständig bewertet werden. Der gesamte
-Rezeptkatalog bleibt dabei gespeichert und sichtbar. Die bestehenden
-Zielbereiche und das nachvollziehbare Scoring bleiben erhalten.
+Eine leere Rezepttabelle ist ein gültiger Zustand. Die API bleibt erreichbar,
+und der Planer erklärt, dass noch kein verwendbarer Plan vorhanden ist.

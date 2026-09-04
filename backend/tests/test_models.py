@@ -1,25 +1,22 @@
 from preppilot_api.models import Base
 
 
-def test_schema_contains_only_the_recipe_catalog() -> None:
+def test_schema_contains_only_personal_recipes() -> None:
     assert set(Base.metadata.tables) == {"recipes"}
 
 
-def test_recipe_source_identity_is_unique() -> None:
+def test_recipe_source_is_optional() -> None:
     recipes = Base.metadata.tables["recipes"]
-    assert any(
-        constraint.name == "uq_recipes_source_external"
-        for constraint in recipes.constraints
-    )
+    assert recipes.columns["source_url"].nullable
 
 
-def test_recipe_categories_are_stored_as_source_metadata() -> None:
+def test_recipe_categories_are_stored_as_a_list() -> None:
     recipes = Base.metadata.tables["recipes"]
     assert "categories" in recipes.columns
     assert "category" not in recipes.columns
 
 
-def test_recipe_keeps_source_macros_and_attribution() -> None:
+def test_recipe_keeps_personal_recipe_content_and_macros() -> None:
     columns = set(Base.metadata.tables["recipes"].columns.keys())
     assert {
         "calories_per_serving",
@@ -34,6 +31,15 @@ def test_recipe_keeps_source_macros_and_attribution() -> None:
         "ingredients",
         "instructions",
         "source_url",
+        "preparation_minutes",
+        "cooking_minutes",
+    } <= columns
+    assert {
+        "source_name",
+        "external_id",
+        "raw_payload",
+        "content_hash",
+        "imported_at",
         "license_name",
         "attribution_text",
-    } <= columns
+    }.isdisjoint(columns)

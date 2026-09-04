@@ -11,9 +11,3 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-
-# Local Windows development helpers
-start-backend.bat
-start-frontend.bat
-start-preppilot.bat
-stop-preppilot.bat

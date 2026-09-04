@@ -1,15 +1,49 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type APIRequestContext } from '@playwright/test'
 
-let catalogSize = 0
+const createdRecipeIds: number[] = []
 
-test.beforeAll(async ({ request }, testInfo) => {
-  testInfo.setTimeout(120_000)
-  const response = await request.post('/api/imports/nhs', { timeout: 120_000 })
+function recipe(category: 'breakfast' | 'lunch' | 'dinner' | 'snack') {
+  const nutrients = {
+    breakfast: { calories: 550, protein: 30, carbs: 60, fat: 15 },
+    lunch: { calories: 650, protein: 40, carbs: 75, fat: 20 },
+    dinner: { calories: 800, protein: 50, carbs: 85, fat: 30 },
+    snack: { calories: 200, protein: 10, carbs: 20, fat: 5 },
+  }[category]
+  return {
+    title: `E2E ${category} recipe`,
+    categories: [category],
+    servings: 4,
+    calories_per_serving: nutrients.calories,
+    protein_per_serving: nutrients.protein,
+    carbs_per_serving: nutrients.carbs,
+    fat_per_serving: nutrients.fat,
+    ingredients: [{ amount: 1, unit: 'Stück', name: 'Testzutat' }],
+    instructions: ['Test instruction.'],
+    preparation_minutes: 10,
+    cooking_minutes: 20,
+    source_url: null,
+  }
+}
+
+async function createTestRecipe(
+  request: APIRequestContext,
+  category: 'breakfast' | 'lunch' | 'dinner' | 'snack',
+) {
+  const response = await request.post('/api/recipes', { data: recipe(category) })
   expect(response.ok()).toBeTruthy()
-  const recipesResponse = await request.get('/api/recipes')
-  expect(recipesResponse.ok()).toBeTruthy()
-  catalogSize = (await recipesResponse.json() as unknown[]).length
-  expect(catalogSize).toBeGreaterThan(100)
+  createdRecipeIds.push((await response.json()).id as number)
+}
+
+test.beforeAll(async ({ request }) => {
+  for (const category of ['breakfast', 'lunch', 'dinner', 'snack'] as const) {
+    await createTestRecipe(request, category)
+  }
+})
+
+test.afterAll(async ({ request }) => {
+  for (const recipeId of createdRecipeIds) {
+    await request.delete(`/api/recipes/${recipeId}`)
+  }
 })
 
 test.beforeEach(async ({ page }) => {
@@ -17,81 +51,44 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByText('System bereit')).toBeVisible()
 })
 
-test('shows the stored recipe inventory', async ({ page }) => {
+test('shows the personal recipe inventory', async ({ page }) => {
   await page.getByRole('link', { name: 'Rezepte' }).click()
   await expect(page).toHaveURL(/\/recipes$/)
-  await expect(page.getByRole('heading', { name: 'Gespeicherte Rezepte' })).toBeVisible()
-  await expect(page.getByText(`${catalogSize} Rezepte`)).toBeVisible()
-  const recipes = page.locator('.recipe-card')
-  await expect(recipes).toHaveCount(catalogSize)
-  await expect(recipes.first()).toContainText('525 kcal pro Portion · ergibt 6 Portionen')
-  await recipes.first().locator('summary').click()
   await expect(
-    recipes.first().getByRole('heading', { name: 'Zutaten für 6 Portionen' }),
+    page.getByRole('heading', { name: 'Meine gespeicherten Rezepte' }),
   ).toBeVisible()
-  await expect(recipes.first().getByText('Ballaststoffe')).toBeVisible()
-  await expect(recipes.first().getByRole('heading', { name: 'Zubereitung' })).toBeVisible()
   await expect(
-    recipes.first().getByRole('link', { name: 'Originalrezept beim NHS' }),
-  ).toBeVisible()
+    page.locator('.recipe-card').filter({ hasText: 'E2E breakfast recipe' }),
+  ).toHaveCount(1)
 })
 
 test('creates and selects a valid day plan', async ({ page }) => {
   await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
 
-  await expect(page.getByRole('heading', { name: '3 Tagespläne' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Tagespläne/ })).toBeVisible()
   const plans = page.getByRole('article')
-  await expect(plans).toHaveCount(3)
-  await expect(plans.first().getByText(/Ziel 2\.000 kcal/)).toBeVisible()
-
-  const secondPlan = plans.nth(1)
-  await secondPlan.getByRole('button', { name: 'Diesen Plan auswählen' }).click()
-
-  await expect(page.getByText('Vorschlag 2 ausgewählt')).toBeVisible()
-  await expect(secondPlan.getByText(/Portion/).first()).toBeVisible()
-  await secondPlan.locator('details').first().locator('summary').click()
-  await expect(
-    secondPlan.getByText(/PrepPilot rechnet sie noch nicht/).first(),
-  ).toBeVisible()
-  await expect(
-    secondPlan.getByRole('link', { name: 'Originalrezept beim NHS' }).first(),
-  ).toBeVisible()
-  await expect(
-    secondPlan.getByRole('button', { name: 'Ausgewählt' }),
-  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(plans.first()).toContainText(/Ziel 2\.000 kcal/)
+  await expect(plans.first().getByText('1 Portion eingeplant')).toHaveCount(3)
+  await plans.first().getByRole('button', { name: 'Diesen Plan auswählen' }).click()
+  await expect(page.getByText('Vorschlag 1 ausgewählt')).toBeVisible()
 })
 
 test('adds a snack when it is selected', async ({ page }) => {
   await page.getByRole('checkbox', { name: 'Snack' }).check()
   await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
 
-  await expect(page.getByRole('heading', { name: '3 Tagespläne' })).toBeVisible({
-    timeout: 30_000,
-  })
   const firstPlan = page.getByRole('article').first()
   await expect(firstPlan.getByText(/Snack ·/)).toBeVisible()
   await expect(firstPlan.locator('.meal')).toHaveCount(4)
 })
 
 test('explains hard and soft deviations for approximations', async ({ page }) => {
-  await page.getByRole('spinbutton', { name: 'Kalorien kcal' }).fill('1800')
-  await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('200')
+  await page.getByRole('spinbutton', { name: 'Protein mindestens g' }).fill('125')
   await page.getByRole('button', { name: 'Tagespläne erstellen' }).click()
 
   await expect(
     page.getByText('Kein Plan trifft alle harten Ziele. Die besten Annäherungen:'),
   ).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Annäherung' })).toHaveCount(3)
+  await expect(page.getByRole('heading', { name: 'Annäherung' }).first()).toBeVisible()
   await expect(page.getByText('Außerhalb').first()).toBeVisible()
-  await expect(page.getByText('Weiche Abweichung').first()).toBeVisible()
-  await expect(
-    page.getByText(/unter dem (Mindestwert|Zielbereich)/).first(),
-  ).toBeVisible()
-
-  await page
-    .getByRole('article')
-    .first()
-    .getByRole('button', { name: 'Diesen Plan auswählen' })
-    .click()
-  await expect(page.getByText('Vorschlag 1 ausgewählt')).toBeVisible()
 })

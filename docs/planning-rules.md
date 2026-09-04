@@ -13,15 +13,16 @@ Eingaben:
 Der Nutzer wählt mindestens eine Mahlzeitenrolle aus. Standardmäßig enthält der
 Plan ein Frühstück, ein Mittagessen und ein Abendessen; ein Snack kann ergänzt
 und jede Hauptmahlzeit abgewählt werden. Pro ausgewählter Rolle wird genau ein
-Rezept mit einer oder zwei ganzen Portionen eingeplant. Dasselbe Rezept wird
-auch bei mehreren Quellkategorien höchstens einmal verwendet. Die Ausgabe ist
-bei unverändertem Rezeptbestand und denselben Eingaben reproduzierbar.
+Rezept mit genau einer Portion eingeplant. Ein Rezept, das für mehrere Rollen
+geeignet ist, darf beispielsweise mittags und abends jeweils einmal vorkommen.
+Die Ausgabe ist bei unverändertem Rezeptbestand und denselben Eingaben
+reproduzierbar.
 
 Bis zu drei Mahlzeiten werden vollständig durchsucht. Für vier Mahlzeiten wählt
 der Planer je Rolle zuerst reproduzierbar die 24 nährwertlich passendsten
-Rezept-Portionsvarianten aus. So bleibt die Berechnung interaktiv; das Ergebnis
+Rezepte aus. So bleibt die Berechnung interaktiv; das Ergebnis
 ist in diesem Fall die beste gefundene Kombination innerhalb dieser Vorauswahl
-und kein Beweis für das globale Optimum des gesamten Katalogs.
+und kein Beweis für das globale Optimum des gesamten Rezeptbestands.
 
 Harte Regeln:
 

@@ -1,30 +1,34 @@
 # PrepPilot
 
-PrepPilot baut einen kleinen, nachvollziehbaren Tagesplan aus vollständigen
-Rezepten. Der Recipe-first-MVP entdeckt geeignete Rezepte im NHS-Katalog
-Healthier Families automatisch, speichert deren Nährwerte pro Portion in
-PostgreSQL und kombiniert sie passend zu Kalorien- und Makrozielen.
-
-Der aktuell erkannte NHS-Bestand umfasst 169 relevante Seiten. Davon bestehen
-149 die Qualitätsprüfung und liegen lokal als planbare oder sichtbare Rezepte
-vor; 20 unvollständige oder widersprüchliche Seiten werden transparent
-abgelehnt.
+PrepPilot erstellt nachvollziehbare Tagespläne aus persönlichen Rezepten. Der
+Nutzer hinterlegt Rezeptausbeute, Nährwerte, Zutaten und Zubereitung selbst.
+PostgreSQL speichert diese Rezepte; der Planer kombiniert ihre Nährwerte pro
+Portion passend zu Kalorien- und Makrozielen.
 
 Der aktuelle Ablauf:
 
 ```text
-NHS-Kategorien automatisch abfragen
-  -> Nachtisch ausschließen
-  -> Rezeptseiten validieren und idempotent importieren
+eigenes Rezept anlegen oder bearbeiten
   -> recipes in PostgreSQL
   -> gewünschte Mahlzeiten auswählen
-  -> Tagesplan aus ganzen Portionen
-  -> Rezept, Zutaten und Quelle im Frontend anzeigen
+  -> Tagesplan mit genau einer Portion je Mahlzeitenplatz
+  -> Rezept, Zutaten und Zubereitung im Frontend anzeigen
 ```
 
-Lebensmittel-Normalisierung, Einkaufslisten und Wochenpläne gehören bewusst
-nicht zu diesem ersten Schnitt. Die Abgrenzung steht in
-[`docs/recipe-first-mvp.md`](docs/recipe-first-mvp.md).
+Jede Zutat wird mit numerischer Menge, Einheit und Bezeichnung gespeichert. Die
+Mengen gelten für das vollständige Rezept; die Nährwerte gelten pro Portion.
+
+## Lokal starten
+
+`start-preppilot.bat` startet PostgreSQL, Backend und Frontend. Die Anwendung
+ist anschließend unter <http://127.0.0.1:5173> erreichbar. Mit
+`stop-preppilot.bat` werden die lokalen Dienste beendet.
+
+Weitere Hinweise stehen in [`docs/development.md`](docs/development.md).
 
 Das Projekt befindet sich in Entwicklung und ist nicht für den produktiven
 Einsatz gedacht.
+
+Die bisherigen Produktphasen sind in
+[`docs/project-history.md`](docs/project-history.md) dokumentiert. Der geplante
+saubere Neustart ist in [`docs/v5-plan.md`](docs/v5-plan.md) festgehalten.

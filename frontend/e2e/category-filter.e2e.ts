@@ -5,9 +5,9 @@ const recipe = (id: number, title: string, categories: Array<'breakfast' | 'lunc
   title,
   categories,
   servings: 2,
-  source_url: `https://www.nhs.uk/healthier-families/recipes/${title.toLowerCase()}/`,
-  license_name: 'Open Government Licence v3.0',
-  attribution_text: 'Quelle: NHS',
+  source_url: null,
+  preparation_minutes: 10,
+  cooking_minutes: 20,
   nutrients: {
     calories: 400,
     protein: 20,
@@ -18,11 +18,11 @@ const recipe = (id: number, title: string, categories: Array<'breakfast' | 'lunc
     fiber: 6,
     salt: 1,
   },
-  ingredients: ['1 test ingredient'],
+  ingredients: [{ amount: 1, unit: 'Stück', name: 'Testzutat' }],
   instructions: ['Test instruction.'],
 })
 
-test('filters stored recipes by their official NHS category', async ({ page }) => {
+test('filters personal recipes by category', async ({ page }) => {
   await page.route('**/api/health', async (route) => {
     await route.fulfill({ json: { status: 'ok' } })
   })

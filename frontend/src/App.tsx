@@ -6,15 +6,24 @@ import {
   type RuleEvaluation,
 } from './api/dayPlans'
 import { getHealth } from './api/health'
-import { importNhsRecipes, type ImportRun } from './api/imports'
-import { getRecipes, type Recipe, type RecipeCategory } from './api/recipes'
+import {
+  createRecipe,
+  deleteRecipe,
+  getRecipes,
+  updateRecipe,
+  type Recipe,
+  type RecipeCategory,
+  type RecipeIngredient,
+  type RecipeInput,
+} from './api/recipes'
 import './App.css'
 
 type SystemStatus = 'checking' | 'ready' | 'unavailable'
 type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
-type ImportStatus = 'idle' | 'loading' | 'success' | 'error'
 type RecipeStatus = 'loading' | 'success' | 'error'
+type SaveStatus = 'idle' | 'loading' | 'error'
 type AppPage = 'planner' | 'recipes'
+type EditableIngredient = Omit<RecipeIngredient, 'amount'> & { amount: number | '' }
 
 const metricNames: Record<RuleEvaluation['metric'], string> = {
   calories: 'Kalorien',
@@ -30,21 +39,6 @@ const metricUnits: Record<RuleEvaluation['metric'], string> = {
   carbs: 'g',
 }
 
-const importFieldNames: Record<string, string> = {
-  title: 'Titel',
-  servings: 'Portionszahl',
-  calories: 'Kalorien',
-  protein: 'Protein',
-  carbs: 'Kohlenhydrate',
-  fat: 'Fett',
-  sugar: 'Zucker',
-  saturated_fat: 'Gesättigte Fettsäuren',
-  fiber: 'Ballaststoffe',
-  salt: 'Salz',
-  ingredients: 'Zutaten',
-  instructions: 'Zubereitung',
-}
-
 const categoryNames: Record<RecipeCategory, string> = {
   breakfast: 'Frühstück',
   lunch: 'Mittagessen',
@@ -58,10 +52,11 @@ function App() {
   const [page, setPage] = useState<AppPage>(() => pageFromPath())
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking')
   const [requestStatus, setRequestStatus] = useState<RequestStatus>('idle')
-  const [importStatus, setImportStatus] = useState<ImportStatus>('idle')
-  const [importResult, setImportResult] = useState<ImportRun | null>(null)
   const [recipeStatus, setRecipeStatus] = useState<RecipeStatus>('loading')
   const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null)
+  const [recipeEditorVersion, setRecipeEditorVersion] = useState(0)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [result, setResult] = useState<DayPlansResponse | null>(null)
   const [selectedPlanIndex, setSelectedPlanIndex] = useState<number | null>(null)
   const [selectedMeals, setSelectedMeals] = useState<RecipeCategory[]>([
@@ -140,25 +135,38 @@ function App() {
     setSelectedPlanIndex(null)
   }
 
-  async function handleImport() {
-    setImportStatus('loading')
-    setImportResult(null)
+  async function handleRecipeSave(input: RecipeInput) {
+    setSaveStatus('loading')
     try {
-      const nextResult = await importNhsRecipes()
-      setImportResult(nextResult)
-      setImportStatus('success')
-      if (nextResult.created + nextResult.updated + nextResult.unchanged > 0) {
-        setSystemStatus('ready')
+      if (editingRecipe) {
+        await updateRecipe(editingRecipe.id, input)
+      } else {
+        await createRecipe(input)
       }
-      try {
-        setRecipes(await getRecipes())
-        setRecipeStatus('success')
-      } catch {
-        setRecipeStatus('error')
-      }
+      setRecipes(await getRecipes())
+      setEditingRecipe(null)
+      setRecipeEditorVersion((current) => current + 1)
+      setRecipeStatus('success')
+      setSaveStatus('idle')
     } catch {
-      setImportStatus('error')
+      setSaveStatus('error')
     }
+  }
+
+  async function handleRecipeDelete(recipe: Recipe) {
+    if (!window.confirm(`„${recipe.title}“ wirklich löschen?`)) return
+    try {
+      await deleteRecipe(recipe.id)
+      setRecipes((current) => current.filter((item) => item.id !== recipe.id))
+      if (editingRecipe?.id === recipe.id) setEditingRecipe(null)
+    } catch {
+      setRecipeStatus('error')
+    }
+  }
+
+  function handleRecipeEdit(recipe: Recipe) {
+    setEditingRecipe(recipe)
+    setSaveStatus('idle')
   }
 
   return (
@@ -251,69 +259,298 @@ function App() {
       ) : (
         <>
           <section className="intro">
-            <p className="eyebrow">Rezeptbestand</p>
-            <h1>Die Grundlage deiner Tagespläne.</h1>
+            <p className="eyebrow">Meine Rezepte</p>
+            <h1>Plane mit Gerichten, die wirklich zu dir passen.</h1>
             <p className="intro-copy">
-              Hier siehst du alle gespeicherten Quellenrezepte und ihre
-              Nährwerte pro Portion.
+              Hinterlege deine eigenen Rezepte mit Portionszahl und Nährwerten.
+              PrepPilot verwendet genau diese Angaben für deine Tagespläne.
             </p>
           </section>
 
-          <section className="import-control" aria-labelledby="import-heading">
-            <div>
-              <p className="eyebrow">NHS-Import</p>
-              <h2 id="import-heading">NHS-Rezeptkatalog synchronisieren</h2>
-              <p>
-                PrepPilot findet Hauptgerichte, Snacks und Getränke automatisch.
-                Nachtisch wird ausgeschlossen.
-              </p>
-            </div>
-            <button type="button" onClick={handleImport} disabled={importStatus === 'loading'}>
-              {importStatus === 'loading' ? 'Rezepte werden importiert …' : 'NHS-Katalog synchronisieren'}
-            </button>
-            {importResult && (
-              <div className="import-result" role="status">
-                <p className="notice">
-                  {importResult.created} neu · {importResult.updated} aktualisiert ·{' '}
-                  {importResult.unchanged} unverändert · {importResult.rejected} abgelehnt
-                </p>
-                {importResult.rejected > 0 && (
-                  <div className="import-rejections">
-                    <strong>Nicht importiert</strong>
-                    <ul>
-                      {importResult.items
-                        .filter((item) => item.status === 'rejected')
-                        .map((item) => (
-                          <li key={item.source_url}>
-                            <a href={item.source_url} target="_blank" rel="noreferrer">
-                              {recipeNameFromUrl(item.source_url)}
-                            </a>
-                            <span>{describeImportReason(item.reason)}</span>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-            {importStatus === 'error' && (
-              <p className="notice notice--error">Der Rezeptimport ist fehlgeschlagen.</p>
-            )}
-          </section>
+          <RecipeEditor
+            key={`${editingRecipe?.id ?? 'new'}-${recipeEditorVersion}`}
+            recipe={editingRecipe}
+            status={saveStatus}
+            onSave={handleRecipeSave}
+            onCancel={() => {
+              setEditingRecipe(null)
+              setSaveStatus('idle')
+            }}
+          />
 
-          <RecipeInventory status={recipeStatus} recipes={recipes} />
+          <RecipeInventory
+            status={recipeStatus}
+            recipes={recipes}
+            onEdit={handleRecipeEdit}
+            onDelete={handleRecipeDelete}
+          />
         </>
       )}
     </main>
   )
 }
 
+function RecipeEditor({
+  recipe,
+  status,
+  onSave,
+  onCancel,
+}: {
+  recipe: Recipe | null
+  status: SaveStatus
+  onSave: (input: RecipeInput) => Promise<void>
+  onCancel: () => void
+}) {
+  const [categories, setCategories] = useState<RecipeCategory[]>(
+    recipe?.categories ?? ['dinner'],
+  )
+  const [ingredients, setIngredients] = useState<EditableIngredient[]>(
+    recipe?.ingredients ?? [{ amount: '', unit: 'g', name: '' }],
+  )
+
+  function toggleCategory(category: RecipeCategory) {
+    setCategories((current) => {
+      if (current.includes(category)) {
+        return current.length === 1
+          ? current
+          : current.filter((item) => item !== category)
+      }
+      return mealCategories.filter((item) => (
+        current.includes(item) || item === category
+      ))
+    })
+  }
+
+  function updateIngredient(
+    index: number,
+    field: keyof EditableIngredient,
+    value: string,
+  ) {
+    setIngredients((current) => current.map((ingredient, ingredientIndex) => (
+      ingredientIndex === index
+        ? {
+            ...ingredient,
+            [field]: field === 'amount' ? (value === '' ? '' : Number(value)) : value,
+          }
+        : ingredient
+    )))
+  }
+
+  function addIngredient() {
+    setIngredients((current) => [
+      ...current,
+      { amount: '', unit: 'g', name: '' },
+    ])
+  }
+
+  function removeIngredient(index: number) {
+    setIngredients((current) => current.filter((_, ingredientIndex) => (
+      ingredientIndex !== index
+    )))
+  }
+
+  async function handleRecipeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    await onSave({
+      title: String(form.get('title')),
+      categories,
+      servings: Number(form.get('servings')),
+      calories_per_serving: Number(form.get('calories_per_serving')),
+      protein_per_serving: Number(form.get('protein_per_serving')),
+      carbs_per_serving: Number(form.get('carbs_per_serving')),
+      fat_per_serving: Number(form.get('fat_per_serving')),
+      sugar_per_serving: optionalNumber(form.get('sugar_per_serving')),
+      saturated_fat_per_serving: optionalNumber(form.get('saturated_fat_per_serving')),
+      fiber_per_serving: optionalNumber(form.get('fiber_per_serving')),
+      salt_per_serving: optionalNumber(form.get('salt_per_serving')),
+      ingredients: ingredients.map((ingredient) => ({
+        ...ingredient,
+        amount: Number(ingredient.amount),
+      })),
+      instructions: splitLines(form.get('instructions')),
+      preparation_minutes: optionalNumber(form.get('preparation_minutes')),
+      cooking_minutes: optionalNumber(form.get('cooking_minutes')),
+      source_url: optionalText(form.get('source_url')),
+    })
+  }
+
+  return (
+    <section className="recipe-editor" aria-labelledby="recipe-editor-heading">
+      <div>
+        <p className="eyebrow">{recipe ? 'Rezept bearbeiten' : 'Neues Rezept'}</p>
+        <h2 id="recipe-editor-heading">
+          {recipe ? recipe.title : 'Eigenes Rezept hinzufügen'}
+        </h2>
+        <p>Alle Nährwerte beziehen sich auf eine Portion.</p>
+      </div>
+      <form onSubmit={handleRecipeSubmit}>
+        <label className="field recipe-title-field">
+          <span>Rezeptname</span>
+          <input name="title" defaultValue={recipe?.title ?? ''} required />
+        </label>
+        <RecipeNumberField name="servings" label="Rezept ergibt" unit="Portionen" value={recipe?.servings ?? 4} />
+        <fieldset className="recipe-category-selector">
+          <legend>Geeignet für</legend>
+          <div>
+            {mealCategories.map((category) => (
+              <label key={category}>
+                <input
+                  type="checkbox"
+                  checked={categories.includes(category)}
+                  onChange={() => toggleCategory(category)}
+                  disabled={categories.length === 1 && categories[0] === category}
+                />
+                <span>{categoryNames[category]}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div className="recipe-form-section">
+          <h3>Nährwerte pro Portion</h3>
+          <div className="recipe-number-grid">
+            <RecipeNumberField name="calories_per_serving" label="Kalorien" unit="kcal" value={recipe?.nutrients.calories ?? 500} />
+            <RecipeNumberField name="protein_per_serving" label="Protein" unit="g" value={recipe?.nutrients.protein ?? 30} allowZero />
+            <RecipeNumberField name="carbs_per_serving" label="Kohlenhydrate" unit="g" value={recipe?.nutrients.carbs ?? 50} allowZero />
+            <RecipeNumberField name="fat_per_serving" label="Fett" unit="g" value={recipe?.nutrients.fat ?? 15} allowZero />
+            <RecipeNumberField name="sugar_per_serving" label="Zucker, optional" unit="g" value={recipe?.nutrients.sugar ?? ''} optional />
+            <RecipeNumberField name="saturated_fat_per_serving" label="Gesättigte Fettsäuren, optional" unit="g" value={recipe?.nutrients.saturated_fat ?? ''} optional />
+            <RecipeNumberField name="fiber_per_serving" label="Ballaststoffe, optional" unit="g" value={recipe?.nutrients.fiber ?? ''} optional />
+            <RecipeNumberField name="salt_per_serving" label="Salz, optional" unit="g" value={recipe?.nutrients.salt ?? ''} optional />
+          </div>
+        </div>
+        <div className="recipe-text-grid">
+          <fieldset className="ingredient-editor">
+            <legend>Zutaten für das vollständige Rezept</legend>
+            <div className="ingredient-rows">
+              {ingredients.map((ingredient, index) => (
+                <div className="ingredient-row" key={index}>
+                  <label>
+                    <span>Menge</span>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={ingredient.amount}
+                      onChange={(event) => updateIngredient(index, 'amount', event.target.value)}
+                      aria-label={`Menge Zutat ${index + 1}`}
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>Einheit</span>
+                    <input
+                      value={ingredient.unit}
+                      onChange={(event) => updateIngredient(index, 'unit', event.target.value)}
+                      aria-label={`Einheit Zutat ${index + 1}`}
+                      placeholder="g"
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>Zutat</span>
+                    <input
+                      value={ingredient.name}
+                      onChange={(event) => updateIngredient(index, 'name', event.target.value)}
+                      aria-label={`Name Zutat ${index + 1}`}
+                      placeholder="Kartoffeln"
+                      required
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="ingredient-remove"
+                    onClick={() => removeIngredient(index)}
+                    disabled={ingredients.length === 1}
+                    aria-label={`Zutat ${index + 1} entfernen`}
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="secondary-button" onClick={addIngredient}>
+              Zutat hinzufügen
+            </button>
+          </fieldset>
+          <label className="field">
+            <span>Zubereitung – ein Schritt pro Zeile</span>
+            <textarea name="instructions" rows={7} defaultValue={recipe?.instructions.join('\n') ?? ''} required />
+          </label>
+        </div>
+        <div className="recipe-number-grid recipe-number-grid--optional">
+          <RecipeNumberField name="preparation_minutes" label="Vorbereitung, optional" unit="Min." value={recipe?.preparation_minutes ?? ''} optional />
+          <RecipeNumberField name="cooking_minutes" label="Kochzeit, optional" unit="Min." value={recipe?.cooking_minutes ?? ''} optional />
+          <label className="field recipe-source-field">
+            <span>Quellenlink, optional</span>
+            <input name="source_url" type="url" defaultValue={recipe?.source_url ?? ''} placeholder="https://…" />
+          </label>
+        </div>
+        {status === 'error' && (
+          <p className="notice notice--error">Das Rezept konnte nicht gespeichert werden.</p>
+        )}
+        <div className="recipe-form-actions">
+          <button type="submit" disabled={status === 'loading'}>
+            {status === 'loading'
+              ? 'Rezept wird gespeichert …'
+              : recipe
+                ? 'Änderungen speichern'
+                : 'Rezept speichern'}
+          </button>
+          {recipe && (
+            <button type="button" className="secondary-button" onClick={onCancel}>
+              Bearbeiten abbrechen
+            </button>
+          )}
+        </div>
+      </form>
+    </section>
+  )
+}
+
+function RecipeNumberField({
+  name,
+  label,
+  unit,
+  value,
+  optional = false,
+  allowZero = false,
+}: {
+  name: string
+  label: string
+  unit: string
+  value: number | ''
+  optional?: boolean
+  allowZero?: boolean
+}) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <span className="number-input">
+        <input
+          name={name}
+          type="number"
+          min={allowZero || optional ? '0' : '0.01'}
+          step="0.01"
+          defaultValue={value}
+          required={!optional}
+        />
+        <small>{unit}</small>
+      </span>
+    </label>
+  )
+}
+
 function RecipeInventory({
   status,
   recipes,
+  onEdit,
+  onDelete,
 }: {
   status: RecipeStatus
   recipes: Recipe[]
+  onEdit: (recipe: Recipe) => void
+  onDelete: (recipe: Recipe) => void
 }) {
   const [categoryFilter, setCategoryFilter] = useState<'all' | RecipeCategory>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -327,11 +564,13 @@ function RecipeInventory({
     <section className="recipe-inventory" aria-labelledby="recipes-heading">
       <div className="inventory-heading">
         <div>
-          <p className="eyebrow">PostgreSQL-Bestand</p>
-          <h2 id="recipes-heading">Gespeicherte Rezepte</h2>
+          <p className="eyebrow">Persönlicher Bestand</p>
+          <h2 id="recipes-heading">Meine gespeicherten Rezepte</h2>
         </div>
         {status === 'success' && (
-          <strong className="inventory-count">{recipes.length} Rezepte</strong>
+          <strong className="inventory-count">
+            {recipes.length} {recipes.length === 1 ? 'Rezept' : 'Rezepte'}
+          </strong>
         )}
       </div>
 
@@ -372,11 +611,11 @@ function RecipeInventory({
       {status === 'loading' && <p>Rezeptbestand wird geladen …</p>}
       {status === 'error' && (
         <p className="notice notice--error">
-          Der Rezeptbestand ist noch nicht verfügbar. Starte oben den Import.
+          Der Rezeptbestand konnte nicht geladen werden.
         </p>
       )}
       {status === 'success' && recipes.length === 0 && (
-        <p>Noch keine Rezepte gespeichert.</p>
+        <p>Noch keine eigenen Rezepte gespeichert. Lege oben dein erstes an.</p>
       )}
       {recipes.length > 0 && (
         <div className="recipe-list">
@@ -409,7 +648,9 @@ function RecipeInventory({
                   <h3>Zutaten für {recipe.servings} Portionen</h3>
                   <ul>
                     {recipe.ingredients.map((ingredient, index) => (
-                      <li key={`${index}:${ingredient}`}>{ingredient}</li>
+                      <li key={`${index}:${ingredient.name}`}>
+                        {formatIngredient(ingredient)}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -423,10 +664,15 @@ function RecipeInventory({
                 </div>
               </div>
               <p className="recipe-source">
-                <a href={recipe.source_url} target="_blank" rel="noreferrer">
-                  Originalrezept beim NHS
-                </a>
-                <small>{recipe.attribution_text} · {recipe.license_name}</small>
+                {recipe.source_url ? (
+                  <a href={recipe.source_url} target="_blank" rel="noreferrer">
+                    Optionale Rezeptquelle öffnen
+                  </a>
+                ) : <small>Eigenes Rezept ohne externe Quelle</small>}
+                <span className="recipe-actions">
+                  <button type="button" onClick={() => onEdit(recipe)}>Bearbeiten</button>
+                  <button type="button" onClick={() => onDelete(recipe)}>Löschen</button>
+                </span>
               </p>
             </details>
           ))}
@@ -511,7 +757,7 @@ function PlanResults({
             <span className="selection-check" aria-hidden="true">✓</span>
             <div>
               <strong>Vorschlag {selectedPlanNumber} ausgewählt</strong>
-              <p>Dieser Vorschlag kombiniert vollständige Quellenrezepte.</p>
+              <p>Dieser Vorschlag kombiniert deine gespeicherten Rezepte.</p>
             </div>
           </div>
         </>
@@ -578,8 +824,7 @@ function PlanCard({
             <summary>
               <span>
                 <small>
-                  {categoryNames[recipe.category]} · {recipe.portions}{' '}
-                  {recipe.portions === 1 ? 'Portion eingeplant' : 'Portionen eingeplant'}
+                  {categoryNames[recipe.category]} · 1 Portion eingeplant
                 </small>
                 <strong>{recipe.title}</strong>
               </span>
@@ -587,18 +832,21 @@ function PlanCard({
             </summary>
             <p className="ingredient-note">
               Die Zutatenmengen gehören zum vollständigen Rezept für{' '}
-              {recipe.recipe_servings} Portionen. PrepPilot rechnet sie noch nicht
-              auf die eingeplante Portionszahl um.
+              {recipe.recipe_servings} Portionen. Dieser Tagesplan verwendet davon
+              genau eine Portion.
             </p>
             <ul>
               {recipe.ingredients.map((ingredient, index) => (
-                <li key={`${index}:${ingredient}`}><span>{ingredient}</span></li>
+                <li key={`${index}:${ingredient.name}`}>
+                  <span>{formatIngredient(ingredient)}</span>
+                </li>
               ))}
             </ul>
-            <a href={recipe.source_url} target="_blank" rel="noreferrer">
-              Originalrezept beim NHS
-            </a>
-            <small>{recipe.attribution_text} · {recipe.license_name}</small>
+            {recipe.source_url && (
+              <a href={recipe.source_url} target="_blank" rel="noreferrer">
+                Rezeptquelle öffnen
+              </a>
+            )}
           </details>
         ))}
       </div>
@@ -703,26 +951,25 @@ function pageFromPath(): AppPage {
   return window.location.pathname === '/recipes' ? 'recipes' : 'planner'
 }
 
-function recipeNameFromUrl(sourceUrl: string) {
-  try {
-    const segments = new URL(sourceUrl).pathname.split('/').filter(Boolean)
-    const slug = segments.at(-1)
-    return slug ? slug.replaceAll('-', ' ') : sourceUrl
-  } catch {
-    return sourceUrl
-  }
+function splitLines(value: FormDataEntryValue | null) {
+  return String(value ?? '')
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
 }
 
-function describeImportReason(reason: string | null) {
-  if (!reason) return 'Unbekannter Importfehler'
-  if (reason === 'recipe JSON-LD missing') {
-    return 'Strukturierte Rezeptdaten fehlen auf der Quellseite.'
-  }
-  const missingField = reason.match(/^(\w+) missing$/)?.[1]
-  if (missingField && importFieldNames[missingField]) {
-    return `Pflichtfeld „${importFieldNames[missingField]}“ fehlt auf der Quellseite.`
-  }
-  return reason
+function optionalNumber(value: FormDataEntryValue | null) {
+  const text = String(value ?? '').trim()
+  return text === '' ? null : Number(text)
+}
+
+function optionalText(value: FormDataEntryValue | null) {
+  const text = String(value ?? '').trim()
+  return text === '' ? null : text
+}
+
+function formatIngredient(ingredient: RecipeIngredient) {
+  return `${formatNumber(ingredient.amount)} ${ingredient.unit} ${ingredient.name}`
 }
 
 export default App

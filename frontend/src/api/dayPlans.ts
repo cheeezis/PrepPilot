@@ -1,4 +1,8 @@
-import type { RecipeCategory } from './recipes'
+import type {
+  NutrientValues,
+  RecipeCategory,
+  RecipeIngredient,
+} from './recipes'
 
 export type DayPlanRequest = {
   calories: number
@@ -6,17 +10,6 @@ export type DayPlanRequest = {
   fat_maximum: number
   carbs: number
   meal_categories: RecipeCategory[]
-}
-
-export type NutrientValues = {
-  calories: number
-  protein: number
-  carbs: number
-  fat: number
-  sugar: number | null
-  saturated_fat: number | null
-  fiber: number | null
-  salt: number | null
 }
 
 export type RuleEvaluation = {
@@ -33,13 +26,10 @@ export type PlannedRecipe = {
   id: number
   title: string
   category: 'breakfast' | 'lunch' | 'dinner' | 'snack'
-  portions: number
   recipe_servings: number
-  source_url: string
-  license_name: string
-  attribution_text: string
+  source_url: string | null
   nutrients: NutrientValues
-  ingredients: string[]
+  ingredients: RecipeIngredient[]
   instructions: string[]
 }
 
