@@ -14,10 +14,11 @@ export default function App() {
 
   useEffect(() => {
     const controller = new AbortController()
+    let active = true
     getHealth(controller.signal)
-      .then(() => setSystemState('ready'))
-      .catch(() => setSystemState('unavailable'))
-    return () => controller.abort()
+      .then(() => { if (active) setSystemState('ready') })
+      .catch(() => { if (active) setSystemState('unavailable') })
+    return () => { active = false; controller.abort() }
   }, [])
 
   return (
@@ -33,11 +34,11 @@ export default function App() {
       </header>
 
       <section className="intro" aria-labelledby="page-title">
-        <p className="eyebrow">V5 · Rezeptbasis</p>
-        <h1 id="page-title">Deine Lebensmittel. Deine Rezepte.</h1>
+        <p className="eyebrow">V5 · Wochenplanung</p>
+        <h1 id="page-title">Deine Ernährung. Deine Woche.</h1>
         <p>
-          Hinterlege Nährwerte einmal und kombiniere sie zu Rezepten. PrepPilot
-          berechnet daraus automatisch die Nährwerte pro Portion.
+          Pflege deine Lebensmittel und Rezepte. PrepPilot plant daraus eine
+          vollständige Woche nach deinen Nährwertzielen.
         </p>
       </section>
 

@@ -13,8 +13,12 @@ export function WeeklyPlans() {
 
   useEffect(() => {
     const controller = new AbortController()
-    listWeeklyPlans(controller.signal).then(setPlans).catch((reason: unknown) => setError(message(reason))).finally(() => setLoading(false))
-    return () => controller.abort()
+    let active = true
+    listWeeklyPlans(controller.signal)
+      .then((items) => { if (active) setPlans(items) })
+      .catch((reason: unknown) => { if (active) setError(message(reason)) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false; controller.abort() }
   }, [])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
