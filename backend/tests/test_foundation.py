@@ -21,4 +21,6 @@ def test_food_catalog_is_the_only_domain_api() -> None:
         "/api/foods",
         "/api/foods/{food_id}",
         "/api/health",
+        "/api/recipes",
+        "/api/recipes/{recipe_id}",
     }

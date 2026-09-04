@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from preppilot_api.database import get_session
-from preppilot_api.models import Food
+from preppilot_api.models import Food, RecipeIngredient
 
 router = APIRouter(prefix="/api/foods", tags=["foods"])
 DatabaseSession = Annotated[Session, Depends(get_session)]
@@ -86,6 +86,13 @@ def delete_food(food_id: int, session: DatabaseSession) -> Response:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Lebensmittel nicht gefunden",
+        )
+    if session.scalar(
+        select(RecipeIngredient.id).where(RecipeIngredient.food_id == food_id).limit(1)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Lebensmittel wird bereits in einem Rezept verwendet",
         )
     session.delete(food)
     _commit(
