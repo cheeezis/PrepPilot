@@ -37,7 +37,8 @@ test('creates, edits and deletes a personal recipe', async ({ page }) => {
   ))
   await page.getByRole('button', { name: 'Rezept speichern' }).click()
   const createResponse = await createResponsePromise
-  createdRecipeIds.push((await createResponse.json()).id as number)
+  const recipeId = (await createResponse.json()).id as number
+  createdRecipeIds.push(recipeId)
 
   const card = page.locator('.recipe-card').filter({ hasText: originalTitle })
   await expect(card).toHaveCount(1)
@@ -52,4 +53,5 @@ test('creates, edits and deletes a personal recipe', async ({ page }) => {
   page.once('dialog', (dialog) => dialog.accept())
   await updatedCard.getByRole('button', { name: 'Löschen' }).click()
   await expect(updatedCard).toHaveCount(0)
+  createdRecipeIds.splice(createdRecipeIds.indexOf(recipeId), 1)
 })

@@ -7,7 +7,7 @@ afterEach(() => {
 
 describe('getHealth', () => {
   it('returns the system status for a successful response', async () => {
-    const health = { status: 'ok', database: 'ok', recipes: 'ok' }
+    const health = { status: 'ok', database: 'ok', recipes: 'empty' }
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify(health), {
         status: 200,

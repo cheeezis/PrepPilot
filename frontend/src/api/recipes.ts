@@ -1,6 +1,15 @@
-import type { NutrientValues } from './dayPlans'
-
 export type RecipeCategory = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+
+export type NutrientValues = {
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  sugar: number | null
+  saturated_fat: number | null
+  fiber: number | null
+  salt: number | null
+}
 
 export type RecipeIngredient = {
   amount: number
