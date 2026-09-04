@@ -19,7 +19,8 @@ Lebensmittelkatalog, Rezeptverwaltung und ein persistentes Wochenmodell bilden
 die umgesetzte fachliche Basis. Die Wochenplanung bewertet vorhandene Rezepte
 reproduzierbar anhand der festgelegten Nährwertprioritäten und weist tägliche
 Abweichungen aus. Der definierte V5-MVP ist vollständig umgesetzt und lokal
-abgenommen.
+abgenommen. Als erste Erweiterung nach dem MVP berechnet jeder gespeicherte
+Wochenplan eine gruppierte, abhakbare Einkaufsliste.
 
 Der verbindliche Umfang und die Umsetzungsreihenfolge stehen im
 [`V5-Plan`](docs/v5-plan.md). Frühere Produktphasen dokumentiert die

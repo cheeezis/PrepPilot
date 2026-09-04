@@ -20,6 +20,8 @@ Stand: 4. September 2026
 - Abschnitt 6 ist mit automatisierten Tests, einer frischen Migration, dem
   lokalen Windows-Start und einer vollständigen Beispielwoche abgeschlossen.
 - Der in diesem Dokument definierte V5-MVP ist damit umgesetzt.
+- Als erste Erweiterung nach dem MVP wurde eine aus gespeicherten Wochenplänen
+  berechnete, gruppierte und lokal abhakbare Einkaufsliste ergänzt.
 
 ## Ziel
 
@@ -295,7 +297,6 @@ zulässig, wenn sie zu den übrigen Wochenzielen passt.
 
 - externe Rezept- oder Lebensmitteldatenquellen
 - automatische Einheitenerkennung und Übernahme von Packungsgrößen
-- Einkaufsliste
 - Vorratshaltung
 - Allergene und Ernährungsformen
 - Favoriten, Ausschlüsse und manueller Rezepttausch

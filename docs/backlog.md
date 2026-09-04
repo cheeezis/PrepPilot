@@ -3,6 +3,18 @@
 Diese Datei enthält Funktionen, die bewusst nicht zum ersten V5-MVP gehören.
 Der verbindliche MVP-Umfang steht in [`v5-plan.md`](v5-plan.md).
 
+## Priorisierte Reihenfolge nach dem MVP
+
+1. Abwechslung und Planqualität
+2. Wochenplan bearbeiten und Mahlzeiten austauschen
+3. mehrere Planvorschläge
+4. Meal-Prep-Logistik
+5. Ernährungsziele und Ernährungsmodi
+6. Historie und Auswertung
+
+Die grundlegende Einkaufsliste wurde direkt nach dem MVP umgesetzt. Weitere
+Einkaufsfunktionen bleiben unten als späterer Ausbau festgehalten.
+
 ## Wochenplan bearbeiten
 
 - einzelne Mahlzeit ablehnen oder entfernen
@@ -52,3 +64,10 @@ Der verbindliche MVP-Umfang steht in [`v5-plan.md`](v5-plan.md).
 - Varianten desselben Lebensmittels verständlich gruppieren und unterscheiden
 - bei konkretem Bedarf weitere Nährwerte wie Ballaststoffe, Zucker, gesättigte
   Fettsäuren oder Salz erfassen und berechnen
+
+## Einkaufsliste und Vorrat
+
+- vorhandene Vorräte von der berechneten Einkaufsliste abziehen
+- benötigte Mengen auf tatsächlich kaufbare Packungsgrößen aufrunden
+- eigene bevorzugte Packungsgrößen pro Lebensmittel pflegen
+- Einkaufsliste exportieren oder mit anderen Geräten teilen
