@@ -30,6 +30,7 @@ def test_weekly_plan_is_generated_persisted_and_reloaded(
     assert [item["portion_number"] for item in batch_assignments] == list(
         range(1, 7)
     )
+    assert len({item["day_index"] for item in batch_assignments}) == 6
     assert {item["recipe_servings"] for item in batch_assignments} == {6}
 
     assert client.get(f"/api/weekly-plans/{plan['id']}").json() == plan
@@ -99,6 +100,69 @@ def test_unknown_plan_has_no_shopping_list(client: TestClient) -> None:
     assert client.get("/api/weekly-plans/404/shopping-list").status_code == 404
 
 
+def test_meal_replacements_are_suggested_and_applied(client: TestClient) -> None:
+    food_id = create_food(client)
+    breakfast_ids = {
+        create_recipe(client, title, 1, ["breakfast"], food_id)
+        for title in ("Frühstück A", "Frühstück B")
+    }
+    create_recipe(client, "Mittagessen", 1, ["lunch"], food_id)
+    create_recipe(client, "Abendessen", 1, ["dinner"], food_id)
+    create_recipe(client, "Snack", 1, ["snack"], food_id)
+    plan = client.post("/api/weekly-plans/generate", json=plan_payload()).json()
+    assignment = next(
+        item
+        for item in plan["assignments"]
+        if item["day_index"] == 0 and item["meal_role"] == "breakfast"
+    )
+    replacement_id = next(iter(breakfast_ids - {assignment["recipe_id"]}))
+
+    suggestions = client.get(
+        f"/api/weekly-plans/{plan['id']}/assignments/"
+        f"{assignment['id']}/replacements"
+    )
+
+    assert suggestions.status_code == 200
+    assert suggestions.json() == [
+        {
+            "recipe_id": replacement_id,
+            "recipe_title": "Frühstück B",
+            "daily_nutrition": plan["daily_nutrition"][0],
+        }
+    ]
+
+    replaced = client.patch(
+        f"/api/weekly-plans/{plan['id']}/assignments/{assignment['id']}",
+        json={"recipe_id": replacement_id},
+    )
+
+    assert replaced.status_code == 200
+    updated_assignment = next(
+        item
+        for item in replaced.json()["assignments"]
+        if item["id"] == assignment["id"]
+    )
+    assert updated_assignment["recipe_id"] == replacement_id
+    assert updated_assignment["portion_number"] is None
+    assert client.get(f"/api/weekly-plans/{plan['id']}").json() == replaced.json()
+
+
+def test_invalid_meal_replacement_is_rejected(client: TestClient) -> None:
+    create_complete_recipe_set(client)
+    plan = client.post("/api/weekly-plans/generate", json=plan_payload()).json()
+    assignment = plan["assignments"][0]
+
+    response = client.patch(
+        f"/api/weekly-plans/{plan['id']}/assignments/{assignment['id']}",
+        json={"recipe_id": assignment["recipe_id"]},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == (
+        "Dieses Rezept ist für diese Mahlzeit kein gültiger Ersatz"
+    )
+
+
 def test_generation_optimizes_targets_in_documented_priority_order(
     client: TestClient,
 ) -> None:
@@ -145,6 +209,60 @@ def test_generation_optimizes_targets_in_documented_priority_order(
     assert [item["recipe_id"] for item in repeated.json()["assignments"]] == [
         item["recipe_id"] for item in first.json()["assignments"]
     ]
+
+
+def test_generation_avoids_duplicate_recipes_within_a_day(
+    client: TestClient,
+) -> None:
+    food_id = create_food(client)
+    recipe_ids = {
+        create_recipe(
+            client,
+            f"Gleichwertige Mahlzeit {number}",
+            1,
+            ["breakfast", "lunch", "dinner"],
+            food_id,
+        )
+        for number in range(1, 4)
+    }
+    payload = plan_payload()
+    payload["snacks_per_day"] = 0
+
+    response = client.post("/api/weekly-plans/generate", json=payload)
+
+    assert response.status_code == 201
+    for day_index in range(7):
+        daily_recipe_ids = {
+            item["recipe_id"]
+            for item in response.json()["assignments"]
+            if item["day_index"] == day_index
+        }
+        assert daily_recipe_ids == recipe_ids
+
+
+def test_generation_rotates_equally_suitable_single_recipes(
+    client: TestClient,
+) -> None:
+    food_id = create_food(client)
+    breakfast_ids = {
+        create_recipe(client, title, 1, ["breakfast"], food_id)
+        for title in ("Frühstück A", "Frühstück B")
+    }
+    create_recipe(client, "Mittagessen", 1, ["lunch"], food_id)
+    create_recipe(client, "Abendessen", 1, ["dinner"], food_id)
+    payload = plan_payload()
+    payload["snacks_per_day"] = 0
+
+    response = client.post("/api/weekly-plans/generate", json=payload)
+
+    assert response.status_code == 201
+    breakfasts = [
+        item["recipe_id"]
+        for item in response.json()["assignments"]
+        if item["meal_role"] == "breakfast"
+    ]
+    assert set(breakfasts) == breakfast_ids
+    assert abs(breakfasts.count(min(breakfast_ids)) - breakfasts.count(max(breakfast_ids))) == 1
 
 
 def create_complete_recipe_set(client: TestClient) -> None:

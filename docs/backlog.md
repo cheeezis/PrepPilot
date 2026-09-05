@@ -17,9 +17,18 @@ Einkaufsfunktionen bleiben unten als späterer Ausbau festgehalten.
 
 ## Wochenplan bearbeiten
 
-- einzelne Mahlzeit ablehnen oder entfernen
-- passende Ersatzmahlzeiten vorschlagen
-- betroffene Meal-Prep-Batches und Tagesnährwerte partiell neu planen
+Bereits umgesetzt:
+
+- für eine einzelne Mahlzeit bis zu drei passende Ersatzrezepte vorschlagen
+- erwartete Tagesnährwerte vor der Auswahl anzeigen
+- ausgewählten Ersatz dauerhaft übernehmen und Tageswerte sowie Einkaufsliste
+  unmittelbar aktualisieren
+- einen Plan auch während des Austauschs jederzeit vollständig halten
+
+Noch offen:
+
+- einen vollständigen Meal-Prep-Batch gemeinsam austauschen
+- übrig bleibende Meal-Prep-Portionen ausdrücklich anzeigen und neu verteilen
 
 ## Planvorschläge
 
@@ -43,6 +52,14 @@ Einkaufsfunktionen bleiben unten als späterer Ausbau festgehalten.
   vom Nutzer eingegebenes Ziel übernimmt
 
 ## Abwechslung
+
+Bereits umgesetzt:
+
+- Meal-Prep-Portionen möglichst auf unterschiedliche Tage verteilen
+- bei gleich guten Nährwerten doppelte Rezepte innerhalb eines Tages vermeiden
+- gleichwertige Einzelrezepte innerhalb einer Woche abwechseln
+
+Noch offen:
 
 - vergangene Wochen bei neuen Vorschlägen berücksichtigen
 - kürzlich verwendete Rezepte bei gleichwertigen Plänen weniger stark

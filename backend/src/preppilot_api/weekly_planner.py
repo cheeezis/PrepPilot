@@ -1,3 +1,4 @@
+from collections import Counter
 from dataclasses import dataclass
 from decimal import Decimal
 from itertools import product
@@ -102,11 +103,19 @@ def _compatible_slots(
     assignments: dict[MealSlot, MealAssignment],
 ) -> list[MealSlot]:
     roles = {item.meal_role for item in recipe.meal_roles}
-    return [
+    compatible = [
         slot
         for slot in slots
         if slot not in assignments and slot.meal_role in roles
     ]
+    spread: list[MealSlot] = []
+    used_days: set[int] = set()
+    for slot in compatible:
+        if slot.day_index in used_days:
+            continue
+        spread.append(slot)
+        used_days.add(slot.day_index)
+    return spread if len(spread) >= recipe.servings else compatible
 
 
 def _fill_single_slots(
@@ -141,8 +150,18 @@ def _fill_single_slots(
             for slot, item in assignments.items()
             if slot.day_index == day_index
         ]
+        fixed_recipe_ids = [item.recipe.id for item in fixed]
+        recipe_usage = Counter(item.recipe.id for item in assignments.values())
         best: tuple[
-            tuple[Decimal, Decimal, Decimal, Decimal, tuple[int, ...]],
+            tuple[
+                Decimal,
+                Decimal,
+                Decimal,
+                Decimal,
+                int,
+                int,
+                tuple[int, ...],
+            ],
             tuple[Recipe, ...],
         ] | None = None
         for selected in product(*choices):
@@ -151,9 +170,13 @@ def _fill_single_slots(
                 for slot, recipe in zip(empty_slots, selected)
             ]
             nutrients = _sum_nutrients([*fixed, *selected_assignments], nutrition)
+            selected_recipe_ids = [recipe.id for recipe in selected]
+            daily_recipe_ids = [*fixed_recipe_ids, *selected_recipe_ids]
             score = (
                 *_nutrition_score(nutrients, targets),
-                tuple(recipe.id for recipe in selected),
+                len(daily_recipe_ids) - len(set(daily_recipe_ids)),
+                sum(recipe_usage[recipe.id] for recipe in selected),
+                tuple(selected_recipe_ids),
             )
             if best is None or score < best[0]:
                 best = (score, selected)

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Literal, cast
 
@@ -97,6 +97,16 @@ class ShoppingListItemResponse(BaseModel):
     equivalent_unit: str | None
 
 
+class MealReplacementSuggestionResponse(BaseModel):
+    recipe_id: int
+    recipe_title: str
+    daily_nutrition: DailyNutritionResponse
+
+
+class ReplaceMealRequest(BaseModel):
+    recipe_id: int
+
+
 @router.get("", response_model=list[WeeklyPlanResponse])
 def list_weekly_plans(session: DatabaseSession) -> list[WeeklyPlanResponse]:
     try:
@@ -130,6 +140,60 @@ def get_shopping_list(
         )
         for item in calculate_shopping_list(plan)
     ]
+
+
+@router.get(
+    "/{plan_id}/assignments/{assignment_id}/replacements",
+    response_model=list[MealReplacementSuggestionResponse],
+)
+def list_meal_replacements(
+    plan_id: int, assignment_id: int, session: DatabaseSession
+) -> list[MealReplacementSuggestionResponse]:
+    plan = _get_plan(plan_id, session)
+    assignment = _get_assignment(plan, assignment_id)
+    try:
+        recipes = list(session.scalars(select(Recipe).order_by(Recipe.id)).all())
+    except SQLAlchemyError as error:
+        raise _database_unavailable() from error
+    return [
+        MealReplacementSuggestionResponse(
+            recipe_id=recipe.id,
+            recipe_title=recipe.title,
+            daily_nutrition=_serialize_nutrients(
+                plan, assignment.day_index, nutrients
+            ),
+        )
+        for recipe, nutrients in _replacement_options(plan, assignment, recipes)[:3]
+    ]
+
+
+@router.patch(
+    "/{plan_id}/assignments/{assignment_id}",
+    response_model=WeeklyPlanResponse,
+)
+def replace_meal(
+    plan_id: int,
+    assignment_id: int,
+    request: ReplaceMealRequest,
+    session: DatabaseSession,
+) -> WeeklyPlanResponse:
+    plan = _get_plan(plan_id, session)
+    assignment = _get_assignment(plan, assignment_id)
+    try:
+        recipe = session.get(Recipe, request.recipe_id)
+    except SQLAlchemyError as error:
+        raise _database_unavailable() from error
+    if recipe is None or not _is_valid_replacement(plan, assignment, recipe):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Dieses Rezept ist für diese Mahlzeit kein gültiger Ersatz",
+        )
+    assignment.recipe = recipe
+    assignment.portion_number = None
+    plan.updated_at = datetime.now(UTC)
+    _commit(session)
+    session.refresh(plan)
+    return _serialize(plan)
 
 
 @router.post(
@@ -220,6 +284,18 @@ def _get_plan(plan_id: int, session: Session) -> WeeklyPlan:
     return plan
 
 
+def _get_assignment(plan: WeeklyPlan, assignment_id: int) -> MealAssignment:
+    assignment = next(
+        (item for item in plan.assignments if item.id == assignment_id), None
+    )
+    if assignment is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Mahlzeit nicht gefunden",
+        )
+    return assignment
+
+
 def _overlapping_plans(
     start_date: date, end_date: date, session: Session
 ) -> list[WeeklyPlan]:
@@ -281,10 +357,20 @@ def _serialize(plan: WeeklyPlan) -> WeeklyPlanResponse:
 def _serialize_daily_nutrition(
     plan: WeeklyPlan, day_index: int
 ) -> DailyNutritionResponse:
+    return _serialize_nutrients(plan, day_index, _daily_nutrients(plan, day_index))
+
+
+def _daily_nutrients(plan: WeeklyPlan, day_index: int) -> Nutrients:
     total = Nutrients()
     for assignment in plan.assignments:
         if assignment.day_index == day_index:
             total += calculate_recipe_nutrition(assignment.recipe).per_serving
+    return total
+
+
+def _serialize_nutrients(
+    plan: WeeklyPlan, day_index: int, total: Nutrients
+) -> DailyNutritionResponse:
     return DailyNutritionResponse(
         date=plan.start_date + timedelta(days=day_index),
         day_index=day_index,
@@ -302,6 +388,64 @@ def _serialize_daily_nutrition(
             total.carbohydrates_g - plan.carbohydrates_target_g
         ),
         fat_over_g=float(max(Decimal(0), total.fat_g - plan.fat_maximum_g)),
+    )
+
+
+def _replacement_options(
+    plan: WeeklyPlan,
+    assignment: MealAssignment,
+    recipes: list[Recipe],
+) -> list[tuple[Recipe, Nutrients]]:
+    current_nutrients = calculate_recipe_nutrition(assignment.recipe).per_serving
+    daily_without_current = (
+        _daily_nutrients(plan, assignment.day_index) - current_nutrients
+    )
+    options = [
+        (
+            recipe,
+            daily_without_current + calculate_recipe_nutrition(recipe).per_serving,
+        )
+        for recipe in recipes
+        if _is_valid_replacement(plan, assignment, recipe)
+    ]
+    return sorted(
+        options,
+        key=lambda option: (
+            *_nutrition_deviation(plan, option[1]),
+            sum(
+                item.recipe_id == option[0].id
+                for item in plan.assignments
+            ),
+            option[0].id,
+        ),
+    )
+
+
+def _is_valid_replacement(
+    plan: WeeklyPlan, assignment: MealAssignment, recipe: Recipe
+) -> bool:
+    roles = {item.meal_role for item in recipe.meal_roles}
+    recipes_on_day = {
+        item.recipe_id
+        for item in plan.assignments
+        if item.day_index == assignment.day_index and item.id != assignment.id
+    }
+    return (
+        recipe.id != assignment.recipe_id
+        and recipe.servings == 1
+        and assignment.meal_role in roles
+        and recipe.id not in recipes_on_day
+    )
+
+
+def _nutrition_deviation(
+    plan: WeeklyPlan, nutrients: Nutrients
+) -> tuple[Decimal, Decimal, Decimal, Decimal]:
+    return (
+        max(Decimal(0), plan.protein_minimum_g - nutrients.protein_g),
+        max(Decimal(0), nutrients.calories_kcal - plan.calories_maximum_kcal),
+        max(Decimal(0), nutrients.fat_g - plan.fat_maximum_g),
+        abs(nutrients.carbohydrates_g - plan.carbohydrates_target_g),
     )
 
 
