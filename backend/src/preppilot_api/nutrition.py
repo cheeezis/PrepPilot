@@ -19,6 +19,14 @@ class Nutrients:
             fat_g=self.fat_g + other.fat_g,
         )
 
+    def __sub__(self, other: "Nutrients") -> "Nutrients":
+        return Nutrients(
+            calories_kcal=self.calories_kcal - other.calories_kcal,
+            protein_g=self.protein_g - other.protein_g,
+            carbohydrates_g=self.carbohydrates_g - other.carbohydrates_g,
+            fat_g=self.fat_g - other.fat_g,
+        )
+
     def divided_by(self, divisor: int) -> "Nutrients":
         return Nutrients(
             calories_kcal=self.calories_kcal / divisor,
