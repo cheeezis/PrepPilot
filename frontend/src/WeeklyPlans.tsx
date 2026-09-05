@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { foodCategories } from './foodCategories'
-import { deleteWeeklyPlan, generateWeeklyPlan, getShoppingList, listWeeklyPlans, WeeklyPlanApiError, type DailyNutrition, type ShoppingListItem, type WeeklyPlan, type WeeklyPlanInput } from './api/weeklyPlans'
+import { deleteWeeklyPlan, generateWeeklyPlan, getMealReplacements, getShoppingList, listWeeklyPlans, replaceMeal, WeeklyPlanApiError, type DailyNutrition, type MealAssignment, type MealReplacementSuggestion, type ShoppingListItem, type WeeklyPlan, type WeeklyPlanInput } from './api/weeklyPlans'
 
 const emptyDraft = { start_date: '', snacks_per_day: '1', calories_maximum_kcal: '', protein_minimum_g: '', carbohydrates_target_g: '', fat_maximum_g: '' }
 
@@ -55,7 +55,7 @@ export function WeeklyPlans() {
       <TargetField label="Fettmaximum" unit="g" value={draft.fat_maximum_g} onChange={(value) => setDraft({ ...draft, fat_maximum_g: value })} />
       <div className="form-actions"><button disabled={saving} type="submit">{saving ? 'Plan wird erzeugt …' : 'Plan erzeugen'}</button></div>
     </form>
-    <section className="food-catalog"><div className="catalog-heading"><div><p className="eyebrow">Gespeicherte Historie</p><h2>Wochenpläne</h2></div><span>{plans.length}</span></div>{error && <p className="notice notice--error">{error}</p>}{loading ? <p className="notice">Wochenpläne werden geladen …</p> : plans.length === 0 ? <div className="empty-state"><div className="empty-state__icon">7</div><div><h3>Noch kein Wochenplan</h3><p>Lege links den ersten Zeitraum und deine täglichen Ziele fest.</p></div></div> : <div className="plan-list">{plans.map((plan) => <PlanCard plan={plan} onDelete={() => void remove(plan)} key={plan.id} />)}</div>}</section>
+    <section className="food-catalog"><div className="catalog-heading"><div><p className="eyebrow">Gespeicherte Historie</p><h2>Wochenpläne</h2></div><span>{plans.length}</span></div>{error && <p className="notice notice--error">{error}</p>}{loading ? <p className="notice">Wochenpläne werden geladen …</p> : plans.length === 0 ? <div className="empty-state"><div className="empty-state__icon">7</div><div><h3>Noch kein Wochenplan</h3><p>Lege links den ersten Zeitraum und deine täglichen Ziele fest.</p></div></div> : <div className="plan-list">{plans.map((plan) => <PlanCard plan={plan} onUpdate={(updated) => setPlans((current) => current.map((item) => item.id === updated.id ? updated : item))} onDelete={() => void remove(plan)} key={plan.id} />)}</div>}</section>
   </section>
 }
 
@@ -63,7 +63,7 @@ function TargetField({ label, unit, value, onChange }: { label: string; unit: st
   return <label className="field"><span>{label}</span><div className="number-input"><input required type="number" min="0" step="0.01" value={value} onChange={(event) => onChange(event.target.value)} /><small>{unit}</small></div></label>
 }
 
-function PlanCard({ plan, onDelete }: { plan: WeeklyPlan; onDelete: () => void }) {
+function PlanCard({ plan, onUpdate, onDelete }: { plan: WeeklyPlan; onUpdate: (plan: WeeklyPlan) => void; onDelete: () => void }) {
   const days = Array.from({ length: 7 }, (_, day) => plan.assignments.filter((item) => item.day_index === day))
   return <details className="plan-card">
     <summary><span>{formatDate(plan.start_date)}–{formatDate(plan.end_date)}</span><span>{plan.snacks_per_day} Snacks/Tag</span></summary>
@@ -72,13 +72,61 @@ function PlanCard({ plan, onDelete }: { plan: WeeklyPlan; onDelete: () => void }
       const nutrition = plan.daily_nutrition.find((item) => item.day_index === day)
       return <section key={day}>
         <h3>{formatDate(assignments[0]?.date ?? nutrition?.date ?? plan.start_date)}</h3>
-        {assignments.map((item) => <p key={item.id}><span>{roleLabel(item.meal_role, item.slot_number)}</span><strong>{item.recipe_title}</strong>{item.portion_number && <small>Portion {item.portion_number}/{item.recipe_servings}</small>}</p>)}
+        {assignments.map((item) => <MealRow assignment={item} plan={plan} onUpdate={onUpdate} key={item.id} />)}
         {nutrition && <DailyNutritionSummary nutrition={nutrition} />}
       </section>
     })}</div>
-    <ShoppingList planId={plan.id} />
+    <ShoppingList planId={plan.id} key={plan.assignments.map((item) => `${item.id}:${item.recipe_id}`).join('|')} />
     <button type="button" className="button-danger" onClick={onDelete}>Wochenplan löschen</button>
   </details>
+}
+
+function MealRow({ assignment, plan, onUpdate }: { assignment: MealAssignment; plan: WeeklyPlan; onUpdate: (plan: WeeklyPlan) => void }) {
+  const [open, setOpen] = useState(false)
+  const [suggestions, setSuggestions] = useState<MealReplacementSuggestion[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function toggle() {
+    if (open) { setOpen(false); return }
+    setOpen(true)
+    if (suggestions !== null) return
+    setLoading(true)
+    setError(null)
+    try { setSuggestions(await getMealReplacements(plan.id, assignment.id)) }
+    catch (reason) { setError(message(reason)) }
+    finally { setLoading(false) }
+  }
+
+  async function select(recipeId: number) {
+    setSaving(true)
+    setError(null)
+    try {
+      onUpdate(await replaceMeal(plan.id, assignment.id, recipeId))
+      setOpen(false)
+      setSuggestions(null)
+    } catch (reason) { setError(message(reason)) }
+    finally { setSaving(false) }
+  }
+
+  return <div className="meal-row">
+    <p>
+      <span>{roleLabel(assignment.meal_role, assignment.slot_number)}</span>
+      <strong>{assignment.recipe_title}</strong>
+      {assignment.portion_number ? <small>Portion {assignment.portion_number}/{assignment.recipe_servings}</small> : <small />}
+      <button type="button" className="meal-swap" aria-expanded={open} onClick={() => void toggle()}>Austauschen</button>
+    </p>
+    {open && <div className="replacement-panel">
+      {loading && <small>Alternativen werden gesucht …</small>}
+      {error && <small className="notice--error">{error}</small>}
+      {suggestions?.length === 0 && <small>Keine passende Alternative verfügbar.</small>}
+      {suggestions?.map((suggestion) => <button type="button" disabled={saving} onClick={() => void select(suggestion.recipe_id)} key={suggestion.recipe_id}>
+        <span><strong>{suggestion.recipe_title}</strong><small>Neue Tageswerte: {nutritionLine(suggestion.daily_nutrition)}</small></span>
+        <b>Übernehmen</b>
+      </button>)}
+    </div>}
+  </div>
 }
 
 function ShoppingList({ planId }: { planId: number }) {
@@ -146,6 +194,7 @@ function DailyNutritionSummary({ nutrition }: { nutrition: DailyNutrition }) {
 function roleLabel(role: string, slot: number) { return role === 'breakfast' ? 'Frühstück' : role === 'lunch' ? 'Mittagessen' : role === 'dinner' ? 'Abendessen' : `Snack ${slot}` }
 function formatDate(value: string) { return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)) }
 function formatNumber(value: number) { return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(value) }
+function nutritionLine(nutrition: DailyNutrition) { return `${formatNumber(nutrition.calories_kcal)} kcal · ${formatNumber(nutrition.protein_g)} g P · ${formatNumber(nutrition.carbohydrates_g)} g KH · ${formatNumber(nutrition.fat_g)} g F` }
 function formatShoppingNumber(value: number) { return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 }).format(value) }
 function shoppingAmount(item: ShoppingListItem) { return item.equivalent_amount !== null ? `${formatNumber(item.equivalent_amount)} × ${item.equivalent_unit}` : baseShoppingAmount(item) }
 function baseShoppingAmount(item: ShoppingListItem) {

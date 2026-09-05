@@ -457,7 +457,8 @@ button:disabled {
 
 .plan-days p {
   display: grid;
-  grid-template-columns: 100px 1fr auto;
+  grid-template-columns: 100px minmax(0, 1fr) auto auto;
+  align-items: center;
   gap: 10px;
   margin-bottom: 6px;
   font-size: 13px;
@@ -466,6 +467,56 @@ button:disabled {
 .plan-days p span,
 .plan-days p small {
   color: #71807a;
+}
+
+.meal-swap {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid #c8d8d1;
+  color: #315c4d;
+  background: #fff;
+  font-size: 11px;
+}
+
+.replacement-panel {
+  display: grid;
+  gap: 7px;
+  margin: 7px 0 12px 100px;
+  padding: 9px;
+  border: 1px solid #dce6e1;
+  border-radius: 9px;
+  background: #f8fbf9;
+}
+
+.replacement-panel > small {
+  color: #687771;
+}
+
+.replacement-panel > button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  min-height: 48px;
+  padding: 8px 10px;
+  color: #24493c;
+  background: #fff;
+  border: 1px solid #d5e1dc;
+  text-align: left;
+}
+
+.replacement-panel > button span {
+  display: grid;
+  gap: 3px;
+}
+
+.replacement-panel > button small {
+  color: #71807a;
+  font-weight: 400;
+}
+
+.replacement-panel > button b {
+  font-size: 11px;
 }
 
 .day-nutrition {
@@ -747,6 +798,23 @@ button:disabled {
 
   .ingredient-row .button-icon {
     justify-self: end;
+  }
+
+  .plan-days p {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .plan-days p small,
+  .meal-swap {
+    grid-column: 2;
+  }
+
+  .meal-swap {
+    justify-self: start;
+  }
+
+  .replacement-panel {
+    margin-left: 0;
   }
 
   .food-actions button {

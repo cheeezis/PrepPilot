@@ -36,6 +36,12 @@ export type ShoppingListItem = {
   equivalent_unit: string | null
 }
 
+export type MealReplacementSuggestion = {
+  recipe_id: number
+  recipe_title: string
+  daily_nutrition: DailyNutrition
+}
+
 export type WeeklyPlan = {
   id: number
   start_date: string
@@ -72,6 +78,14 @@ export function generateWeeklyPlan(input: WeeklyPlanInput): Promise<WeeklyPlan> 
 
 export function getShoppingList(planId: number): Promise<ShoppingListItem[]> {
   return request(`/api/weekly-plans/${planId}/shopping-list`)
+}
+
+export function getMealReplacements(planId: number, assignmentId: number): Promise<MealReplacementSuggestion[]> {
+  return request(`/api/weekly-plans/${planId}/assignments/${assignmentId}/replacements`)
+}
+
+export function replaceMeal(planId: number, assignmentId: number, recipeId: number): Promise<WeeklyPlan> {
+  return request(`/api/weekly-plans/${planId}/assignments/${assignmentId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipe_id: recipeId }) })
 }
 
 export async function deleteWeeklyPlan(id: number): Promise<void> {
