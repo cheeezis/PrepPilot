@@ -1,90 +1,79 @@
 # Backlog
 
-Diese Datei enthält Funktionen, die bewusst nicht zum ersten V5-MVP gehören.
-Der verbindliche MVP-Umfang steht in [`v5-plan.md`](v5-plan.md).
+Stand: 5. September 2026
 
-## Priorisierte Reihenfolge nach dem MVP
+Der V5-MVP ist abgeschlossen. Diese Datei enthält nur noch die offenen
+Erweiterungen in ihrer derzeit sinnvollen Reihenfolge. Der ursprüngliche
+MVP-Umfang steht in [`v5-plan.md`](v5-plan.md).
 
-1. Abwechslung und Planqualität
-2. Wochenplan bearbeiten und Mahlzeiten austauschen
-3. mehrere Planvorschläge
-4. Meal-Prep-Logistik
-5. Ernährungsziele und Ernährungsmodi
-6. Historie und Auswertung
+## Bereits nach dem MVP umgesetzt
 
-Die grundlegende Einkaufsliste wurde direkt nach dem MVP umgesetzt. Weitere
-Einkaufsfunktionen bleiben unten als späterer Ausbau festgehalten.
+- gruppierte, abhakbare Einkaufsliste aus einem gespeicherten Wochenplan
+- bessere Verteilung von Meal-Prep-Portionen und weniger Wiederholungen bei
+  gleichwertigen Rezepten
+- bis zu drei Ersatzvorschläge für eine einzelne Mahlzeit
+- erwartete Tagesnährwerte vor dem Austausch
+- direkte Aktualisierung von Plan, Tageswerten und Einkaufsliste nach der
+  Auswahl
 
-## Wochenplan bearbeiten
+## 1. Mehrere Planvorschläge
 
-Bereits umgesetzt:
+- [ ] mehrere Vorschläge für denselben Wochenzeitraum erzeugen, ohne sie sofort
+  als Wochenplan zu speichern
+- [ ] Unterschiede bei Rezepten, Nährwerten und Wiederholungen übersichtlich
+  vergleichen
+- [ ] einen Vorschlag auswählen und erst dann dauerhaft speichern
+- [ ] nicht gewählte Vorschläge verwerfen
 
-- für eine einzelne Mahlzeit bis zu drei passende Ersatzrezepte vorschlagen
-- erwartete Tagesnährwerte vor der Auswahl anzeigen
-- ausgewählten Ersatz dauerhaft übernehmen und Tageswerte sowie Einkaufsliste
-  unmittelbar aktualisieren
-- einen Plan auch während des Austauschs jederzeit vollständig halten
+## 2. Meal-Prep-Batches bearbeiten
 
-Noch offen:
+- [ ] einen vollständigen Meal-Prep-Batch gemeinsam austauschen
+- [ ] übrig bleibende Portionen nach einem einzelnen Austausch ausdrücklich
+  anzeigen
+- [ ] betroffene Portionen auf Wunsch neu verteilen, ohne den übrigen Plan neu
+  zu erzeugen
 
-- einen vollständigen Meal-Prep-Batch gemeinsam austauschen
-- übrig bleibende Meal-Prep-Portionen ausdrücklich anzeigen und neu verteilen
+## 3. Historie und wochenübergreifende Abwechslung
 
-## Planvorschläge
-
-- mehrere Vorschläge für denselben Wochenzeitraum erzeugen
-- Vorschläge vergleichen und einen davon als Wochenplan übernehmen
-- nicht gewählte Vorschläge verwerfen, ohne den gespeicherten Plan zu verändern
-
-## Historie
-
-- komfortable Übersicht vergangener Wochen
-- Wochen vergleichen und erneut verwenden
-- Entwicklungen der geplanten Nährwerte auswerten
-
-## Ernährungsziele
-
-- Modi für Abnehmen, Gewicht halten und Zunehmen
-- Nährwertgrenzen und Optimierungsprioritäten abhängig vom Modus interpretieren
-- für jeden Modus sinnvolle Zielbereiche statt unbegrenzter Unter- oder
-  Obergrenzen festlegen
-- entscheiden, ob PrepPilot den persönlichen Energiebedarf berechnet oder ein
-  vom Nutzer eingegebenes Ziel übernimmt
-
-## Abwechslung
-
-Bereits umgesetzt:
-
-- Meal-Prep-Portionen möglichst auf unterschiedliche Tage verteilen
-- bei gleich guten Nährwerten doppelte Rezepte innerhalb eines Tages vermeiden
-- gleichwertige Einzelrezepte innerhalb einer Woche abwechseln
-
-Noch offen:
-
-- vergangene Wochen bei neuen Vorschlägen berücksichtigen
-- kürzlich verwendete Rezepte bei gleichwertigen Plänen weniger stark
+- [ ] vergangene Wochen bei neuen Vorschlägen berücksichtigen
+- [ ] kürzlich verwendete Rezepte bei gleichwertigen Plänen weniger stark
   bevorzugen
-- gewünschte Wiederholungshäufigkeit konfigurierbar machen
-- Abwechslung erreichen, ohne Meal-Prep-Portionen oder Nährwertziele zu
-  verschlechtern
+- [ ] vergangene Wochen komfortabel anzeigen und erneut verwenden
+- [ ] geplante Nährwerte verschiedener Wochen vergleichen
+- [ ] gewünschte Wiederholungshäufigkeit erst bei konkretem Bedarf
+  konfigurierbar machen
 
-## Meal-Prep-Logistik
+Die Nährwertprioritäten und vollständige Verwendung eingeplanter
+Meal-Prep-Batches bleiben wichtiger als zusätzliche Abwechslung.
 
-- optionale Vorbereitungs- und Kochzeiten an Rezepten erfassen
-- konkreten Koch- oder Vorbereitungstag eines Batches planen und anzeigen
-- Vorbereitung vor Beginn des Planzeitraums abbilden
-- Haltbarkeit und spätesten Verzehr berücksichtigen
+## 4. Meal-Prep-Logistik
 
-## Lebensmittelkatalog
+- [ ] optionale Vorbereitungs- und Kochzeiten an Rezepten erfassen
+- [ ] konkreten Koch- oder Vorbereitungstag eines Batches anzeigen
+- [ ] Vorbereitung vor Beginn des Planzeitraums abbilden
+- [ ] Haltbarkeit und spätesten Verzehr berücksichtigen
 
-- bei konkretem Bedarf ein optionales Marken- oder Produktfeld ergänzen
-- Varianten desselben Lebensmittels verständlich gruppieren und unterscheiden
-- bei konkretem Bedarf weitere Nährwerte wie Ballaststoffe, Zucker, gesättigte
-  Fettsäuren oder Salz erfassen und berechnen
+## 5. Ernährungsmodi
 
-## Einkaufsliste und Vorrat
+- [ ] Modi für Abnehmen, Gewicht halten und Zunehmen definieren
+- [ ] Nährwertgrenzen und Optimierungsprioritäten abhängig vom Modus auslegen
+- [ ] sinnvolle Zielbereiche statt einseitiger Ober- oder Untergrenzen
+  festlegen
+- [ ] später entscheiden, ob PrepPilot den Energiebedarf berechnet oder ein
+  eingegebenes Ziel übernimmt
 
-- vorhandene Vorräte von der berechneten Einkaufsliste abziehen
-- benötigte Mengen auf tatsächlich kaufbare Packungsgrößen aufrunden
-- eigene bevorzugte Packungsgrößen pro Lebensmittel pflegen
-- Einkaufsliste exportieren oder mit anderen Geräten teilen
+## Später nur bei konkretem Bedarf
+
+### Einkaufsliste und Vorrat
+
+- [ ] vorhandene Vorräte von der Einkaufsliste abziehen
+- [ ] benötigte Mengen auf tatsächlich kaufbare Packungsgrößen aufrunden
+- [ ] bevorzugte Packungsgrößen pro Lebensmittel pflegen
+- [ ] Einkaufsliste exportieren oder teilen
+
+### Lebensmittelkatalog
+
+- [ ] optionales Marken- oder Produktfeld ergänzen
+- [ ] Varianten desselben Lebensmittels verständlich gruppieren
+- [ ] weitere Nährwerte wie Ballaststoffe, Zucker, gesättigte Fettsäuren oder
+  Salz nur bei konkretem Nutzen erfassen
