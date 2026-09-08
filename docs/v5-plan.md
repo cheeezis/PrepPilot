@@ -1,12 +1,12 @@
 # PrepPilot V5
 
-Stand: 4. September 2026
+Stand: 5. September 2026
 
 ## Umsetzungsstand
 
 - Abschnitt 0 ist abgeschlossen; der V4-Stand ist mit `prototype-v4` markiert.
-- Abschnitt 1 ist auf `rewrite/v5-foundation` umgesetzt und automatisiert
-  geprüft. Der echte lokale Start mit Docker steht noch aus.
+- Abschnitt 1 ist auf `rewrite/v5-foundation` umgesetzt und automatisiert sowie
+  später im vollständigen lokalen Docker-Start geprüft.
 - Abschnitt 2 ist auf `feature/food-catalog` umgesetzt und automatisiert sowie
   mit einer echten lokalen PostgreSQL-Datenbank geprüft.
 - Abschnitt 3 ist auf `feature/recipe-management` umgesetzt und automatisiert
@@ -22,6 +22,9 @@ Stand: 4. September 2026
 - Der in diesem Dokument definierte V5-MVP ist damit umgesetzt.
 - Als erste Erweiterung nach dem MVP wurde eine aus gespeicherten Wochenplänen
   berechnete, gruppierte und lokal abhakbare Einkaufsliste ergänzt.
+- Die anschließende Plan-Experience-Erweiterung verteilt Meal-Prep-Portionen
+  besser, reduziert gleichwertige Wiederholungen und ermöglicht den gezielten
+  Austausch einzelner Mahlzeiten anhand konkreter Ersatzvorschläge.
 
 ## Ziel
 
@@ -54,10 +57,11 @@ die schrittweise weiter umgebaut werden muss.
 - jede Einplanung verbraucht genau eine Portion
 - wird ein Meal-Prep-Rezept gekocht, werden alle seine Portionen in derselben
   Planwoche verwendet
-- dasselbe Gericht darf am selben Tag mittags und abends vorkommen
-- Meal-Prep-Portionen dürfen flexibel verteilt werden, zum Beispiel bei sechs
-  Portionen an zwei Tagen mittags und abends sowie an zwei weiteren Tagen nur
-  abends
+- dasselbe Gericht darf am selben Tag mehrfach vorkommen, wenn dies für die
+  Nährwertziele oder eine vollständige Planung erforderlich ist; bei
+  gleichwertigen Alternativen wird eine Wiederholung vermieden
+- Meal-Prep-Portionen werden nach Möglichkeit auf unterschiedliche,
+  aufeinanderfolgende Tage verteilt
 - die Verteilung soll möglichst aufeinanderfolgende Tage und wenige Kochvorgänge
   begünstigen
 - für alle sieben Tage gelten zunächst dieselben Nährwertziele
@@ -201,7 +205,8 @@ Weiche Ziele:
 
 - Nährwertziele möglichst gut treffen
 - wenige verschiedene Kochvorgänge benötigen
-- Portionen eines Batches auf möglichst zusammenhängende Tage konzentrieren
+- Portionen eines Batches auf unterschiedliche, möglichst zusammenhängende
+  Tage verteilen
 
 Wenn kein Plan die Nährwertziele exakt erreicht, wird der beste Plan angezeigt,
 der alle harten Bedingungen erfüllt. Seine Abweichungen werden konkret
@@ -281,17 +286,18 @@ Kalorienmaximums sind zulässig; Überschreitungen werden stärker bewertet.
 
 Ein Rezept ergibt sechs Portionen und ist für Mittag- und Abendessen geeignet.
 Wird es als Meal-Prep-Gericht für die Woche gewählt, zeigt PrepPilot genau sechs
-Belegungen. Zulässig wäre beispielsweise:
+Belegungen. Die bevorzugte Verteilung wäre beispielsweise:
 
-- Montag: Mittagessen und Abendessen
-- Dienstag: Mittagessen und Abendessen
-- Mittwoch: Abendessen
-- Donnerstag: Abendessen
+- Montag: Mittagessen
+- Dienstag: Mittagessen
+- Mittwoch: Mittagessen
+- Donnerstag: Mittagessen
+- Freitag: Mittagessen
+- Samstag: Mittagessen
 
-Nach Donnerstag sind alle sechs Portionen verbraucht. Es entsteht weder eine
-unsichtbare siebte Portion noch ein Rest für die nächste Woche. Eine alternative
-Verteilung über drei Tage mit jeweils Mittag- und Abendessen ist ebenfalls
-zulässig, wenn sie zu den übrigen Wochenzielen passt.
+Nach Samstag sind alle sechs Portionen verbraucht. Es entsteht weder eine
+unsichtbare siebte Portion noch ein Rest für die nächste Woche. Die konkrete
+Mahlzeitenrolle darf zwischen Mittag- und Abendessen wechseln.
 
 ## Bewusst außerhalb des ersten MVP
 
@@ -299,7 +305,7 @@ zulässig, wenn sie zu den übrigen Wochenzielen passt.
 - automatische Einheitenerkennung und Übernahme von Packungsgrößen
 - Vorratshaltung
 - Allergene und Ernährungsformen
-- Favoriten, Ausschlüsse und manueller Rezepttausch
+- Favoriten und Ausschlüsse
 - mehrere Personen und Haushalte
 - mehrere Wochen oder Reste über Wochengrenzen
 - unterschiedliche Ziele je Wochentag
